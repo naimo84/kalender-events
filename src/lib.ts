@@ -2,17 +2,15 @@ import moment = require('moment');
 import { loadEventsForDay } from './icloud';
 import { CalDav, Fallback } from './caldav';
 import { Config } from './config';
+import nodeIcal = require('node-ical');
+
 var debug = require('debug')('kalendar-events')
-import * as NodeCache from 'node-cache';
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
-const nodeIcal = require('node-ical');
-
 export interface Job {
     id: string,
     cronjob: any
 }
-
 export interface CalEvent {
     summary?: string,
     topic?: string,
@@ -28,8 +26,8 @@ export interface CalEvent {
     on?: boolean,
     off?: boolean,
     countdown?: object,
-    calendarName?: string
-
+    calendarName?: string,
+    uid?: string,
 }
 
 export default class KalenderEvents {
@@ -39,7 +37,7 @@ export default class KalenderEvents {
 
     }
 
-    async getICal(config) {
+    async getICal(config: any) {
         try {
             let data = await this.getEvents(config);
             if (this.cache) {
@@ -76,8 +74,8 @@ export default class KalenderEvents {
         } as Config;
     }
 
-    convertEvents(events) {
-        let retEntries = [];
+    convertEvents(events: any): any[] {
+        let retEntries: any = [];
         if (events) {
             if (Array.isArray(events)) {
                 events.forEach(event => {
@@ -87,13 +85,13 @@ export default class KalenderEvents {
             }
             else {
                 if (events.events) {
-                    events.events.forEach(event => {
+                    events.events.forEach((event: any) => {
                         let ev = this.convertEvent(event);
                         retEntries.push(ev);
                     });
                 }
                 if (events.occurrences && events.occurrences.length > 0) {
-                    events.occurrences.forEach(event => {
+                    events.occurrences.forEach((event: any) => {
                         let ev = this.convertEvent(event);
                         retEntries.push(ev);
                     });
@@ -111,7 +109,7 @@ export default class KalenderEvents {
         });
     }
 
-    convertEvent(e) {
+    convertEvent(e: any): any {
         if (e) {
             let startDate = e.startDate?.toJSDate() || e.start;
             let endDate = e.endDate?.toJSDate() || e.end;
@@ -160,12 +158,12 @@ export default class KalenderEvents {
                 datetype: 'date',
                 type: 'VEVENT',
                 allDay: allday,
-                calendarName: null
+                calendarName: null as any
             }
         }
     }
 
-    convertScrapegoat(e) {
+    convertScrapegoat(e: any) {
         if (e) {
             let startDate = moment(e.start).toDate();
             let endDate = moment(e.end).toDate();
@@ -204,12 +202,12 @@ export default class KalenderEvents {
                 datetype: 'date',
                 type: 'VEVENT',
                 allDay: allday,
-                calendarName: null
+                calendarName: null as any
             }
         }
     }
 
-    getTimezoneOffset(date) {
+    getTimezoneOffset(date: Date) {
         var offset = 0;
         var zone = moment.tz.zone(moment.tz.guess());
         if (zone && date) {
@@ -218,11 +216,11 @@ export default class KalenderEvents {
         return offset;
     }
 
-    addOffset(time, offset) {
+    addOffset(time: Date, offset: number) {
         return new Date(time.getTime() + offset * 60 * 1000);
     }
 
-    countdown(date) {
+    countdown(date: Date) {
 
         var seconds = (date.getTime() - new Date().getTime()) / 1000;
         seconds = Number(seconds);
@@ -240,18 +238,18 @@ export default class KalenderEvents {
         };
     }
 
-    async getEvents(config) {
+    async getEvents(config: Config) {
         if (config.caldav && config.caldav === 'icloud') {
             debug('icloud');
             const now = moment();
             const when = now.toDate();
-            let list = await loadEventsForDay(moment(when), config);
+            let list = await loadEventsForDay(moment(when), config, this);
             return list;
         } else if (config.caldav && JSON.parse(config.caldav) === true) {
             debug('caldav');
             try {
                 let data = await CalDav(config);
-                let retEntries = {};
+                let retEntries:any = {};
                 if (data) {
                     for (let events of data) {
                         for (let event in events) {
@@ -299,7 +297,7 @@ export default class KalenderEvents {
         }
     }
 
-    processRRule(ev, preview, today, realnow, config) {
+    processRRule(ev: any, preview: Date, today: Date, realnow: Date, config: any) {
         var eventLength = ev.end.getTime() - ev.start.getTime();
         var options = RRule.parseString(ev.rrule.toString());
         options.dtstart = this.addOffset(ev.start, -this.getTimezoneOffset(ev.start));
@@ -399,7 +397,7 @@ export default class KalenderEvents {
         return reslist;
     }
 
-    processData(data, realnow, pastview, preview, config, reslist) {
+    processData(data: any, realnow: Date, pastview: Date, preview: Date, config: Config, reslist: CalEvent[]) {
         var processedEntries = 0;
 
         for (var k in data) {
@@ -436,10 +434,10 @@ export default class KalenderEvents {
         }
     }
 
-    checkDates(ev, preview, pastview, realnow, rule, config: Config, reslist: CalEvent[]) {
+    checkDates(ev: any, preview: Date, pastview: Date, realnow: Date, rule: string, config: Config, reslist: CalEvent[]) {
         var fullday = false;
-        var reason;
-        var date;
+        var reason: string;
+        var date: any;
 
         if (ev.summary && ev.summary.hasOwnProperty('val')) {
             reason = ev.summary.val;
@@ -560,9 +558,9 @@ export default class KalenderEvents {
         }
     }
 
-    formatDate(_date, _end: Date, withTime, fullday, config) {
-        var day = _date.getDate();
-        var month = _date.getMonth() + 1;
+    formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean, config: Config) {
+        var day: any = _date.getDate();
+        var month: any = _date.getMonth() + 1;
         var year = _date.getFullYear();
         var endday = _end.getDate();
         var endmonth = _end.getMonth() + 1;
@@ -571,16 +569,16 @@ export default class KalenderEvents {
         var alreadyStarted = _date < new Date();
 
         if (withTime) {
-            var hours = _date.getHours();
-            var minutes = _date.getMinutes();
+            var hours = _date.getHours().toString();
+            var minutes = _date.getMinutes().toString();
 
             if (!alreadyStarted) {
-                if (hours < 10) hours = '0' + hours.toString();
-                if (minutes < 10) minutes = '0' + minutes.toString();
+                if (parseInt(hours) < 10) hours = '0' + hours.toString();
+                if (parseInt(minutes) < 10) minutes = '0' + minutes.toString();
                 _time = ' ' + hours + ':' + minutes;
             }
             var timeDiff = _end.getTime() - _date.getTime();
-            if (timeDiff === 0 && hours === 0 && minutes === 0) {
+            if (timeDiff === 0 && parseInt(hours) === 0 && parseInt(minutes) === 0) {
                 _time = ' ';
             } else if (timeDiff > 0) {
                 if (!alreadyStarted) {
@@ -798,7 +796,7 @@ export default class KalenderEvents {
     }
 
 
-    replaceText(text, config) {
+    replaceText(text: string, config: Config) {
         if (!text) return '';
 
         if (this.dictionary[text]) {
@@ -815,7 +813,7 @@ export default class KalenderEvents {
         return text;
     }
 
-    dictionary = {
+    dictionary: any = {
         today: {
             en: 'Today',
             it: 'Oggi',

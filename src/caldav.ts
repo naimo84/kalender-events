@@ -5,7 +5,7 @@ import Scrapegoat = require("scrapegoat");
 import moment = require('moment');
 import IcalExpander = require('ical-expander');
 import * as  ical from 'node-ical';
-import  KalenderEvents  from './lib';
+import KalenderEvents, { CalEvent } from './lib';
 
 export function CalDav(config: Config) {
     const calName = config.calendar;
@@ -59,16 +59,17 @@ export function CalDav(config: Config) {
             for (let calendar of account.calendars) {
 
                 if (!calName || !calName.length || (calName && calName.length && calName.toLowerCase() === calendar.displayName.toLowerCase())) {
+                    //@ts-ignore
                     promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
-                        .then((calendarEntries) => {
-                            let retEntries = {};
+                        .then((calendarEntries: any) => {
+                            let retEntries:any = {};
                             for (let calendarEntry of calendarEntries) {
                                 const ics = calendarEntry.calendarData;
                                 if (ics) {
                                     const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
                                     const events = icalExpander.between(start.toDate(), end.toDate());
 
-                                    ke.convertEvents(events).forEach(event => {
+                                    ke.convertEvents(events).forEach((event:CalEvent) => {
                                         if (event) {
                                             event.calendarName = calendar.displayName;
                                             retEntries[event.uid] = event;
@@ -79,10 +80,10 @@ export function CalDav(config: Config) {
                             return retEntries;
                         }),
                     );
-
+                    //@ts-ignore
                     promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
-                        .then((calendarEntries) => {
-                            let retEntries = {};
+                        .then((calendarEntries: any) => {
+                            let retEntries:any = {};
                             for (let calendarEntry of calendarEntries) {
                                 if (calendarEntry.calendar.objects) {
                                     for (let calendarObject of calendarEntry.calendar.objects) {
@@ -100,7 +101,7 @@ export function CalDav(config: Config) {
                                                 };
                                             }
 
-                                            return ical.fromURL(ics, header).then(data => {
+                                            return ical.fromURL(ics, header).then((data: any) => {
                                                 for (var k in data) {
                                                     var ev = ke.convertEvent(data[k]);
                                                     if (ev) {
@@ -119,12 +120,12 @@ export function CalDav(config: Config) {
                 }
             }
             return Promise.all(promises);
-        }, function (err) {           
+        }, function (err) {
             throw err;
         });
 }
 
-export async function Fallback(config:Config) {
+export async function Fallback(config: Config) {
     const ke = new KalenderEvents();
     let scrapegoat = new Scrapegoat({
         auth: {

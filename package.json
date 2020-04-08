@@ -2,7 +2,7 @@
   "name": "kalender-events",
   "version": "0.0.1",
   "description": "calendar events for nodejs",
-  "main": "dist/index.js",
+  "main": "dist/lib.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -38,10 +38,11 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
+    "@types/dav": "^1.7.1",
     "@types/lodash": "^4.14.149",
     "@types/moment": "^2.13.0",
-    "@types/node": "^13.11.0",
     "@types/moment-timezone": "^0.5.12",
+    "@types/node": "^13.11.0",
     "commitlint": "^8.3.5",
     "gulp": "^4.0.2",
     "gulp-nodemon": "^2.4.2",

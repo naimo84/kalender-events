@@ -1,19 +1,20 @@
 import xmlParser = require('xml-js');
 import icalExpander = require('ical-expander');
-import { convertEvents } from './lib';
 import { Config } from './config';
 import axios, { AxiosRequestConfig } from "axios";
+import KalenderEvents from './types/index';
+import moment = require('moment');
 
-function process(reslist, start, end, ics) {
+function process(reslist:any, start:any, end:any, ics:any, kalEv:KalenderEvents) {
     const cal = new icalExpander({ ics, maxIterations: 1000 });
     const events = cal.between(start.toDate(), end.toDate());
 
-    for (let event of convertEvents(events)) {
+    for (let event of kalEv.convertEvents(events)) {
         reslist[event.uid + event.start] = event;
     }
 }
 
-async function requestIcloudSecure(config: Config, start, end) {
+async function requestIcloudSecure(config: Config, start:any, end:any) {
     const DavTimeFormat = 'YYYYMMDDTHHmms\\Z',
         url = config.url,
         user = config.username,
@@ -71,8 +72,10 @@ async function requestIcloudSecure(config: Config, start, end) {
     }
 }
 
-export async function loadEventsForDay(whenMoment, config: Config) {
+export async function loadEventsForDay(whenMoment:moment.Moment, config: Config, kalEv:KalenderEvents) {
+    //@ts-ignore
     let start = whenMoment.clone().startOf('day').subtract(config.pastview, config.pastviewUnits);
+    //@ts-ignore
     let end = whenMoment.clone().endOf('day').add(config.preview, config.previewUnits);
 
     if (config.pastviewUnits === 'days') {
@@ -87,9 +90,9 @@ export async function loadEventsForDay(whenMoment, config: Config) {
     var reslist = {};
     if (json && json.multistatus && json.multistatus.response) {
         if (json.multistatus.response.propstat) {
-            process(reslist, start, end, json.multistatus.response.propstat.prop['calendar-data']._cdata);
+            process(reslist, start, end, json.multistatus.response.propstat.prop['calendar-data']._cdata,kalEv);
         } else {
-            json.multistatus.response.forEach(response => process(reslist, start, end, response.propstat.prop['calendar-data']._cdata));
+            json.multistatus.response.forEach((response:any) => process(reslist, start, end, response.propstat.prop['calendar-data']._cdata,kalEv));
         }
     }
     return reslist;
