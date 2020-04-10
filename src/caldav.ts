@@ -9,7 +9,7 @@ import KalenderEvents, { CalEvent } from './lib';
 
 export function CalDav(config: Config) {
     const calName = config.calendar;
-    const ke = new KalenderEvents();
+    const ke = new KalenderEvents(config);
     const now = moment();
     const whenMoment = moment(now.toDate());
 
@@ -126,7 +126,7 @@ export function CalDav(config: Config) {
 }
 
 export async function Fallback(config: Config) {
-    const ke = new KalenderEvents();
+    const ke = new KalenderEvents(config);
     let scrapegoat = new Scrapegoat({
         auth: {
             user: config.username,

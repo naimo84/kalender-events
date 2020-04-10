@@ -3,7 +3,7 @@ import { loadEventsForDay } from './icloud';
 import { CalDav, Fallback } from './caldav';
 import { Config } from './config';
 import nodeIcal = require('node-ical');
-
+import * as NodeCache from 'node-cache';
 var debug = require('debug')('kalendar-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
@@ -31,15 +31,17 @@ export interface CalEvent {
 }
 
 export default class KalenderEvents {
-    cache: any;
+    private cache: NodeCache;
+    private config: Config;
 
-    constructor() {
-
+    constructor(config: Config) {
+        this.config = config;
+        this.cache = new NodeCache();
     }
 
     async getICal(config: any) {
         try {
-            let data = await this.getEvents(config);
+            let data = await this.getEvents();
             if (this.cache) {
                 if (data) {
                     this.cache.set("events", data);
@@ -53,7 +55,7 @@ export default class KalenderEvents {
         }
     }
 
-    
+
 
     convertEvents(events: any): any[] {
         let retEntries: any = [];
@@ -83,7 +85,7 @@ export default class KalenderEvents {
         return retEntries;
     }
 
-    uuidv4() {
+    private uuidv4() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
@@ -219,18 +221,18 @@ export default class KalenderEvents {
         };
     }
 
-    async getEvents(config: Config) {
-        if (config.caldav && config.caldav === 'icloud') {
+    async getEvents() {
+        if (this.config.caldav && this.config.caldav === 'icloud') {
             debug('icloud');
             const now = moment();
             const when = now.toDate();
-            let list = await loadEventsForDay(moment(when), config, this);
+            let list = await loadEventsForDay(moment(when), this.config, this);
             return list;
-        } else if (config.caldav && JSON.parse(config.caldav) === true) {
+        } else if (this.config.caldav && JSON.parse(this.config.caldav) === true) {
             debug('caldav');
             try {
-                let data = await CalDav(config);
-                let retEntries:any = {};
+                let data = await CalDav(this.config);
+                let retEntries: any = {};
                 if (data) {
                     for (let events of data) {
                         for (let event in events) {
@@ -244,7 +246,7 @@ export default class KalenderEvents {
             catch (err) {
                 debug(`caldav - get calendar went wrong. Error Message: ${err}`)
                 debug(`caldav - using fallback`)
-                Fallback(config).then((data) => {
+                Fallback(this.config).then((data) => {
                     return data;
                 }).catch(err_fallback => {
                     throw (`caldav - get calendar went wrong. Error Message: ${err_fallback}`)
@@ -252,10 +254,10 @@ export default class KalenderEvents {
             };
         } else {
             debug('ical');
-            if (config?.url?.match(/^https?:\/\//)) {
+            if (this.config?.url?.match(/^https?:\/\//)) {
                 let header = {};
-                let username = config.username;
-                let password = config.password;
+                let username = this.config.username;
+                let password = this.config.password;
 
                 if (username && password) {
                     var auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
@@ -266,19 +268,19 @@ export default class KalenderEvents {
                     };
                 }
 
-                return await nodeIcal.async.fromURL(config.url, header);
+                return await nodeIcal.async.fromURL(this.config.url, header);
             } else {
-                if (!config.url) {
+                if (!this.config.url) {
                     throw "URL/File is not defined";
 
                     return {};
                 }
-                return await nodeIcal.async.parseFile(config.url);
+                return await nodeIcal.async.parseFile(this.config.url);
             }
         }
     }
 
-    processRRule(ev: any, preview: Date, today: Date, realnow: Date, config: any) {
+    processRRule(ev: any, preview: Date, today: Date) {
         var eventLength = ev.end.getTime() - ev.start.getTime();
         var options = RRule.parseString(ev.rrule.toString());
         options.dtstart = this.addOffset(ev.start, -this.getTimezoneOffset(ev.start));
@@ -378,7 +380,7 @@ export default class KalenderEvents {
         return reslist;
     }
 
-    processData(data: any, realnow: Date, pastview: Date, preview: Date, config: Config, reslist: CalEvent[]) {
+    processData(data: any, realnow: Date, pastview: Date, preview: Date, reslist: CalEvent[]) {
         var processedEntries = 0;
 
         for (var k in data) {
@@ -394,11 +396,11 @@ export default class KalenderEvents {
                 }
 
                 if (ev.rrule === undefined) {
-                    this.checkDates(ev, preview, pastview, realnow, ' ', config, reslist);
+                    this.checkDates(ev, preview, pastview, realnow, ' ', reslist);
                 } else {
-                    let evlist = this.processRRule(ev, preview, pastview, realnow, config);
+                    let evlist = this.processRRule(ev, preview, pastview);
                     for (let ev2 of evlist) {
-                        this.checkDates(ev2, preview, pastview, realnow, ' rrule ', config, reslist);
+                        this.checkDates(ev2, preview, pastview, realnow, ' rrule ', reslist);
                     }
 
                 }
@@ -411,11 +413,11 @@ export default class KalenderEvents {
         if (!Object.keys(data).length) {
             return;
         } else {
-            this.processData(data, realnow, pastview, preview, config, reslist);
+            this.processData(data, realnow, pastview, preview, reslist);
         }
     }
 
-    checkDates(ev: any, preview: Date, pastview: Date, realnow: Date, rule: string, config: Config, reslist: CalEvent[]) {
+    checkDates(ev: any, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: CalEvent[]) {
         var fullday = false;
         var reason: string;
         var date: any;
@@ -448,11 +450,11 @@ export default class KalenderEvents {
         }
 
         let output = false;
-        if (config.trigger == 'match') {
-            let regex = new RegExp(config.filter);
+        if (this.config.trigger == 'match') {
+            let regex = new RegExp(this.config.filter);
             if (regex.test(ev.summary)) output = true;
-        } else if (config.trigger == 'nomatch') {
-            let regex = new RegExp(config.filter);
+        } else if (this.config.trigger == 'nomatch') {
+            let regex = new RegExp(this.config.filter);
             if (!regex.test(ev.summary)) output = true;
         } else {
             output = true;
@@ -465,7 +467,7 @@ export default class KalenderEvents {
                     (ev.end > pastview && ev.end <= preview) ||
                     (ev.start < pastview && ev.end > pastview)
                 ) {
-                    date = this.formatDate(ev.start, ev.end, true, true, config);
+                    date = this.formatDate(ev.start, ev.end, true, true);
 
                     this.insertSorted(reslist, {
                         date: date.text.trim(),
@@ -492,7 +494,7 @@ export default class KalenderEvents {
                     (ev.end >= realnow && ev.end <= preview) ||
                     (ev.start < realnow && ev.end > realnow)
                 ) {
-                    date = this.formatDate(ev.start, ev.end, true, false, config);
+                    date = this.formatDate(ev.start, ev.end, true, false);
                     this.insertSorted(reslist, {
                         date: date.text.trim(),
                         event: reason,
@@ -539,7 +541,7 @@ export default class KalenderEvents {
         }
     }
 
-    formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean, config: Config) {
+    formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean) {
         var day: any = _date.getDate();
         var month: any = _date.getMonth() + 1;
         var year = _date.getFullYear();
@@ -596,7 +598,7 @@ export default class KalenderEvents {
                     if (fullTimeDiff >= 24 * 60 * 60 * 1000) {
                         _time += '+' + Math.floor(timeDiff / (24 * 60 * 60 * 1000));
                     }
-                } else if (config.replacedates && _end.getHours() === 0 && _end.getMinutes() === 0) {
+                } else if (this.config.replacedates && _end.getHours() === 0 && _end.getMinutes() === 0) {
                     _time = ' ';
                 }
             }
@@ -660,78 +662,78 @@ export default class KalenderEvents {
                 _class = 'ical_oneweek';
             }
 
-            if (config.replacedates) {
+            if (this.config.replacedates) {
                 if (_class === 'ical_today')
                     return {
-                        text: this.replaceText('today', config) + _time,
+                        text: this.replaceText('today') + _time,
                         _class: _class,
                     };
-                if (_class === 'ical_tomorrow') return { text: this.replaceText('tomorrow', config) + _time, _class: _class };
-                if (_class === 'ical_dayafter') return { text: this.replaceText('dayafter', config) + _time, _class: _class };
-                if (_class === 'ical_3days') return { text: this.replaceText('3days', config) + _time, _class: _class };
-                if (_class === 'ical_4days') return { text: this.replaceText('4days', config) + _time, _class: _class };
-                if (_class === 'ical_5days') return { text: this.replaceText('5days', config) + _time, _class: _class };
-                if (_class === 'ical_6days') return { text: this.replaceText('6days', config) + _time, _class: _class };
-                if (_class === 'ical_oneweek') return { text: this.replaceText('oneweek', config) + _time, _class: _class };
+                if (_class === 'ical_tomorrow') return { text: this.replaceText('tomorrow') + _time, _class: _class };
+                if (_class === 'ical_dayafter') return { text: this.replaceText('dayafter') + _time, _class: _class };
+                if (_class === 'ical_3days') return { text: this.replaceText('3days') + _time, _class: _class };
+                if (_class === 'ical_4days') return { text: this.replaceText('4days') + _time, _class: _class };
+                if (_class === 'ical_5days') return { text: this.replaceText('5days') + _time, _class: _class };
+                if (_class === 'ical_6days') return { text: this.replaceText('6days') + _time, _class: _class };
+                if (_class === 'ical_oneweek') return { text: this.replaceText('oneweek') + _time, _class: _class };
             }
         } else {
             _class = 'ical_today';
             var daysleft = Math.round((_end.getDate() - new Date().getDate()) / (1000 * 60 * 60 * 24));
             var hoursleft = Math.round((_end.getDate() - new Date().getDate()) / (1000 * 60 * 60));
 
-            if (config.replacedates) {
-                var _left = this.replaceText('left', config) !== ' ' ? ' ' + this.replaceText('left', config) : '';
+            if (this.config.replacedates) {
+                var _left = this.replaceText('left') !== ' ' ? ' ' + this.replaceText('left') : '';
                 var text;
                 if (daysleft === 42) {
-                    text = this.replaceText('6week_left', config);
+                    text = this.replaceText('6week_left');
                 } else if (daysleft === 35) {
-                    text = this.replaceText('5week_left', config);
+                    text = this.replaceText('5week_left');
                 } else if (daysleft === 28) {
-                    text = this.replaceText('4week_left', config);
+                    text = this.replaceText('4week_left');
                 } else if (daysleft === 21) {
-                    text = this.replaceText('3week_left', config);
+                    text = this.replaceText('3week_left');
                 } else if (daysleft === 14) {
-                    text = this.replaceText('2week_left', config);
+                    text = this.replaceText('2week_left');
                 } else if (daysleft === 7) {
-                    text = this.replaceText('1week_left', config);
+                    text = this.replaceText('1week_left');
                 } else if (daysleft >= 1) {
-                    if (config.language === 'ru') {
+                    if (this.config.language === 'ru') {
                         var c = daysleft % 10;
                         var cc = Math.floor(daysleft / 10) % 10;
                         if (daysleft === 1) {
-                            text = (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') + ' ' + daysleft + ' ' + this.replaceText('day', config) + _left;
+                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + daysleft + ' ' + this.replaceText('day') + _left;
                         } else if (cc > 1 && (c > 1 || c < 5)) {
-                            text = (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') + ' ' + daysleft + ' ' + 'дня' + _left;
+                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + daysleft + ' ' + 'дня' + _left;
                         } else {
-                            text = (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') + ' ' + daysleft + ' ' + this.replaceText('days', config) + _left;
+                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + daysleft + ' ' + this.replaceText('days') + _left;
                         }
                     } else {
                         text =
-                            (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') +
+                            (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') +
                             ' ' +
                             daysleft +
                             ' ' +
-                            (daysleft === 1 ? this.replaceText('day', config) : this.replaceText('days', config)) +
+                            (daysleft === 1 ? this.replaceText('day') : this.replaceText('days')) +
                             _left;
                     }
                 } else {
-                    if (config.language === 'ru') {
+                    if (this.config.language === 'ru') {
                         var c = hoursleft % 10;
                         var cc = Math.floor(hoursleft / 10) % 10;
                         if (hoursleft === 1) {
-                            text = (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') + ' ' + hoursleft + ' ' + this.replaceText('hour', config) + _left;
+                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + hoursleft + ' ' + this.replaceText('hour') + _left;
                         } else if (cc !== 1 && (c > 1 || c < 5)) {
-                            text = (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') + ' ' + hoursleft + ' ' + 'часа' + _left;
+                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + hoursleft + ' ' + 'часа' + _left;
                         } else {
-                            text = (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') + ' ' + hoursleft + ' ' + this.replaceText('hours', config) + _left;
+                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + hoursleft + ' ' + this.replaceText('hours') + _left;
                         }
                     } else {
                         text =
-                            (this.replaceText('still', config) !== ' ' ? this.replaceText('still', config) : '') +
+                            (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') +
                             ' ' +
                             hoursleft +
                             ' ' +
-                            (hoursleft === 1 ? this.replaceText('hour', config) : this.replaceText('hours', config)) +
+                            (hoursleft === 1 ? this.replaceText('hour') : this.replaceText('hours')) +
                             _left;
                     }
                 }
@@ -777,14 +779,14 @@ export default class KalenderEvents {
     }
 
 
-    replaceText(text: string, config: Config) {
+    replaceText(text: string) {
         if (!text) return '';
 
         if (this.dictionary[text]) {
-            var newText = this.dictionary[text][config.language];
+            var newText = this.dictionary[text][this.config.language];
             if (newText) {
                 return newText;
-            } else if (config.language !== 'en') {
+            } else if (this.config.language !== 'en') {
                 newText = this.dictionary[text].en;
                 if (newText) {
                     return newText;
