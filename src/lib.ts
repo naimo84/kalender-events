@@ -146,7 +146,7 @@ export default class KalenderEvents {
         }
     }
 
-    convertScrapegoat(e: any) {
+    private convertScrapegoat(e: any) {
         if (e) {
             let startDate = moment(e.start).toDate();
             let endDate = moment(e.end).toDate();
@@ -190,7 +190,7 @@ export default class KalenderEvents {
         }
     }
 
-    getTimezoneOffset(date: Date) {
+    private getTimezoneOffset(date: Date) {
         var offset = 0;
         var zone = moment.tz.zone(moment.tz.guess());
         if (zone && date) {
@@ -199,12 +199,21 @@ export default class KalenderEvents {
         return offset;
     }
 
-    addOffset(time: any, ...args: any): Date {
+    /**
+    * This comment _supports_ [Markdown](https://marked.js.org/)
+    * @param date Comment for parameter ´time´.
+    * @param args test
+    * ```
+    * example
+    * ```
+    */ 
+    addOffset(date: Date, ...args: any): Date {
         if (args.length == 1) {
-            return new Date(time.getTime() + parseInt(args) * 60 * 1000);
+            let dat = new Date(date.getTime() + parseInt(args) * 60 * 1000);
+            return dat;
         } else {
-            let date = moment(time).add(args[0], args[1]).toDate();
-            return date;
+            let dat = moment(date).add(args[0], args[1]).toDate();
+            return dat;
         }
     }
 
@@ -226,7 +235,7 @@ export default class KalenderEvents {
         };
     }
 
-    async getEvents() {
+    private async getEvents() {
         if (this.config.caldav && this.config.caldav === 'icloud') {
             debug('icloud');
             const now = moment();
@@ -285,7 +294,7 @@ export default class KalenderEvents {
         }
     }
 
-    processRRule(ev: any, preview: Date, today: Date) {
+    private processRRule(ev: any, preview: Date, today: Date) {
         var eventLength = ev.end.getTime() - ev.start.getTime();
         var options = RRule.parseString(ev.rrule.toString());
         options.dtstart = this.addOffset(ev.start, -this.getTimezoneOffset(ev.start));
@@ -391,7 +400,7 @@ export default class KalenderEvents {
         return reslist;
     }
 
-    processDataRev(data: any, realnow: Date, pastview: Date, preview: Date, reslist: CalEvent[]) {
+    private processDataRev(data: any, realnow: Date, pastview: Date, preview: Date, reslist: CalEvent[]) {
         var processedEntries = 0;
 
         for (var k in data) {
@@ -428,7 +437,7 @@ export default class KalenderEvents {
         }
     }
 
-    checkDates(ev: any, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: CalEvent[]) {
+    private checkDates(ev: any, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: CalEvent[]) {
         var fullday = false;
         var reason: string;
         var date: any;
@@ -527,7 +536,7 @@ export default class KalenderEvents {
         }
     }
 
-    insertSorted(arr: CalEvent[], element: CalEvent) {
+    private insertSorted(arr: CalEvent[], element: CalEvent) {
         if (!arr.length) {
             arr.push(element);
         } else {
@@ -552,7 +561,7 @@ export default class KalenderEvents {
         }
     }
 
-    formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean) {
+    private formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean) {
         var day: any = _date.getDate();
         var month: any = _date.getMonth() + 1;
         var year = _date.getFullYear();
@@ -790,7 +799,7 @@ export default class KalenderEvents {
     }
 
 
-    replaceText(text: string) {
+    private replaceText(text: string) {
         if (!text) return '';
 
         if (this.dictionary[text]) {
@@ -807,7 +816,7 @@ export default class KalenderEvents {
         return text;
     }
 
-    dictionary: any = {
+    private dictionary: any = {
         today: {
             en: 'Today',
             it: 'Oggi',
