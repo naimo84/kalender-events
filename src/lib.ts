@@ -199,8 +199,13 @@ export default class KalenderEvents {
         return offset;
     }
 
-    addOffset(time: Date, offset: number) {
-        return new Date(time.getTime() + offset * 60 * 1000);
+    addOffset(time: any, ...args: any): Date {
+        if (args.length == 1) {
+            return new Date(time.getTime() + parseInt(args) * 60 * 1000);
+        } else {
+            let date = moment(time).add(args[0], args[1]).toDate();
+            return date;
+        }
     }
 
     countdown(date: Date) {
@@ -380,7 +385,13 @@ export default class KalenderEvents {
         return reslist;
     }
 
-    processData(data: any, realnow: Date, pastview: Date, preview: Date, reslist: CalEvent[]) {
+    processData(data: any, realnow: Date, pastview: Date, preview: Date): CalEvent[] {
+        let reslist: CalEvent[] = [];
+        this.processDataRev(data, realnow, pastview, preview, reslist);
+        return reslist;
+    }
+
+    processDataRev(data: any, realnow: Date, pastview: Date, preview: Date, reslist: CalEvent[]) {
         var processedEntries = 0;
 
         for (var k in data) {
@@ -413,7 +424,7 @@ export default class KalenderEvents {
         if (!Object.keys(data).length) {
             return;
         } else {
-            this.processData(data, realnow, pastview, preview, reslist);
+            this.processDataRev(data, realnow, pastview, preview, reslist);
         }
     }
 
