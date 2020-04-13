@@ -1,5 +1,5 @@
 import moment = require('moment');
-import { loadEventsForDay } from './icloud';
+import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
 import { Config } from './config';
 import nodeIcal = require('node-ical');
@@ -39,9 +39,12 @@ export default class KalenderEvents {
         this.cache = new NodeCache();
     }
 
-    async getICal(config: any) {
+    public async getEvents(config?: Config) {
         try {
-            let data = await this.getEvents();
+            if (config) {
+                this.config = Object.assign(this.config, config);
+            }
+            let data = await this.getCal();
             if (this.cache) {
                 if (data) {
                     this.cache.set("events", data);
@@ -57,7 +60,7 @@ export default class KalenderEvents {
 
 
 
-    convertEvents(events: any): any[] {
+    public convertEvents(events: any): any[] {
         let retEntries: any = [];
         if (events) {
             if (Array.isArray(events)) {
@@ -92,7 +95,7 @@ export default class KalenderEvents {
         });
     }
 
-    convertEvent(e: any): any {
+    public convertEvent(e: any): any {
         if (e) {
             let startDate = e.startDate?.toJSDate() || e.start;
             let endDate = e.endDate?.toJSDate() || e.end;
@@ -199,15 +202,17 @@ export default class KalenderEvents {
         return offset;
     }
 
-    /**
-    * This comment _supports_ [Markdown](https://marked.js.org/)
-    * @param date Comment for parameter ´time´.
-    * @param args test
+    /**    
+    * @param date Date, eg. new Date()
+    * @param args offset either in minutes or as value and type (seconds, minutes, hours, days)
     * ```
-    * example
+    * example:
+    * let ke = new KalenderEvents();
+    * ke.addOffset(new Date(), 10, 'hours') // adds 10 hours
+    * ke.addOffset(new Date(), 10) // adds 10 minutes
     * ```
-    */ 
-    addOffset(date: Date, ...args: any): Date {
+    */
+    public addOffset(date: Date, ...args: any): Date {
         if (args.length == 1) {
             let dat = new Date(date.getTime() + parseInt(args) * 60 * 1000);
             return dat;
@@ -217,7 +222,26 @@ export default class KalenderEvents {
         }
     }
 
-    countdown(date: Date) {
+    /**  
+    * calculates the countdown to ``date``
+    * @param date Date, eg. new Date()    
+    * ```
+    * example:
+    * let ke = new KalenderEvents();
+    * let countdown = ke.countdown(ke.addOffset(new Date(), 10))
+    * 
+    * console.log(countdown)
+    * --> 
+    * {
+    *  days: 0,
+    *  hours: 0,
+    *  minutes: 10,
+    *  seconds: 0,
+    * }
+    * 
+    * ```
+    */
+    public countdown(date: Date) {
 
         var seconds = (date.getTime() - new Date().getTime()) / 1000;
         seconds = Number(seconds);
@@ -235,12 +259,12 @@ export default class KalenderEvents {
         };
     }
 
-    private async getEvents() {
+    private async getCal() {
         if (this.config.caldav && this.config.caldav === 'icloud') {
             debug('icloud');
             const now = moment();
             const when = now.toDate();
-            let list = await loadEventsForDay(moment(when), this.config, this);
+            let list = await ICloud(moment(when), this.config, this);
             return list;
         } else if (this.config.caldav && JSON.parse(this.config.caldav) === true) {
             debug('caldav');
@@ -286,8 +310,6 @@ export default class KalenderEvents {
             } else {
                 if (!this.config.url) {
                     throw "URL/File is not defined";
-
-                    return {};
                 }
                 return await nodeIcal.async.parseFile(this.config.url);
             }

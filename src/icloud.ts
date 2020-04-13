@@ -72,7 +72,7 @@ async function requestIcloudSecure(config: Config, start:any, end:any) {
     }
 }
 
-export async function loadEventsForDay(whenMoment:moment.Moment, config: Config, kalEv:KalenderEvents) {
+export async function ICloud(whenMoment:moment.Moment, config: Config, kalEv:KalenderEvents) {
     //@ts-ignore
     let start = whenMoment.clone().startOf('day').subtract(config.pastview, config.pastviewUnits);
     //@ts-ignore
