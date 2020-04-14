@@ -30,176 +30,13 @@ export interface CalEvent {
     uid?: string,
 }
 
-export default class KalenderEvents {
+export class KalenderEvents {
     private cache: NodeCache;
     private config: Config;
 
-    constructor(config: Config) {
+    constructor(config?: Config) {
         this.config = config;
         this.cache = new NodeCache();
-    }
-
-    public async getEvents(config?: Config) {
-        try {
-            if (config) {
-                this.config = Object.assign(this.config, config);
-            }
-            let data = await this.getCal();
-            if (this.cache) {
-                if (data) {
-                    this.cache.set("events", data);
-                }
-            }
-            return data;
-        } catch (err) {
-            if (this.cache) {
-                return this.cache.get("events");
-            }
-        }
-    }
-
-
-
-    public convertEvents(events: any): any[] {
-        let retEntries: any = [];
-        if (events) {
-            if (Array.isArray(events)) {
-                events.forEach(event => {
-                    let ev = this.convertScrapegoat(event.data);
-                    retEntries.push(ev);
-                });
-            }
-            else {
-                if (events.events) {
-                    events.events.forEach((event: any) => {
-                        let ev = this.convertEvent(event);
-                        retEntries.push(ev);
-                    });
-                }
-                if (events.occurrences && events.occurrences.length > 0) {
-                    events.occurrences.forEach((event: any) => {
-                        let ev = this.convertEvent(event);
-                        retEntries.push(ev);
-                    });
-                }
-            }
-        }
-
-        return retEntries;
-    }
-
-    private uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
-
-    public convertEvent(e: any): any {
-        if (e) {
-            let startDate = e.startDate?.toJSDate() || e.start;
-            let endDate = e.endDate?.toJSDate() || e.end;
-
-            const recurrence = e.recurrenceId;
-
-            if (e.item) {
-                e = e.item
-            }
-            if (e.type && e.type !== "VEVENT") {
-                return;
-            }
-            if (e.duration?.wrappedJSObject) {
-                delete e.duration.wrappedJSObject
-            }
-
-            let uid = e.uid || this.uuidv4();
-            if (recurrence) {
-                uid += new Date(recurrence.year, recurrence.month, recurrence.day, recurrence.hour, recurrence.minute, recurrence.second).getTime().toString();
-            } else {
-                uid += startDate.getTime().toString();
-            }
-
-            let duration = e.duration;
-            let allday = false;
-            if (!duration) {
-                var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
-                seconds = Number(seconds);
-                allday = ((seconds % 86400) === 0)
-            } else {
-                allday = ((duration.toSeconds() % 86400) === 0)
-            }
-
-            return {
-                start: startDate,
-                end: endDate,
-                summary: e.summary || '',
-                description: e.description || '',
-                attendees: e.attendees,
-                duration: e.duration?.toICALString(),
-                durationSeconds: e.duration?.toSeconds(),
-                location: e.location || '',
-                organizer: e.organizer || '',
-                uid: uid,
-                isRecurring: false,
-                datetype: 'date',
-                type: 'VEVENT',
-                allDay: allday,
-                calendarName: null as any
-            }
-        }
-    }
-
-    private convertScrapegoat(e: any) {
-        if (e) {
-            let startDate = moment(e.start).toDate();
-            let endDate = moment(e.end).toDate();
-
-            const recurrence = e.recurrenceId;
-
-            if (e.duration?.wrappedJSObject) {
-                delete e.duration.wrappedJSObject
-            }
-
-            let uid = e.uid || this.uuidv4();
-            uid += startDate.getTime().toString();
-
-            let duration = e.duration;
-            let allday = false;
-            if (!duration) {
-                var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
-                seconds = Number(seconds);
-                allday = ((seconds % 86400) === 0)
-            } else {
-                allday = ((duration.toSeconds() % 86400) === 0)
-            }
-
-            return {
-                start: startDate,
-                end: endDate,
-                summary: e.title || '',
-                description: e.title || '',
-                attendees: e.attendees,
-                duration: e.duration?.toICALString(),
-                durationSeconds: e.duration?.toSeconds(),
-                location: e.location || '',
-                organizer: e.organizer || '',
-                uid: uid,
-                isRecurring: false,
-                datetype: 'date',
-                type: 'VEVENT',
-                allDay: allday,
-                calendarName: null as any
-            }
-        }
-    }
-
-    private getTimezoneOffset(date: Date) {
-        var offset = 0;
-        var zone = moment.tz.zone(moment.tz.guess());
-        if (zone && date) {
-            offset = zone.utcOffset(date.getTime());
-        }
-        return offset;
     }
 
     /**    
@@ -257,6 +94,167 @@ export default class KalenderEvents {
             minutes: m,
             seconds: s,
         };
+    }
+
+    public async getEvents(config?: Config) {
+        try {
+            if (config) {
+                this.config = Object.assign(this.config, config);
+            }
+            let data = await this.getCal();
+            if (this.cache) {
+                if (data) {
+                    this.cache.set("events", data);
+                }
+            }
+            return data;
+        } catch (err) {
+            if (this.cache) {
+                return this.cache.get("events");
+            }
+        }
+    }
+
+    public convertEvents(events: any): any[] {
+        let retEntries: any = [];
+        if (events) {
+            if (Array.isArray(events)) {
+                events.forEach(event => {
+                    let ev = this.convertScrapegoat(event.data);
+                    retEntries.push(ev);
+                });
+            }
+            else {
+                if (events.events) {
+                    events.events.forEach((event: any) => {
+                        let ev = this.convertEvent(event);
+                        retEntries.push(ev);
+                    });
+                }
+                if (events.occurrences && events.occurrences.length > 0) {
+                    events.occurrences.forEach((event: any) => {
+                        let ev = this.convertEvent(event);
+                        retEntries.push(ev);
+                    });
+                }
+            }
+        }
+
+        return retEntries;
+    }
+
+    public convertEvent(e: any): any {
+        if (e) {
+            let startDate = e.startDate?.toJSDate() || e.start;
+            let endDate = e.endDate?.toJSDate() || e.end;
+
+            const recurrence = e.recurrenceId;
+
+            if (e.item) {
+                e = e.item
+            }
+            if (e.type && e.type !== "VEVENT") {
+                return;
+            }
+            if (e.duration?.wrappedJSObject) {
+                delete e.duration.wrappedJSObject
+            }
+
+            let uid = e.uid || this.uuidv4();
+            if (recurrence) {
+                uid += new Date(recurrence.year, recurrence.month, recurrence.day, recurrence.hour, recurrence.minute, recurrence.second).getTime().toString();
+            } else {
+                uid += startDate.getTime().toString();
+            }
+
+            let duration = e.duration;
+            let allday = false;
+            if (!duration) {
+                var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+                seconds = Number(seconds);
+                allday = ((seconds % 86400) === 0)
+            } else {
+                allday = ((duration.toSeconds() % 86400) === 0)
+            }
+
+            return {
+                start: startDate,
+                end: endDate,
+                summary: e.summary || '',
+                description: e.description || '',
+                attendees: e.attendees,
+                duration: e.duration?.toICALString(),
+                durationSeconds: e.duration?.toSeconds(),
+                location: e.location || '',
+                organizer: e.organizer || '',
+                uid: uid,
+                isRecurring: false,
+                datetype: 'date',
+                type: 'VEVENT',
+                allDay: allday,
+                calendarName: null as any
+            }
+        }
+    }
+
+    private uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    private convertScrapegoat(e: any) {
+        if (e) {
+            let startDate = moment(e.start).toDate();
+            let endDate = moment(e.end).toDate();
+
+            const recurrence = e.recurrenceId;
+
+            if (e.duration?.wrappedJSObject) {
+                delete e.duration.wrappedJSObject
+            }
+
+            let uid = e.uid || this.uuidv4();
+            uid += startDate.getTime().toString();
+
+            let duration = e.duration;
+            let allday = false;
+            if (!duration) {
+                var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+                seconds = Number(seconds);
+                allday = ((seconds % 86400) === 0)
+            } else {
+                allday = ((duration.toSeconds() % 86400) === 0)
+            }
+
+            return {
+                start: startDate,
+                end: endDate,
+                summary: e.title || '',
+                description: e.title || '',
+                attendees: e.attendees,
+                duration: e.duration?.toICALString(),
+                durationSeconds: e.duration?.toSeconds(),
+                location: e.location || '',
+                organizer: e.organizer || '',
+                uid: uid,
+                isRecurring: false,
+                datetype: 'date',
+                type: 'VEVENT',
+                allDay: allday,
+                calendarName: null as any
+            }
+        }
+    }
+
+    private getTimezoneOffset(date: Date) {
+        var offset = 0;
+        var zone = moment.tz.zone(moment.tz.guess());
+        if (zone && date) {
+            offset = zone.utcOffset(date.getTime());
+        }
+        return offset;
     }
 
     private async getCal() {
@@ -416,7 +414,7 @@ export default class KalenderEvents {
         return reslist;
     }
 
-    processData(data: any, realnow: Date, pastview: Date, preview: Date): CalEvent[] {
+    public processData(data: any, realnow: Date, pastview: Date, preview: Date): CalEvent[] {
         let reslist: CalEvent[] = [];
         this.processDataRev(data, realnow, pastview, preview, reslist);
         return reslist;

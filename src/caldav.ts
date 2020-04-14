@@ -5,7 +5,7 @@ import Scrapegoat = require("scrapegoat");
 import moment = require('moment');
 import IcalExpander = require('ical-expander');
 import * as  ical from 'node-ical';
-import KalenderEvents, { CalEvent } from './lib';
+import { KalenderEvents, CalEvent } from './lib';
 
 export function CalDav(config: Config) {
     const calName = config.calendar;
@@ -62,14 +62,14 @@ export function CalDav(config: Config) {
                     //@ts-ignore
                     promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
                         .then((calendarEntries: any) => {
-                            let retEntries:any = {};
+                            let retEntries: any = {};
                             for (let calendarEntry of calendarEntries) {
                                 const ics = calendarEntry.calendarData;
                                 if (ics) {
                                     const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
                                     const events = icalExpander.between(start.toDate(), end.toDate());
 
-                                    ke.convertEvents(events).forEach((event:CalEvent) => {
+                                    ke.convertEvents(events).forEach((event: CalEvent) => {
                                         if (event) {
                                             event.calendarName = calendar.displayName;
                                             retEntries[event.uid] = event;
@@ -83,7 +83,7 @@ export function CalDav(config: Config) {
                     //@ts-ignore
                     promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
                         .then((calendarEntries: any) => {
-                            let retEntries:any = {};
+                            let retEntries: any = {};
                             for (let calendarEntry of calendarEntries) {
                                 if (calendarEntry.calendar.objects) {
                                     for (let calendarObject of calendarEntry.calendar.objects) {

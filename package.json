@@ -56,7 +56,12 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "gulp-watch": "^5.0.1",
     "standard-version": "^7.1.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "sinon": "9.0.1",
+    "chai": "4.2.0",
+    "chai-like": "1.1.1",
+    "chai-things": "0.2.0",
+    "mocha": "7.1.1"
   },
   "prepublish": "tsc",
   "license": "ISC",
