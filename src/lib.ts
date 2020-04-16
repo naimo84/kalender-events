@@ -96,21 +96,52 @@ export class KalenderEvents {
         };
     }
 
-    public async getEvents(config?: Config) {
+    public async getEvents(config?: Config){
         try {
             if (config) {
                 this.config = Object.assign(this.config, config);
             }
             let data = await this.getCal();
+            
+            var realnow = new Date();
+            var preview = new Date();
+            var pastview = new Date();
+
+            if (this.config.previewUnits === 'days') {
+                if (this.config.preview == 1) {
+                    preview = moment(preview).endOf('day').add(this.config.preview - 1, 'days').toDate();
+                } else {
+                    preview = moment(preview).endOf('day').add(this.config.preview, 'days').toDate();
+                }
+            } else {
+                //@ts-ignore
+                preview = moment(preview)
+                    .add(this.config.preview, this.config.previewUnits.charAt(0))
+                    .toDate();
+            }
+
+            if (this.config.pastviewUnits === 'days') {
+                if (this.config.pastview == 1) {
+                    pastview = moment(pastview).startOf('day').subtract(this.config.pastview - 1, 'days').toDate();
+                } else {
+                    pastview = moment(pastview).startOf('day').subtract(this.config.pastview, 'days').toDate();
+                }
+            } else {
+                //@ts-ignore
+                pastview = moment(pastview)
+                    .subtract(this.config.pastview, this.config.pastviewUnits.charAt(0))
+                    .toDate();
+            }
+            let processedData = this.processData(data, realnow, pastview, preview);          
             if (this.cache) {
                 if (data) {
-                    this.cache.set("events", data);
+                    this.cache.set("events", processedData);
                 }
             }
-            return data;
+            return processedData;
         } catch (err) {
             if (this.cache) {
-                return this.cache.get("events");
+                return this.cache.get("events") as CalEvent[];
             }
         }
     }
@@ -188,7 +219,7 @@ export class KalenderEvents {
                 location: e.location || '',
                 organizer: e.organizer || '',
                 uid: uid,
-                isRecurring: false,
+                isRecurring: !!recurrence,
                 datetype: 'date',
                 type: 'VEVENT',
                 allDay: allday,
@@ -414,7 +445,7 @@ export class KalenderEvents {
         return reslist;
     }
 
-    public processData(data: any, realnow: Date, pastview: Date, preview: Date): CalEvent[] {
+    private processData(data: any, realnow: Date, pastview: Date, preview: Date): CalEvent[] {
         let reslist: CalEvent[] = [];
         this.processDataRev(data, realnow, pastview, preview, reslist);
         return reslist;
@@ -501,6 +532,7 @@ export class KalenderEvents {
         }
         if (output) {
             debug('Event: ' + JSON.stringify(ev))
+         
             if (fullday) {
                 if (
                     (ev.start < preview && ev.start >= pastview) ||
