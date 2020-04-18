@@ -11,13 +11,32 @@ export interface Job {
     id: string,
     cronjob: any
 }
-export interface CalEvent {
+export interface IKalenderEvent {
     summary?: string,
     topic?: string,
     location?: string,
     eventStart?: Date
     eventEnd?: Date,
     date?: string,
+    event?: string,
+    description?: string,
+    id?: string,
+    allDay?: boolean,
+    rule?: string,
+    on?: boolean,
+    off?: boolean,
+    countdown?: object,
+    calendarName?: string,
+    uid?: string,
+}
+
+export interface iCalEvent {
+    summary?: any,
+    topic?: string,
+    location?: string,
+    start?: Date
+    end?: Date,
+    datetype?: string,
     event?: string,
     description?: string,
     id?: string,
@@ -96,13 +115,13 @@ export class KalenderEvents {
         };
     }
 
-    public async getEvents(config?: Config){
+    public async getEvents(config?: Config) {
         try {
             if (config) {
                 this.config = Object.assign(this.config, config);
             }
             let data = await this.getCal();
-            
+
             var realnow = new Date();
             var preview = new Date();
             var pastview = new Date();
@@ -132,7 +151,7 @@ export class KalenderEvents {
                     .subtract(this.config.pastview, this.config.pastviewUnits.charAt(0))
                     .toDate();
             }
-            let processedData = this.processData(data, realnow, pastview, preview);          
+            let processedData = this.processData(data, realnow, pastview, preview);
             if (this.cache) {
                 if (data) {
                     this.cache.set("events", processedData);
@@ -141,7 +160,7 @@ export class KalenderEvents {
             return processedData;
         } catch (err) {
             if (this.cache) {
-                return this.cache.get("events") as CalEvent[];
+                return this.cache.get("events") as IKalenderEvent[];
             }
         }
     }
@@ -288,7 +307,7 @@ export class KalenderEvents {
         return offset;
     }
 
-    private async getCal() {
+    private async getCal(): Promise<iCalEvent> {
         if (this.config.caldav && this.config.caldav === 'icloud') {
             debug('icloud');
             const now = moment();
@@ -299,11 +318,11 @@ export class KalenderEvents {
             debug('caldav');
             try {
                 let data = await CalDav(this.config);
-                let retEntries: any = {};
+                let retEntries: iCalEvent = {};
                 if (data) {
                     for (let events of data) {
                         for (let event in events) {
-                            var ev = events[event];
+                            var ev = await events[event];
                             retEntries[ev.uid] = ev;
                         }
                     }
@@ -335,7 +354,8 @@ export class KalenderEvents {
                     };
                 }
 
-                return await nodeIcal.async.fromURL(this.config.url, header);
+                let data = await nodeIcal.async.fromURL(this.config.url, header);
+                return data;
             } else {
                 if (!this.config.url) {
                     throw "URL/File is not defined";
@@ -445,13 +465,13 @@ export class KalenderEvents {
         return reslist;
     }
 
-    private processData(data: any, realnow: Date, pastview: Date, preview: Date): CalEvent[] {
-        let reslist: CalEvent[] = [];
+    private processData(data: any, realnow: Date, pastview: Date, preview: Date): IKalenderEvent[] {
+        let reslist: IKalenderEvent[] = [];
         this.processDataRev(data, realnow, pastview, preview, reslist);
         return reslist;
     }
 
-    private processDataRev(data: any, realnow: Date, pastview: Date, preview: Date, reslist: CalEvent[]) {
+    private processDataRev(data: any, realnow: Date, pastview: Date, preview: Date, reslist: IKalenderEvent[]) {
         var processedEntries = 0;
 
         for (var k in data) {
@@ -488,7 +508,7 @@ export class KalenderEvents {
         }
     }
 
-    private checkDates(ev: any, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: CalEvent[]) {
+    private checkDates(ev: iCalEvent, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: IKalenderEvent[]) {
         var fullday = false;
         var reason: string;
         var date: any;
@@ -532,7 +552,7 @@ export class KalenderEvents {
         }
         if (output) {
             debug('Event: ' + JSON.stringify(ev))
-         
+
             if (fullday) {
                 if (
                     (ev.start < preview && ev.start >= pastview) ||
@@ -588,7 +608,7 @@ export class KalenderEvents {
         }
     }
 
-    private insertSorted(arr: CalEvent[], element: CalEvent) {
+    private insertSorted(arr: IKalenderEvent[], element: IKalenderEvent) {
         if (!arr.length) {
             arr.push(element);
         } else {

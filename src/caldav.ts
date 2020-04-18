@@ -5,9 +5,9 @@ import Scrapegoat = require("scrapegoat");
 import moment = require('moment');
 import IcalExpander = require('ical-expander');
 import * as  ical from 'node-ical';
-import { KalenderEvents, CalEvent } from './lib';
+import { KalenderEvents, IKalenderEvent, iCalEvent } from './lib';
 
-export function CalDav(config: Config) {
+export function CalDav(config: Config): Promise<Promise<iCalEvent>[]> {
     const calName = config.calendar;
     const ke = new KalenderEvents(config);
     const now = moment();
@@ -51,7 +51,7 @@ export function CalDav(config: Config) {
     let url = new URL(calDavUri);
     return dav.createAccount({ server: calDavUri, xhr: xhr, loadCollections: true, loadObjects: true })
         .then((account) => {
-            let promises = [];
+            let promises:  Promise<Promise<iCalEvent>>[] = [];
             if (!account.calendars) {
                 throw 'CalDAV -> no calendars found.';
             }
@@ -62,14 +62,14 @@ export function CalDav(config: Config) {
                     //@ts-ignore
                     promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
                         .then((calendarEntries: any) => {
-                            let retEntries: any = {};
+                            let retEntries: iCalEvent = {};
                             for (let calendarEntry of calendarEntries) {
                                 const ics = calendarEntry.calendarData;
                                 if (ics) {
                                     const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
                                     const events = icalExpander.between(start.toDate(), end.toDate());
 
-                                    ke.convertEvents(events).forEach((event: CalEvent) => {
+                                    ke.convertEvents(events).forEach((event: IKalenderEvent) => {
                                         if (event) {
                                             event.calendarName = calendar.displayName;
                                             retEntries[event.uid] = event;
@@ -83,7 +83,7 @@ export function CalDav(config: Config) {
                     //@ts-ignore
                     promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
                         .then((calendarEntries: any) => {
-                            let retEntries: any = {};
+                            let retEntries: iCalEvent = {};
                             for (let calendarEntry of calendarEntries) {
                                 if (calendarEntry.calendar.objects) {
                                     for (let calendarObject of calendarEntry.calendar.objects) {
