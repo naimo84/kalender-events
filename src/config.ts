@@ -1,13 +1,13 @@
 
-export interface Config  {
-    rejectUnauthorized?: boolean;    
+export interface Config {
+    rejectUnauthorized?: boolean;
     url?: string,
     language?: string,
     replacedates?: boolean,
-    caldav?: string,
+    type?: "icloud" | "caldav" | "ical",
     username?: string,
     password?: string,
-    calendar?: string,  
+    calendar?: string,
     filter?: string,
     trigger?: string,
     endpreview?: number,
@@ -16,6 +16,6 @@ export interface Config  {
     previewUnits?: string,
     pastview?: number,
     pastviewUnits?: string,
-    offsetUnits?:string,
+    offsetUnits?: string,
     offset?: number
 }

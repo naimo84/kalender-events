@@ -308,13 +308,13 @@ export class KalenderEvents {
     }
 
     private async getCal(): Promise<iCalEvent> {
-        if (this.config.caldav && this.config.caldav === 'icloud') {
+        if (this.config.type && this.config.type === 'icloud') {
             debug('icloud');
             const now = moment();
             const when = now.toDate();
             let list = await ICloud(moment(when), this.config, this);
             return list;
-        } else if (this.config.caldav && JSON.parse(this.config.caldav) === true) {
+        } else if (this.config.type && this.config.type === 'caldav') {
             debug('caldav');
             try {
                 let data = await CalDav(this.config);
