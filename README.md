@@ -1,6 +1,6 @@
 # kalender-events (ka'lɛndɐ, german for calendar)
 
-This Node module gets the events from an ical-URL or from a caldav-server.
+This Node module gets the events from an ical-URL, a caldav-server or from the iCloud.
 
 ## :question: Get Help
 
@@ -36,6 +36,7 @@ git clone https://github.com/naimo84/kalender-events.git
 cd kalender-events
 npm install
 gulp
+cd /your/project/path
 npm install /path/to/kalender-events
 ```
 
@@ -43,33 +44,23 @@ npm install /path/to/kalender-events
 
 ### INPUT
 
-msg.url
-msg.language
-msg.replacedates
-msg.caldav
-msg.username
-msg.password
-msg.calendar
-msg.pastWeeks
-msg.futureWeeks
-msg.filter
-msg.trigger
-msg.preview
-msg.previewUnits
-msg.pastview
-msg.pastviewUnits
-msg.offset
-msg.offsetUnits
+- url: string (URL to Calendar)
+- language: string (if dates are replaced with names, the following languages are available at the moment Deutsch, English, русский, polski, Nederlands, français, Italiano, Espanol)
+- replacedates: boolean (Dates are formated in a readable way, like today, tommorrow, in 3 weeks,...)
+- type: string (ical, icloud, caldav)
+- username: string (optional)
+- password: string (optional)
+- calendar: string (Name of the caldav calendar)
+- filter: string, Regex to filter for
+- trigger: string (always, match, nomatch)
+- preview: number
+- previewUnits: string (seconds, minutes, hours, days)
+- pastview: number
+- pastviewUnits: string (seconds, minutes, hours, days)
 
 ### OUTPUT
 
-Additional msg properties are:
-
--   msg.today - number of upcoming events today
--   msg.tomorrow - number of upcoming events tomorrow
--   msg.total - number of upcoming events totally
--   msg.htmlTable - a html formated table of upcoming events
--   msg.payload - arraylist of upcoming events
+arraylist of upcoming events:
     -   date
     -   summary
     -   event
@@ -81,16 +72,7 @@ Additional msg properties are:
     -   rule
     -   location
 
----
 
-### General Configuration:
-
--   **_URL_** URL to Calendar
--   **_Replace Dates with name_** Dates are formated in a readable way, like today, tommorrow, in 3 weeks,...
--   **_Language_** if dates are replaced with names, the following languages are available at the moment Deutsch, English, русский, polski, Nederlands, français, Italiano, Espanol
--   **_Username_** HTTP Basic authentication user
--   **_Password_** HTTP Basic authentication user
--   **_Type_** Type can be ical or caldav
 
 ## :scroll: The MIT License
 

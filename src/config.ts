@@ -15,7 +15,5 @@ export interface Config {
     preview?: number,
     previewUnits?: string,
     pastview?: number,
-    pastviewUnits?: string,
-    offsetUnits?: string,
-    offset?: number
+    pastviewUnits?: string
 }
