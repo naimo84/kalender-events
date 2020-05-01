@@ -60,7 +60,9 @@ npm install /path/to/kalender-events
 
 ### OUTPUT
 
-arraylist of upcoming events:
+arraylist of upcoming events.  
+properties:
+
     -   date
     -   summary
     -   event
@@ -72,7 +74,11 @@ arraylist of upcoming events:
     -   rule
     -   location
 
+### Example
 
+```js
+
+```
 
 ## :scroll: The MIT License
 
