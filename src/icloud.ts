@@ -2,7 +2,7 @@ import xmlParser = require('xml-js');
 import icalExpander = require('ical-expander');
 import { Config } from './config';
 import axios, { AxiosRequestConfig } from "axios";
-import KalenderEvents from '../types/index';
+import {KalenderEvents} from './lib';
 import moment = require('moment');
 
 function process(reslist:any, start:any, end:any, ics:any, kalEv:KalenderEvents) {
