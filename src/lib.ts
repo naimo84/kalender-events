@@ -1,9 +1,10 @@
 import moment = require('moment');
 import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
-import { Config } from './config';
+import { Config } from 'config';
 import nodeIcal = require('node-ical');
 import * as NodeCache from 'node-cache';
+import { IKalenderEvent, iCalEvent } from 'event';
 var debug = require('debug')('kalendar-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
@@ -11,44 +12,6 @@ export interface Job {
     id: string,
     cronjob: any
 }
-export interface IKalenderEvent {
-    summary?: string,
-    topic?: string,
-    location?: string,
-    eventStart?: Date
-    eventEnd?: Date,
-    date?: string,
-    event?: string,
-    description?: string,
-    id?: string,
-    allDay?: boolean,
-    rule?: string,
-    on?: boolean,
-    off?: boolean,
-    countdown?: object,
-    calendarName?: string,
-    uid?: string,
-}
-
-export interface iCalEvent {
-    summary?: any,
-    topic?: string,
-    location?: string,
-    start?: Date
-    end?: Date,
-    datetype?: string,
-    event?: string,
-    description?: string,
-    id?: string,
-    allDay?: boolean,
-    rule?: string,
-    on?: boolean,
-    off?: boolean,
-    countdown?: object,
-    calendarName?: string,
-    uid?: string,
-}
-
 export class KalenderEvents {
     private cache: NodeCache;
     private config: Config;

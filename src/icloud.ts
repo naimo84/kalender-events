@@ -1,6 +1,6 @@
 import xmlParser = require('xml-js');
 import icalExpander = require('ical-expander');
-import { Config } from './config';
+import { Config } from 'config';
 import axios, { AxiosRequestConfig } from "axios";
 import {KalenderEvents} from './lib';
 import moment = require('moment');
