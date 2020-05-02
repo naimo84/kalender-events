@@ -10,8 +10,6 @@ export interface Config {
     calendar?: string,
     filter?: string,
     trigger?: string,
-    endpreview?: number,
-    endpreviewUnits?: string,
     preview?: number,
     previewUnits?: string,
     pastview?: number,

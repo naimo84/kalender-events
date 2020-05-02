@@ -114,7 +114,11 @@ export class KalenderEvents {
                     .subtract(this.config.pastview, this.config.pastviewUnits.charAt(0))
                     .toDate();
             }
+            debug(`pastview: ${pastview}`)
+            debug(`preview: ${preview}`)
             let processedData = this.processData(data, realnow, pastview, preview);
+            debug(`processedData: ${processedData}`)
+
             if (this.cache) {
                 if (data) {
                     this.cache.set("events", processedData);
@@ -318,6 +322,7 @@ export class KalenderEvents {
                 }
 
                 let data = await nodeIcal.async.fromURL(this.config.url, header);
+                debug(data)
                 return data;
             } else {
                 if (!this.config.url) {

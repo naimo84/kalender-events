@@ -1,11 +1,12 @@
-import { Config } from './config';
+import { Config } from 'config';
 
 import dav = require('dav');
 import Scrapegoat = require("scrapegoat");
 import moment = require('moment');
 import IcalExpander = require('ical-expander');
 import * as  ical from 'node-ical';
-import { KalenderEvents, IKalenderEvent, iCalEvent } from './lib';
+import { KalenderEvents } from './lib';
+import { iCalEvent, IKalenderEvent } from 'event';
 
 export function CalDav(config: Config): Promise<Promise<iCalEvent>[]> {
     const calName = config.calendar;
