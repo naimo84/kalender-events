@@ -17,7 +17,7 @@ However, if you get some profit from this or just want to encourage me to contin
 -   [![PayPal][badge_paypal]][paypal-donations] **PayPal**— You can make one-time donations via PayPal. I'll probably buy a ~~coffee~~ tea. :tea:
 -   [![Support me on using Brave Browser][badge_brave]][brave] **Brave**— It's free for you. Brave is a browser that improves the security and the access time of websites by blocking ads, trackers and scripts. Give the new Brave Browser a try and Brave will contribute to me on your behalf. :wink:
 -   [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T412CXA) **Ko-fi**— I'll buy a ~~tea~~ coffee. :coffee: :wink:
--   ![](./examples/bitcoin.png) **Bitcoin**—You can send me bitcoins at this address (or scanning the code): `3KDjCmXsGFYawmycXRsVwfFbphog117N8P`
+-   ![](./docs/bitcoin.png) **Bitcoin**—You can send me bitcoins at this address (or scanning the code): `3KDjCmXsGFYawmycXRsVwfFbphog117N8P`
 
 Thanks! :heart:
 
@@ -44,19 +44,21 @@ npm install /path/to/kalender-events
 
 ### INPUT
 
-- url: string (URL to Calendar)
-- language: string (if dates are replaced with names, the following languages are available at the moment Deutsch, English, русский, polski, Nederlands, français, Italiano, Espanol)
-- replacedates: boolean (Dates are formated in a readable way, like today, tommorrow, in 3 weeks,...)
-- type: string (ical, icloud, caldav)
-- username: string (optional)
-- password: string (optional)
-- calendar: string (Name of the caldav calendar)
-- filter: string, Regex to filter for
-- trigger: string (always, match, nomatch)
-- preview: number
-- previewUnits: string (seconds, minutes, hours, days)
-- pastview: number
-- pastviewUnits: string (seconds, minutes, hours, days)
+- **url**: _string_ (URL to Calendar)
+- **language**: _string_ (if dates are replaced with names, the following languages are available at the moment Deutsch, English, русский, polski, Nederlands, français, Italiano, Espanol)
+- **replacedates**: _boolean_ (Dates are formated in a readable way, like today, tommorrow, in 3 weeks,...)
+- **type**: _string_ (ical, icloud, caldav). default is ical
+- **username**: _string_ (optional)
+- **password**: _string_ (optional)
+- **calendar**: _string_ (Name of the caldav calendar)
+- **filter**: _string_, Regex to filter for
+- **trigger**: _string_ (always, match, nomatch)
+- **preview**: _number_
+- **previewUnits**: _string_ (seconds, minutes, hours, days)
+- **pastview**: _number_
+- **pastviewUnits**: _string_ (seconds, minutes, hours, days)
+
+> :warning: **If you are using iCloud**: Have a look here: [wiki/Get-iCloud-secure-URL](https://github.com/naimo84/kalender-events/wiki/Get-iCloud-secure-URL)
 
 ### OUTPUT
 
@@ -74,10 +76,70 @@ properties:
     -   rule
     -   location
 
-### Example
+### Example:
+
+```ts
+//Typescript - index.ts
+
+import { KalenderEvents } from "kalender-events";
+
+const ev = new KalenderEvents({
+    url: "https://calendar.google.com/calendar/ical/xxx%40group.calendar.google.com/private-xxx/basic.ics"
+});
+
+ev.getEvents({
+    type: 'ical',
+    preview: 10,
+    previewUnits:'days',
+    pastview: 10,
+    pastviewUnits:'days'
+}).then(data => {
+    console.log(data);
+})
+```
+
+or
 
 ```js
+//Javascript - index.js
 
+var kalender_events = require("kalender-events");
+var ev = new kalender_events.KalenderEvents({
+    url: "https://calendar.google.com/calendar/ical/xxx%40group.calendar.google.com/private-xxx/basic.ics"
+});
+
+ev.getEvents({
+    type: 'ical',
+    preview: 10,
+    previewUnits: 'days',
+    pastview: 10,
+    pastviewUnits: 'days'
+}).then(function (data) {
+    console.log(data);
+});
+```
+
+output:  
+```sh
+$ tsc index.ts
+$ node .\index.js
+[
+  {
+    date: '02.05.2020 10:00',
+    event: 'test',
+    summary: 'test',
+    topic: 'test',
+    calendarName: undefined,
+    eventStart: 2020-05-02T07:00:00.000Z,
+    eventEnd: 2020-05-02T08:00:00.000Z,
+    description: '',
+    id: '123@google.com',
+    allDay: false,
+    rule: ' ',
+    location: '',
+    countdown: { days: -1, hours: -7, minutes: -26, seconds: -38 }
+  }
+]
 ```
 
 ## :scroll: The MIT License
@@ -93,7 +155,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY
 
 Coded with :heart: in :cloud:
 
-[badge_brave]: ./examples/support_banner.png
+[badge_brave]: ./docs/support_banner.png
 [badge_paypal]: https://img.shields.io/badge/Donate-PayPal-blue.svg
 [paypal-donations]: https://paypal.me/NeumannBenjamin
 [brave]: https://brave.com/nai412
