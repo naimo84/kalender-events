@@ -5,10 +5,9 @@ import { IKalenderEvent, iCalEvent } from './event';
 
 export class KalenderEvents {
     constructor(config: Config);
-    convertEvent(e: iCalEvent): IKalenderEvent;
+    convertEvent(event: iCalEvent): IKalenderEvent;
     convertEvents(events: any): any;
-    convertScrapegoat(e: any): any;
-    formatDate(_date: any, _end: any, withTime: any, fullday: any): any;
+    countdown(date: Date): any;      
     getEvents(config?: Config): Promise<IKalenderEvent[]>;
 }
 

@@ -78,7 +78,7 @@ export class KalenderEvents {
         };
     }
 
-    public async getEvents(config?: Config) {
+    public async getEvents(config?: Config): Promise<IKalenderEvent[]> {
         try {
             if (config) {
                 this.config = Object.assign(this.config, config);
@@ -132,8 +132,8 @@ export class KalenderEvents {
         }
     }
 
-    public convertEvents(events: any): any[] {
-        let retEntries: any = [];
+    public convertEvents(events: any): IKalenderEvent[] {
+        let retEntries: IKalenderEvent[] = [];
         if (events) {
             if (Array.isArray(events)) {
                 events.forEach(event => {
@@ -160,31 +160,31 @@ export class KalenderEvents {
         return retEntries;
     }
 
-    public convertEvent(e: any): any {
-        if (e) {
-            let startDate = e.startDate?.toJSDate() || e.start;
-            let endDate = e.endDate?.toJSDate() || e.end;
+    public convertEvent(event: iCalEvent): IKalenderEvent {
+        if (event) {
+            let startDate = event.startDate?.toJSDate() || event.start;
+            let endDate = event.endDate?.toJSDate() || event.end;
 
-            const recurrence = e.recurrenceId;
+            const recurrence = event.recurrenceId;
 
-            if (e.item) {
-                e = e.item
+            if (event.item) {
+                event = event.item
             }
-            if (e.type && e.type !== "VEVENT") {
+            if (event.type && event.type !== "VEVENT") {
                 return;
             }
-            if (e.duration?.wrappedJSObject) {
-                delete e.duration.wrappedJSObject
+            if (event.duration?.wrappedJSObject) {
+                delete event.duration.wrappedJSObject
             }
 
-            let uid = e.uid || this.uuidv4();
+            let uid = event.uid || this.uuidv4();
             if (recurrence) {
                 uid += new Date(recurrence.year, recurrence.month, recurrence.day, recurrence.hour, recurrence.minute, recurrence.second).getTime().toString();
             } else {
                 uid += startDate.getTime().toString();
             }
 
-            let duration = e.duration;
+            let duration = event.duration;
             let allday = false;
             if (!duration) {
                 var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
@@ -193,21 +193,21 @@ export class KalenderEvents {
             } else {
                 allday = ((duration.toSeconds() % 86400) === 0)
             }
-
+            let date = this.formatDate(event.start, event.end, true, true);
             return {
-                start: startDate,
-                end: endDate,
-                summary: e.summary || '',
-                description: e.description || '',
-                attendees: e.attendees,
-                duration: e.duration?.toICALString(),
-                durationSeconds: e.duration?.toSeconds(),
-                location: e.location || '',
-                organizer: e.organizer || '',
+                date: date.text.trim(),
+                eventStart: startDate,
+                eventEnd: endDate,
+                summary: event.summary || '',
+                description: event.description || '',
+                //attendees: event.attendees,
+                duration: event.duration?.toICALString(),
+                durationSeconds: event.duration?.toSeconds(),
+                location: event.location || '',
+                organizer: event.organizer || '',
                 uid: uid,
                 isRecurring: !!recurrence,
                 datetype: 'date',
-                type: 'VEVENT',
                 allDay: allday,
                 calendarName: null as any
             }
@@ -221,21 +221,21 @@ export class KalenderEvents {
         });
     }
 
-    private convertScrapegoat(e: any) {
-        if (e) {
-            let startDate = moment(e.start).toDate();
-            let endDate = moment(e.end).toDate();
+    private convertScrapegoat(event: any): IKalenderEvent {
+        if (event) {
+            let startDate = moment(event.start).toDate();
+            let endDate = moment(event.end).toDate();
 
-            const recurrence = e.recurrenceId;
+            const recurrence = event.recurrenceId;
 
-            if (e.duration?.wrappedJSObject) {
-                delete e.duration.wrappedJSObject
+            if (event.duration?.wrappedJSObject) {
+                delete event.duration.wrappedJSObject
             }
 
-            let uid = e.uid || this.uuidv4();
+            let uid = event.uid || this.uuidv4();
             uid += startDate.getTime().toString();
 
-            let duration = e.duration;
+            let duration = event.duration;
             let allday = false;
             if (!duration) {
                 var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
@@ -244,21 +244,22 @@ export class KalenderEvents {
             } else {
                 allday = ((duration.toSeconds() % 86400) === 0)
             }
+            let date = this.formatDate(event.start, event.end, true, true);
 
             return {
-                start: startDate,
-                end: endDate,
-                summary: e.title || '',
-                description: e.title || '',
-                attendees: e.attendees,
-                duration: e.duration?.toICALString(),
-                durationSeconds: e.duration?.toSeconds(),
-                location: e.location || '',
-                organizer: e.organizer || '',
+                date: date.text.trim(),
+                eventStart: startDate,
+                eventEnd: endDate,
+                summary: event.summary || '',
+                description: event.description || '',
+                attendees: event.attendees,
+                duration: event.duration?.toICALString(),
+                durationSeconds: event.duration?.toSeconds(),
+                location: event.location || '',
+                organizer: event.organizer || '',
                 uid: uid,
-                isRecurring: false,
+                isRecurring: !!recurrence,
                 datetype: 'date',
-                type: 'VEVENT',
                 allDay: allday,
                 calendarName: null as any
             }
@@ -334,9 +335,9 @@ export class KalenderEvents {
     }
 
     private processRRule(ev: any, preview: Date, today: Date) {
-        var eventLength = ev.end.getTime() - ev.start.getTime();
+        var eventLength = ev.eventEnd.getTime() - ev.eventStart.getTime();
         var options = RRule.parseString(ev.rrule.toString());
-        options.dtstart = this.addOffset(ev.start, -this.getTimezoneOffset(ev.start));
+        options.dtstart = this.addOffset(ev.eventStart, -this.getTimezoneOffset(ev.eventStart));
         if (options.until) {
             options.until = this.addOffset(options.until, -this.getTimezoneOffset(options.until));
         }
@@ -351,7 +352,7 @@ export class KalenderEvents {
             'RRule event:' +
             ev.summary +
             '; start:' +
-            ev.start.toString() +
+            ev.eventStart.toString() +
             '; preview:' +
             preview.toString() +
             '; today:' +
@@ -447,10 +448,10 @@ export class KalenderEvents {
             delete data[k];
 
             if (ev.type === 'VEVENT') {
-                if (!ev.end) {
-                    ev.end = ce.clone(ev.start);
-                    if (!ev.start.getHours() && !ev.start.getMinutes() && !ev.start.getSeconds()) {
-                        ev.end.setDate(ev.end.getDate() + 1);
+                if (!ev.eventEnd) {
+                    ev.eventEnd = ce.clone(ev.eventStart);
+                    if (!ev.eventStart.getHours() && !ev.eventStart.getMinutes() && !ev.eventStart.getSeconds()) {
+                        ev.eventEnd.setDate(ev.eventEnd.getDate() + 1);
                     }
                 }
 
@@ -476,34 +477,25 @@ export class KalenderEvents {
         }
     }
 
-    private checkDates(ev: iCalEvent, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: IKalenderEvent[]) {
-        var fullday = false;
-        var reason: string;
-        var date: any;
-
-        if (ev.summary && ev.summary.hasOwnProperty('val')) {
-            reason = ev.summary.val;
-        } else {
-            reason = ev.summary;
-        }
-        var location = ev.location || '';
-
-        if (!ev.start) return;
-        if (!ev.end) ev.end = ev.start;
-        ev.start = new Date(ev.start);
-        ev.end = new Date(ev.end);
+    private checkDates(ev: IKalenderEvent, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: IKalenderEvent[]) {
+        var fullday = false;     
+       
+        if (!ev.eventStart) return;
+        if (!ev.eventEnd) ev.eventEnd = ev.eventStart;
+        ev.eventStart = new Date(ev.eventStart);
+        ev.eventEnd = new Date(ev.eventEnd);
         if (
-            !ev.start.getHours() &&
-            !ev.start.getMinutes() &&
-            !ev.start.getSeconds() &&
-            !ev.end.getHours() &&
-            !ev.end.getMinutes() &&
-            !ev.end.getSeconds()
+            !ev.eventStart.getHours() &&
+            !ev.eventStart.getMinutes() &&
+            !ev.eventStart.getSeconds() &&
+            !ev.eventEnd.getHours() &&
+            !ev.eventEnd.getMinutes() &&
+            !ev.eventEnd.getSeconds()
         ) {
-            if (ev.end.getTime() == ev.start.getTime() && ev.datetype == 'date') {
-                ev.end.setDate(ev.end.getDate() + 1);
+            if (ev.eventEnd.getTime() == ev.eventStart.getTime() && ev.datetype == 'date') {
+                ev.eventEnd.setDate(ev.eventEnd.getDate() + 1);
             }
-            if (ev.end.getTime() !== ev.start.getTime()) {
+            if (ev.eventEnd.getTime() !== ev.eventStart.getTime()) {
                 fullday = true;
             }
         }
@@ -523,54 +515,22 @@ export class KalenderEvents {
 
             if (fullday) {
                 if (
-                    (ev.start < preview && ev.start >= pastview) ||
-                    (ev.end > pastview && ev.end <= preview) ||
-                    (ev.start < pastview && ev.end > pastview)
-                ) {
-                    date = this.formatDate(ev.start, ev.end, true, true);
-
-                    this.insertSorted(reslist, {
-                        date: date.text.trim(),
-                        summary: ev.summary,
-                        topic: ev.summary,
-                        calendarName: ev.calendarName,
-                        event: reason,
-                        eventStart: new Date(ev.start.getTime()),
-                        eventEnd: new Date(ev.end.getTime()),
-                        description: ev.description,
-                        id: ev.uid,
-                        allDay: true,
-                        rule: rule,
-                        location: location,
-                        countdown: this.countdown(new Date(ev.start))
-                    });
-
-                    debug('Event (full day) added : ' + JSON.stringify(rule) + ' ' + reason + ' at ' + date.text);
+                    (ev.eventStart < preview && ev.eventStart >= pastview) ||
+                    (ev.eventEnd > pastview && ev.eventEnd <= preview) ||
+                    (ev.eventStart < pastview && ev.eventEnd > pastview)
+                ) {                  
+                    this.insertSorted(reslist,ev);
+                    debug('Event (full day) added : ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.date);
                 }
             } else {
                 // Event with time              
                 if (
-                    (ev.start >= pastview && ev.start < preview) ||
-                    (ev.end >= realnow && ev.end <= preview) ||
-                    (ev.start < realnow && ev.end > realnow)
-                ) {
-                    date = this.formatDate(ev.start, ev.end, true, false);
-                    this.insertSorted(reslist, {
-                        date: date.text.trim(),
-                        event: reason,
-                        summary: ev.summary,
-                        topic: ev.summary,
-                        calendarName: ev.calendarName,
-                        eventStart: new Date(ev.start.getTime()),
-                        eventEnd: new Date(ev.end.getTime()),
-                        description: ev.description,
-                        id: ev.uid,
-                        allDay: false,
-                        rule: rule,
-                        location: location,
-                        countdown: this.countdown(new Date(ev.start))
-                    });
-                    debug('Event with time added: ' + JSON.stringify(rule) + ' ' + reason + ' at ' + date.text);
+                    (ev.eventStart >= pastview && ev.eventStart < preview) ||
+                    (ev.eventEnd >= realnow && ev.eventEnd <= preview) ||
+                    (ev.eventStart < realnow && ev.eventEnd > realnow)
+                ) {                    
+                    this.insertSorted(reslist, ev);
+                    debug('Event with time added: ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.date);
                 }
             }
         }
