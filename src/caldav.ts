@@ -73,7 +73,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                         debug(`caldav - ical: ${JSON.stringify(event)}`)
                         if (event) {
                             event.calendarName = calendar.displayName;
-                            retEntries.push(event);
+                            retEntries[ev.uid.uid] = ev;
                         }
                     });
                 }
@@ -104,7 +104,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                                 var ev = ke.convertEvent(data[k]);
                                 if (ev) {
                                     ev.calendarName = calendar.displayName;                                    
-                                    retEntries.push(ev);
+                                    retEntries[ev.uid.uid] = ev;
                                 }
                             }
 

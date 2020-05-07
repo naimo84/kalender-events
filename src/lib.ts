@@ -302,16 +302,7 @@ export class KalenderEvents {
             debug('caldav');
             try {
                 let data = await CalDav(this.config);
-                let retEntries: IKalenderEvent[] = [];
-                if (data) {
-                    for (let events of data) {
-                        for (let event in events) {
-                            var ev = await events[event];
-                            retEntries[ev.uid.uid + ev.uid.date] = ev;
-                        }
-                    }
-                }
-                return retEntries;
+                return data;
             }
             catch (err) {
                 debug(`caldav - get calendar went wrong. Error Message: ${err}`)
