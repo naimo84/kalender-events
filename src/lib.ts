@@ -117,18 +117,19 @@ export class KalenderEvents {
             debug(`pastview: ${pastview}`)
             debug(`preview: ${preview}`)
             let processedData = this.processData(data, realnow, pastview, preview);
-            debug(`processedData: ${processedData}`)
+            debug(`processedData: ${JSON.stringify(processedData)}`)
 
-            if (this.cache) {
+            if (this.config.usecache && this.cache) {
                 if (data) {
                     this.cache.set("events", processedData);
                 }
             }
             return processedData;
         } catch (err) {
-            if (this.cache) {
+            if (this.config.usecache && this.cache) {
                 return this.cache.get("events") as IKalenderEvent[];
             }
+            throw err;
         }
     }
 
@@ -140,8 +141,7 @@ export class KalenderEvents {
                     let ev = this.convertScrapegoat(event.data);
                     retEntries.push(ev);
                 });
-            }
-            else {
+            } else if (events.events || events.occurrences) {
                 if (events.events) {
                     events.events.forEach((event: any) => {
                         let ev = this.convertEvent(event);
@@ -154,6 +154,12 @@ export class KalenderEvents {
                         retEntries.push(ev);
                     });
                 }
+            } else {
+                for (let index in events) {
+                    let ev = this.convertEvent(events[index]);
+                    retEntries.push(ev);
+                }
+
             }
         }
 
@@ -170,6 +176,7 @@ export class KalenderEvents {
             if (event.item) {
                 event = event.item
             }
+
             if (event.type && event.type !== "VEVENT") {
                 return;
             }
@@ -177,11 +184,12 @@ export class KalenderEvents {
                 delete event.duration.wrappedJSObject
             }
 
-            let uid = event.uid || this.uuidv4();
+            let uid = {
+                uid: event.uid || this.uuidv4(),
+                date: startDate.getTime().toString()
+            };
             if (recurrence) {
-                uid += new Date(recurrence.year, recurrence.month, recurrence.day, recurrence.hour, recurrence.minute, recurrence.second).getTime().toString();
-            } else {
-                uid += startDate.getTime().toString();
+                uid.date = new Date(recurrence.year, recurrence.month, recurrence.day, recurrence.hour, recurrence.minute, recurrence.second).getTime().toString();
             }
 
             let duration = event.duration;
@@ -193,7 +201,7 @@ export class KalenderEvents {
             } else {
                 allday = ((duration.toSeconds() % 86400) === 0)
             }
-            let date = this.formatDate(event.start, event.end, true, true);
+            let date = this.formatDate(startDate, endDate, true, true);
             return {
                 date: date.text.trim(),
                 eventStart: startDate,
@@ -205,11 +213,14 @@ export class KalenderEvents {
                 durationSeconds: event.duration?.toSeconds(),
                 location: event.location || '',
                 organizer: event.organizer || '',
+                rrule: event.rrule,
                 uid: uid,
                 isRecurring: !!recurrence,
                 datetype: 'date',
                 allDay: allday,
-                calendarName: null as any
+                calendarName: null as any,
+                exdate: event.exdate,
+                recurrences: event.recurrences
             }
         }
     }
@@ -275,23 +286,28 @@ export class KalenderEvents {
         return offset;
     }
 
-    private async getCal(): Promise<iCalEvent> {
+    private async getCal(): Promise<IKalenderEvent[]> {
         if (this.config.type && this.config.type === 'icloud') {
             debug('icloud');
             const now = moment();
             const when = now.toDate();
-            let list = await ICloud(moment(when), this.config, this);
-            return list;
+            try {
+                let list = await ICloud(moment(when), this.config, this);
+                return list;
+            } catch (err) {
+                debug(err);
+                throw err;
+            }
         } else if (this.config.type && this.config.type === 'caldav') {
             debug('caldav');
             try {
                 let data = await CalDav(this.config);
-                let retEntries: iCalEvent = {};
+                let retEntries: IKalenderEvent[] = [];
                 if (data) {
                     for (let events of data) {
                         for (let event in events) {
                             var ev = await events[event];
-                            retEntries[ev.uid] = ev;
+                            retEntries[ev.uid.uid + ev.uid.date] = ev;
                         }
                     }
                 }
@@ -324,17 +340,21 @@ export class KalenderEvents {
 
                 let data = await nodeIcal.async.fromURL(this.config.url, header);
                 debug(data)
-                return data;
+                let converted = await this.convertEvents(data);
+                return converted;
             } else {
                 if (!this.config.url) {
                     throw "URL/File is not defined";
                 }
-                return await nodeIcal.async.parseFile(this.config.url);
+                let data = await nodeIcal.async.parseFile(this.config.url);
+                debug(data)
+                let converted = await this.convertEvents(data);
+                return converted;
             }
         }
     }
 
-    private processRRule(ev: any, preview: Date, today: Date) {
+    private processRRule(ev: IKalenderEvent, preview: Date, today: Date) {
         var eventLength = ev.eventEnd.getTime() - ev.eventStart.getTime();
         var options = RRule.parseString(ev.rrule.toString());
         options.dtstart = this.addOffset(ev.eventStart, -this.getTimezoneOffset(ev.eventStart));
@@ -394,19 +414,19 @@ export class KalenderEvents {
         let reslist = [];
         if (dates.length > 0) {
             for (var i = 0; i < dates.length; i++) {
-                var ev2 = ce.clone(ev);
+                var ev2: IKalenderEvent = ce.clone(ev);
                 var start = dates[i];
-                ev2.start = this.addOffset(start, this.getTimezoneOffset(start));
+                ev2.eventStart = this.addOffset(start, this.getTimezoneOffset(start));
 
                 var end = new Date(start.getTime() + eventLength);
-                ev2.end = this.addOffset(end, this.getTimezoneOffset(end));
+                ev2.eventEnd = this.addOffset(end, this.getTimezoneOffset(end));
 
-                debug('   ' + i + ': Event (' + JSON.stringify(ev2.exdate) + '):' + ev2.start.toString() + ' ' + ev2.end.toString());
+                debug('   ' + i + ': Event (' + JSON.stringify(ev2.exdate) + '):' + ev2.eventStart.toString() + ' ' + ev2.eventEnd.toString());
 
                 var checkDate = true;
                 if (ev2.exdate) {
                     for (var d in ev2.exdate) {
-                        if (ev2.exdate[d].getTime() === ev2.start.getTime()) {
+                        if (ev2.exdate[d].getTime() === ev2.eventStart.getTime()) {
                             checkDate = false;
                             debug('   ' + i + ': sort out');
                             break;
@@ -417,9 +437,9 @@ export class KalenderEvents {
                     for (var dOri in ev.recurrences) {
                         let recurrenceid = ev.recurrences[dOri].recurrenceid
                         if (recurrenceid) {
-                            if (recurrenceid.getTime() === ev2.start.getTime()) {
-                                ev2 = ce.clone(ev.recurrences[dOri]);
-                                debug('   ' + i + ': different recurring found replaced with Event:' + ev2.start + ' ' + ev2.end);
+                            if (recurrenceid.getTime() === ev2.eventStart.getTime()) {
+                                ev2 = this.convertEvent(ce.clone(ev.recurrences[dOri]));
+                                debug('   ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
                             }
                         }
                     }
@@ -427,6 +447,8 @@ export class KalenderEvents {
 
 
                 if (checkDate) {
+                    let date = this.formatDate(ev2.eventStart, ev2.eventEnd, true, true);
+                    ev2.date = date.text.trim();
                     reslist.push(ev2);
                 }
             }
@@ -434,20 +456,20 @@ export class KalenderEvents {
         return reslist;
     }
 
-    private processData(data: any, realnow: Date, pastview: Date, preview: Date): IKalenderEvent[] {
+    private processData(data: IKalenderEvent[], realnow: Date, pastview: Date, preview: Date): IKalenderEvent[] {
         let reslist: IKalenderEvent[] = [];
         this.processDataRev(data, realnow, pastview, preview, reslist);
         return reslist;
     }
 
-    private processDataRev(data: any, realnow: Date, pastview: Date, preview: Date, reslist: IKalenderEvent[]) {
+    private processDataRev(data: IKalenderEvent[], realnow: Date, pastview: Date, preview: Date, reslist: IKalenderEvent[]) {
         var processedEntries = 0;
 
         for (var k in data) {
-            var ev = data[k];
+            const ev: IKalenderEvent = data[k];
             delete data[k];
-
-            if (ev.type === 'VEVENT') {
+            debug(`event ProcessData: ${JSON.stringify(ev)}`)
+            if (ev) {
                 if (!ev.eventEnd) {
                     ev.eventEnd = ce.clone(ev.eventStart);
                     if (!ev.eventStart.getHours() && !ev.eventStart.getMinutes() && !ev.eventStart.getSeconds()) {
@@ -464,10 +486,11 @@ export class KalenderEvents {
                     }
 
                 }
-            }
 
-            if (++processedEntries > 100) {
-                break;
+
+                if (++processedEntries > 100) {
+                    break;
+                }
             }
         }
         if (!Object.keys(data).length) {
@@ -478,8 +501,8 @@ export class KalenderEvents {
     }
 
     private checkDates(ev: IKalenderEvent, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: IKalenderEvent[]) {
-        var fullday = false;     
-       
+        var fullday = false;
+
         if (!ev.eventStart) return;
         if (!ev.eventEnd) ev.eventEnd = ev.eventStart;
         ev.eventStart = new Date(ev.eventStart);
@@ -511,16 +534,18 @@ export class KalenderEvents {
             output = true;
         }
         if (output) {
-            debug('Event: ' + JSON.stringify(ev))
-
+            debug('Event checkdates: ' + JSON.stringify(ev))
+            delete ev.recurrences;
+            delete ev.exdate;
+            delete ev.rrule;
             if (fullday) {
                 if (
                     (ev.eventStart < preview && ev.eventStart >= pastview) ||
                     (ev.eventEnd > pastview && ev.eventEnd <= preview) ||
                     (ev.eventStart < pastview && ev.eventEnd > pastview)
-                ) {                  
-                    this.insertSorted(reslist,ev);
-                    debug('Event (full day) added : ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.date);
+                ) {
+                    this.insertSorted(reslist, ev);
+                    debug('Event (full day) added : ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
                 }
             } else {
                 // Event with time              
@@ -528,9 +553,9 @@ export class KalenderEvents {
                     (ev.eventStart >= pastview && ev.eventStart < preview) ||
                     (ev.eventEnd >= realnow && ev.eventEnd <= preview) ||
                     (ev.eventStart < realnow && ev.eventEnd > realnow)
-                ) {                    
+                ) {
                     this.insertSorted(reslist, ev);
-                    debug('Event with time added: ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.date);
+                    debug('Event with time added: ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
                 }
             }
         }
@@ -548,11 +573,19 @@ export class KalenderEvents {
                 if (arr.length === 1) {
                     arr.push(element);
                 } else {
-                    for (var i = 0; i < arr.length - 1; i++) {
-                        if (arr[i].eventStart <= element.eventStart && element.eventStart < arr[i + 1].eventStart) {
-                            arr.splice(i + 1, 0, element);
+                    for (var i = 0; i < arr.length; i++) {
+                        if (arr[i].uid.uid == element.uid.uid && element.eventStart.getTime() == arr[i].eventStart.getTime()) {
                             element = null;
                             break;
+                        }
+                    }
+                    if (element) {
+                        for (var i = 0; i < arr.length - 1; i++) {
+                            if (arr[i].eventStart <= element.eventStart && element.eventStart < arr[i + 1].eventStart) {
+                                arr.splice(i + 1, 0, element);
+                                element = null;
+                                break;
+                            }
                         }
                     }
                     if (element) arr.push(element);

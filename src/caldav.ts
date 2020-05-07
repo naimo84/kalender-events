@@ -7,8 +7,9 @@ import IcalExpander = require('ical-expander');
 import * as  ical from 'node-ical';
 import { KalenderEvents } from './lib';
 import { iCalEvent, IKalenderEvent } from 'event';
+var debug = require('debug')('kalendar-events')
 
-export function CalDav(config: Config): Promise<Promise<iCalEvent>[]> {
+export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     const calName = config.calendar;
     const ke = new KalenderEvents(config);
     const now = moment();
@@ -50,80 +51,72 @@ export function CalDav(config: Config): Promise<Promise<iCalEvent>[]> {
 
     let calDavUri = config.url;
     let url = new URL(calDavUri);
-    return dav.createAccount({ server: calDavUri, xhr: xhr, loadCollections: true, loadObjects: true })
-        .then((account) => {
-            let promises:  Promise<Promise<iCalEvent>>[] = [];
-            if (!account.calendars) {
-                throw 'CalDAV -> no calendars found.';
-            }
+    const account = await dav.createAccount({ server: calDavUri, xhr: xhr, loadCollections: true, loadObjects: true })
 
-            for (let calendar of account.calendars) {
+    let promises: Promise<Promise<IKalenderEvent>>[] = [];
+    if (!account.calendars) {
+        throw 'CalDAV -> no calendars found.';
+    }
+    let retEntries: IKalenderEvent[] = [];
+    for (let calendar of account.calendars) {
 
-                if (!calName || !calName.length || (calName && calName.length && calName.toLowerCase() === calendar.displayName.toLowerCase())) {
-                    //@ts-ignore
-                    promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
-                        .then((calendarEntries: any) => {
-                            let retEntries: iCalEvent = {};
-                            for (let calendarEntry of calendarEntries) {
-                                const ics = calendarEntry.calendarData;
-                                if (ics) {
-                                    const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
-                                    const events = icalExpander.between(start.toDate(), end.toDate());
+        if (!calName || !calName.length || (calName && calName.length && calName.toLowerCase() === calendar.displayName.toLowerCase())) {
+            //@ts-ignore
+            let calendarEntries = await dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
+            for (let calendarEntry of calendarEntries) {
+                const ics = calendarEntry.calendarData;
+                if (ics) {
+                    const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
+                    const events = icalExpander.between(start.toDate(), end.toDate());
 
-                                    ke.convertEvents(events).forEach((event: IKalenderEvent) => {
-                                        if (event) {
-                                            event.calendarName = calendar.displayName;
-                                            retEntries[event.uid] = event;
-                                        }
-                                    });
-                                }
-                            }
-                            return retEntries;
-                        }),
-                    );
-                    //@ts-ignore
-                    promises.push(dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
-                        .then((calendarEntries: any) => {
-                            let retEntries: iCalEvent = {};
-                            for (let calendarEntry of calendarEntries) {
-                                if (calendarEntry.calendar.objects) {
-                                    for (let calendarObject of calendarEntry.calendar.objects) {
-                                        if (calendarObject.data && calendarObject.data.href) {
-                                            let ics = url.origin + calendarObject.data.href;
-                                            let header = {};
-                                            let username = config.username;
-                                            let password = config.password;
-                                            if (username && password) {
-                                                var auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
-                                                header = {
-                                                    headers: {
-                                                        'Authorization': auth,
-                                                    },
-                                                };
-                                            }
-
-                                            return ical.fromURL(ics, header).then((data: any) => {
-                                                for (var k in data) {
-                                                    var ev = ke.convertEvent(data[k]);
-                                                    if (ev) {
-                                                        ev.calendarName = calendar.displayName;
-                                                        retEntries[ev.uid] = ev;
-                                                    }
-                                                }
-                                                return retEntries;
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }),
-                    );
+                    ke.convertEvents(events).forEach((event: IKalenderEvent) => {
+                        debug(`caldav - ical: ${JSON.stringify(event)}`)
+                        if (event) {
+                            event.calendarName = calendar.displayName;
+                            retEntries.push(event);
+                        }
+                    });
                 }
             }
-            return Promise.all(promises);
-        }, function (err) {
-            throw err;
-        });
+
+            //@ts-ignore
+            calendarEntries = await dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
+            for (let calendarEntry of calendarEntries) {
+                if (calendarEntry.calendar.objects) {
+                    for (let calendarObject of calendarEntry.calendar.objects) {
+                        if (calendarObject.data && calendarObject.data.href) {
+                            let ics = url.origin + calendarObject.data.href;
+                            let header = {};
+                            let username = config.username;
+                            let password = config.password;
+                            if (username && password) {
+                                var auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+                                header = {
+                                    headers: {
+                                        'Authorization': auth,
+                                    },
+                                };
+                            }
+                           
+                            const data = await ical.async.fromURL(ics, header);
+                            for (var k in data) {
+                                //debug(`caldav - href: ${JSON.stringify(data[k])}`)
+                                var ev = ke.convertEvent(data[k]);
+                                if (ev) {
+                                    ev.calendarName = calendar.displayName;                                    
+                                    retEntries.push(ev);
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+    return retEntries;
+
 }
 
 export async function Fallback(config: Config) {

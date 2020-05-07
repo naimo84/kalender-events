@@ -1,5 +1,6 @@
 
 export interface Config {
+    usecache?: boolean;
     rejectUnauthorized?: boolean;
     url?: string,
     language?: string,
