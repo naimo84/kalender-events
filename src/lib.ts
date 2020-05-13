@@ -267,12 +267,9 @@ export class KalenderEvents {
     }
 
     private getTimezoneOffset(date: Date) {
-        var offset = 0;
-        var zone = moment.tz.zone(moment.tz.guess());
-        if (zone && date) {
-            offset = zone.utcOffset(date.getTime());
-        }
-        return offset;
+        const isoDate = date.toISOString();
+        var offset = moment(isoDate).utcOffset();
+        return -offset;
     }
 
     private async getCal(): Promise<iCalEvent> {
