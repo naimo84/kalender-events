@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0](https://github.com/naimo84/kalender-events/compare/v0.0.4...v0.1.0) (2020-05-08)
+
+
+### Features
+
+* more debug ([c7a9dfc](https://github.com/naimo84/kalender-events/commit/c7a9dfc1d98a4b79a61ca516169fe250dc416274))
+* some improvements ([75cbf10](https://github.com/naimo84/kalender-events/commit/75cbf10c2e51489e32ab48fa24a02098c5af4a27))
+
+
+### Bug Fixes
+
+* push events with uid ([f6d850e](https://github.com/naimo84/kalender-events/commit/f6d850e2dcf3c22a1f26b75121865fb68245c8c6))
+* wrong event used ([1cdfa29](https://github.com/naimo84/kalender-events/commit/1cdfa299ebca185ef5b95927a4108c27db634bc1))
+
 ### [0.0.6](https://github.com/naimo84/kalender-events/compare/v0.0.5...v0.0.6) (2020-05-02)
 
 ### [0.0.5](https://github.com/naimo84/kalender-events/compare/v0.0.4...v0.0.5) (2020-05-02)

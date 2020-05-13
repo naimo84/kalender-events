@@ -1,5 +1,8 @@
 
 export interface iCalEvent {
+    exdate: any;
+    recurrences: any;
+    rrule?: any;
     startDate?: any;
     endDate?: any;
     recurrenceId?: any;
@@ -27,7 +30,9 @@ export interface iCalEvent {
 }
 
 export interface IKalenderEvent {
-    summary?: string,    
+    exdate?: any;
+    recurrences?: any;
+    summary?: string,
     location?: string,
     eventStart?: Date
     eventEnd?: Date,
@@ -36,14 +41,14 @@ export interface IKalenderEvent {
     description?: string,
     id?: string,
     allDay?: boolean,
-    rule?: string,   
+    rrule?: string,
     countdown?: object,
     calendarName?: string,
-    uid?: string,
+    uid?: { uid: string, date: string },
     duration?: number,
-    durationSeconds?:number,
-    organizer?:string,
-    isRecurring?:boolean,
-    datetype?:string,
-    attendees?:any
+    durationSeconds?: number,
+    organizer?: string,
+    isRecurring?: boolean,
+    datetype?: string,
+    attendees?: any
 }

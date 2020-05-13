@@ -3,14 +3,16 @@ import icalExpander = require('ical-expander');
 import { Config } from 'config';
 import axios, { AxiosRequestConfig } from "axios";
 import {KalenderEvents} from './lib';
+import { iCalEvent, IKalenderEvent } from '../types/event';
 import moment = require('moment');
+var debug = require('debug')('kalendar-events_icloud')
 
-function process(reslist:any, start:any, end:any, ics:any, kalEv:KalenderEvents) {
+function process(reslist:IKalenderEvent[], start:any, end:any, ics:any, kalEv:KalenderEvents) {
     const cal = new icalExpander({ ics, maxIterations: 1000 });
     const events = cal.between(start.toDate(), end.toDate());
 
     for (let event of kalEv.convertEvents(events)) {
-        reslist[event.uid + event.start] = event;
+        reslist[event.uid.uid + event.uid.date] = event;
     }
 }
 
@@ -66,6 +68,7 @@ async function requestIcloudSecure(config: Config, start:any, end:any) {
     try {
         let data = await axios(conf);
         const json = JSON.parse(xmlParser.xml2json(data.data, { compact: true, spaces: 0 }));
+        debug(`json: ${json}`)
         return json;
     } catch (err) {
         console.error(err);
@@ -87,7 +90,7 @@ export async function ICloud(whenMoment:moment.Moment, config: Config, kalEv:Kal
 
     const json = await requestIcloudSecure(config, start, end);
 
-    var reslist = {};
+    var reslist:IKalenderEvent[] = [];
     if (json && json.multistatus && json.multistatus.response) {
         if (json.multistatus.response.propstat) {
             process(reslist, start, end, json.multistatus.response.propstat.prop['calendar-data']._cdata,kalEv);
