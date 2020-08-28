@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/naimo84/kalender-events/compare/v0.1.2...v0.1.3) (2020-08-28)
+
+
+### Bug Fixes
+
+* [#2](https://github.com/naimo84/kalender-events/issues/2), rrule 2.6.5 broken ([17a0516](https://github.com/naimo84/kalender-events/commit/17a05164ef12663be13bc0d93d3db08d8fb51bb4))
+
 ### [0.1.2](https://github.com/naimo84/kalender-events/compare/v0.1.0...v0.1.2) (2020-08-28)
 
 
