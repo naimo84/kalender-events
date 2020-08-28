@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/naimo84/kalender-events/compare/v0.1.0...v0.1.2) (2020-08-28)
+
+
+### Bug Fixes
+
+* [#2](https://github.com/naimo84/kalender-events/issues/2), rrule 2.6.5 broken ([f8f5dad](https://github.com/naimo84/kalender-events/commit/f8f5dad9ade203752260db560cc1ab8a7f0971f7))
+* removed deprecated timezone from moment ([7a7aeeb](https://github.com/naimo84/kalender-events/commit/7a7aeebc17fcd5078bb7a289caf89dadaf79fd00))
+
+### [0.1.1](https://github.com/naimo84/kalender-events/compare/v0.1.0...v0.1.1) (2020-08-28)
+
+
+### Bug Fixes
+
+* [#2](https://github.com/naimo84/kalender-events/issues/2), rrule 2.6.5 broken ([f8f5dad](https://github.com/naimo84/kalender-events/commit/f8f5dad9ade203752260db560cc1ab8a7f0971f7))
+* removed deprecated timezone from moment ([7a7aeeb](https://github.com/naimo84/kalender-events/commit/7a7aeebc17fcd5078bb7a289caf89dadaf79fd00))
+
 ## [0.1.0](https://github.com/naimo84/kalender-events/compare/v0.0.4...v0.1.0) (2020-05-08)
 
 
