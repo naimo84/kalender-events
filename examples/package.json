@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "kalender-events": "0.0.6"
+    "kalender-events": "0.1.0"
   },
   "devDependencies": {
     "typescript": "3.4.3"
