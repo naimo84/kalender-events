@@ -18,6 +18,13 @@ export class KalenderEvents {
 
     constructor(config?: Config) {
         this.config = config;
+        if (!this.config) {
+            this.config = {};
+        }
+        if (!this.config.pastview) this.config.pastview = 10;
+        if (!this.config.pastviewUnits) this.config.pastviewUnits = "days";
+        if (!this.config.preview) this.config.preview = 10;
+        if (!this.config.previewUnits) this.config.previewUnits = "days";
         this.cache = new NodeCache();
     }
 
@@ -168,8 +175,8 @@ export class KalenderEvents {
 
     public convertEvent(event: iCalEvent): IKalenderEvent {
         if (event) {
-            let startDate = event.startDate?.toJSDate() || event.start;
-            let endDate = event.endDate?.toJSDate() || event.end;
+            let startDate = new Date(event.startDate?.toJSDate() || event.start);
+            let endDate = new Date(event.endDate?.toJSDate() || event.end);
 
             const recurrence = event.recurrenceId;
 
@@ -186,11 +193,15 @@ export class KalenderEvents {
 
             let uid = {
                 uid: event.uid || this.uuidv4(),
-                date: startDate.getTime().toString()
+                date: ''
             };
             if (recurrence) {
                 uid.date = new Date(recurrence.year, recurrence.month, recurrence.day, recurrence.hour, recurrence.minute, recurrence.second).getTime().toString();
+            } else {
+                uid.date = startDate.getTime().toString()
             }
+
+
 
             let duration = event.duration;
             let allday = false;
@@ -201,14 +212,15 @@ export class KalenderEvents {
             } else {
                 allday = ((duration.toSeconds() % 86400) === 0)
             }
-            let date = this.formatDate(startDate, endDate, true, true);
-            return {
+            let date = this.formatDate(startDate, endDate, true, allday);
+
+            let returnEvent: IKalenderEvent = {
                 date: date.text.trim(),
                 eventStart: startDate,
                 eventEnd: endDate,
                 summary: event.summary || '',
                 description: event.description || '',
-                //attendees: event.attendees,
+                attendee: event.attendees || event.attendee,
                 duration: event.duration?.toICALString(),
                 durationSeconds: event.duration?.toSeconds(),
                 location: event.location || '',
@@ -220,8 +232,17 @@ export class KalenderEvents {
                 allDay: allday,
                 calendarName: null as any,
                 exdate: event.exdate,
-                recurrences: event.recurrences
+                recurrences: event.recurrences,
+                categories: event.categories
             }
+
+            Object.keys(returnEvent).forEach(key => {
+                if (returnEvent[key] === undefined || returnEvent[key] === "") {
+                    delete returnEvent[key];
+                }
+            });
+
+            return returnEvent
         }
     }
 
@@ -255,7 +276,7 @@ export class KalenderEvents {
             } else {
                 allday = ((duration.toSeconds() % 86400) === 0)
             }
-            let date = this.formatDate(event.start, event.end, true, true);
+            let date = this.formatDate(startDate, endDate, true, allday);
 
             return {
                 date: date.text.trim(),
@@ -263,7 +284,7 @@ export class KalenderEvents {
                 eventEnd: endDate,
                 summary: event.summary || '',
                 description: event.description || '',
-                attendees: event.attendees,
+                attendee: event.attendees,
                 duration: event.duration?.toICALString(),
                 durationSeconds: event.duration?.toSeconds(),
                 location: event.location || '',
@@ -297,6 +318,7 @@ export class KalenderEvents {
             }
         } else if (this.config.type && this.config.type === 'caldav') {
             debug('caldav');
+
             try {
                 let data = await CalDav(this.config);
                 return data;
@@ -304,14 +326,23 @@ export class KalenderEvents {
             catch (err) {
                 debug(`caldav - get calendar went wrong. Error Message: ${err}`)
                 debug(`caldav - using fallback`)
-                Fallback(this.config).then((data) => {
+                try {
+
+
+                    let data = await Fallback(this.config)
                     return data;
-                }).catch(err_fallback => {
+                }
+                catch (err_fallback) {
                     throw (`caldav - get calendar went wrong. Error Message: ${err_fallback}`)
-                })
+                }
             };
         } else {
             debug('ical');
+
+            if (this.config?.url?.match(/^webcal:\/\//)) {
+                this.config.url = this.config.url.replace("webcal", "https")
+            }
+
             if (this.config?.url?.match(/^https?:\/\//)) {
                 let header = {};
                 let username = this.config.username;
@@ -328,6 +359,7 @@ export class KalenderEvents {
 
                 let data = await nodeIcal.async.fromURL(this.config.url, header);
                 debug(data)
+
                 let converted = await this.convertEvents(data);
                 return converted;
             } else {
@@ -488,6 +520,81 @@ export class KalenderEvents {
         }
     }
 
+
+    private filterOutput(ev) {
+        let output = false;
+        let filterProperty = ev.summary;
+        let regex = null;
+        if (this.config.filterProperty) {
+            filterProperty = ev[this.config.filterProperty]
+        }
+
+        if (filterProperty) {
+            if (this.config.trigger == 'match') {
+                output = this.checkRegex(filterProperty)
+            } else if (this.config.trigger == 'nomatch') {
+                output = !this.checkRegex(filterProperty)
+            } else {
+                output = true;
+            }
+        } else if (this.config.trigger == 'always') {
+            output = true;
+        }
+        return output;
+    }
+
+    private checkRegex(filterProperty: any) {
+        if (this.config.filterProperty && this.config.filterProperty == "attendee") {
+            let regex = new RegExp(this.config.filter || "");
+            if (Array.isArray(filterProperty)) {
+                for (const attendee of filterProperty) {
+                    if (attendee.jCal && regex.test(attendee.jCal[1].cn)) {
+                        return true;
+                    }
+                    if (attendee.params && regex.test(attendee.params.CN)) {
+                        return true;
+                    }
+                }
+            } else {
+                return regex.test(filterProperty.params.CN)
+            }
+        } else if (this.config.filterProperty && this.config.filterProperty.indexOf("event") >= 0) {
+            if (filterProperty instanceof Date) {
+                switch (this.config.filterOperator) {
+                    case 'before':
+                        if (moment(filterProperty) < moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss")) {
+                            return true;
+                        }
+                        break;
+                    case 'after':
+                        if (moment(filterProperty) > moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss")) {
+                            return true;
+                        }
+                        break;
+                    case 'between':
+                        if (moment(filterProperty) > moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss") &&
+                            moment(filterProperty) < moment(this.config.filter2, "YYYY-MM-DD_hh:mm:ss")) {
+                            return true;
+                        }
+                        break;
+                }
+            }
+        } else {
+            let regex = new RegExp(this.config.filter || "");
+
+            if (Array.isArray(filterProperty)) {
+                for (const prop of filterProperty) {
+                    if (regex.test(prop)) {
+                        return true;
+                    }
+                }
+            } else {
+                return regex.test(filterProperty);
+            }
+        }
+        return false;
+    }
+
     private checkDates(ev: IKalenderEvent, preview: Date, pastview: Date, realnow: Date, rule: string, reslist: IKalenderEvent[]) {
         var fullday = false;
 
@@ -511,16 +618,7 @@ export class KalenderEvents {
             }
         }
 
-        let output = false;
-        if (this.config.trigger == 'match') {
-            let regex = new RegExp(this.config.filter);
-            if (regex.test(ev.summary)) output = true;
-        } else if (this.config.trigger == 'nomatch') {
-            let regex = new RegExp(this.config.filter);
-            if (!regex.test(ev.summary)) output = true;
-        } else {
-            output = true;
-        }
+        let output = this.filterOutput(ev)
         if (output) {
             debug('Event checkdates: ' + JSON.stringify(ev))
             delete ev.recurrences;

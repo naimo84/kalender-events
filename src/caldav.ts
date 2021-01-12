@@ -6,6 +6,8 @@ import moment = require('moment');
 import IcalExpander = require('ical-expander');
 import * as  ical from 'node-ical';
 import { KalenderEvents } from './lib';
+import * as URL from "url";
+
 import { iCalEvent, IKalenderEvent } from 'event';
 var debug = require('debug')('kalendar-events')
 
@@ -50,10 +52,11 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     );
 
     let calDavUri = config.url;
-    let url = new URL(calDavUri);
+    let url = URL.parse(calDavUri);
+    let host = url.protocol + '//' + url.host+'/';
+ 
     const account = await dav.createAccount({ server: calDavUri, xhr: xhr, loadCollections: true, loadObjects: true })
 
-    let promises: Promise<Promise<IKalenderEvent>>[] = [];
     if (!account.calendars) {
         throw 'CalDAV -> no calendars found.';
     }
@@ -85,7 +88,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                 if (calendarEntry.calendar.objects) {
                     for (let calendarObject of calendarEntry.calendar.objects) {
                         if (calendarObject.data && calendarObject.data.href) {
-                            let ics = url.origin + calendarObject.data.href;
+                            let ics = host + calendarObject.data.href;
                             let header = {};
                             let username = config.username;
                             let password = config.password;
@@ -126,8 +129,11 @@ export async function Fallback(config: Config) {
             user: config.username,
             pass: config.password
         },
-        uri: config.url,
-        rejectUnauthorized: config.rejectUnauthorized
+        uri: encodeURI(config.url).replace('@','%40'),
+        rejectUnauthorized: config.rejectUnauthorized,
+        headers:{
+            "Content-Type":"application/xml"
+        }
     });
 
     let data = await scrapegoat.getAllEvents();

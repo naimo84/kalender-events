@@ -1,7 +1,7 @@
 const fs = require('fs');
 
-exports.getEvents = function (){
+export function getEvents (){
     let rawdata = fs.readFileSync('./test/mocks/testical.json');
     let data = JSON.parse(rawdata);
-    return data;
+        return data;
   }

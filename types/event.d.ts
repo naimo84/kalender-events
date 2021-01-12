@@ -10,6 +10,7 @@ export interface iCalEvent {
     type?: string;
     duration?: any;
     attendees?: any;
+    attendee?: any;
     organizer?: string;
     summary?: any,
     topic?: string,
@@ -27,6 +28,7 @@ export interface iCalEvent {
     countdown?: object,
     calendarName?: string,
     uid?: string,
+    categories?: string[]
 }
 
 export interface IKalenderEvent {
@@ -50,5 +52,6 @@ export interface IKalenderEvent {
     organizer?: string,
     isRecurring?: boolean,
     datetype?: string,
-    attendees?: any
+    attendee?: any,
+    categories?: string[]
 }

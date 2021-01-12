@@ -5,6 +5,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import {KalenderEvents} from './lib';
 import { iCalEvent, IKalenderEvent } from '../types/event';
 import moment = require('moment');
+const   https = require('https');
 var debug = require('debug')('kalendar-events_icloud')
 
 function process(reslist:IKalenderEvent[], start:any, end:any, ics:any, kalEv:KalenderEvents) {
@@ -16,63 +17,76 @@ function process(reslist:IKalenderEvent[], start:any, end:any, ics:any, kalEv:Ka
     }
 }
 
-async function requestIcloudSecure(config: Config, start:any, end:any) {
-    const DavTimeFormat = 'YYYYMMDDTHHmms\\Z',
-        url = config.url,
-        user = config.username,
-        pass = config.password,
-        urlparts = /(https?)\:\/\/(.*?):?(\d*)?(\/.*\/?)/gi.exec(url),
-        protocol = urlparts[1],
-        host = urlparts[2],
-        port = urlparts[3] || (protocol === "https" ? 443 : 80),
-        path = urlparts[4];
+function requestIcloudSecure(config: Config, start, end): Promise<any> {
+    return new Promise((resolve, reject) => {
+        const DavTimeFormat = 'YYYYMMDDTHHmms\\Z',
+            url = config.url,
+            user = config.username,
+            pass = config.password,
+            urlparts = /(https?)\:\/\/(.*?):?(\d*)?(\/.*\/?)/gi.exec(url),
+            protocol = urlparts[1],
+            host = urlparts[2],
+            port = urlparts[3] || (protocol === "https" ? 443 : 80),
+            path = urlparts[4];
 
-    var xml = '<?xml version="1.0" encoding="utf-8" ?>\n' +
-        '<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">\n' +
-        '  <D:prop>\n' +
-        '    <C:calendar-data/>\n' +
-        '  </D:prop>\n' +
-        '  <C:filter>\n' +
-        '    <C:comp-filter name="VCALENDAR">\n' +
-        '      <C:comp-filter name="VEVENT">\n' +
-        '        <C:time-range start="' + start.format(DavTimeFormat) + '" end="' + end.format(DavTimeFormat) + '" />\n' +
-        '      </C:comp-filter>\n' +
-        '    </C:comp-filter>\n' +
-        '  </C:filter>\n' +
-        '</C:calendar-query>';
+        var xml = '<?xml version="1.0" encoding="utf-8" ?>\n' +
+            '<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">\n' +
+            '  <D:prop>\n' +
+            '    <C:calendar-data/>\n' +
+            '  </D:prop>\n' +
+            '  <C:filter>\n' +
+            '    <C:comp-filter name="VCALENDAR">\n' +
+            '      <C:comp-filter name="VEVENT">\n' +
+            '        <C:time-range start="' + start.format(DavTimeFormat) + '" end="' + end.format(DavTimeFormat) + '" />\n' +
+            '      </C:comp-filter>\n' +
+            '    </C:comp-filter>\n' +
+            '  </C:filter>\n' +
+            '</C:calendar-query>';
 
+        var options = {
+            rejectUnauthorized: config.rejectUnauthorized,
+            hostname: host,
+            port: port,
+            path: path,
+            method: 'REPORT',
+            headers: {
+                "Content-type": "application/xml",
+                "Content-Length": xml.length,
+                "User-Agent": "calDavClient",
+                "Connection": "close",
+                "Depth": "1"
+            }
+        };
 
-
-    let conf: AxiosRequestConfig = {
-        // @ts-ignore
-        method: 'REPORT',        
-        baseURL: `${protocol}://${host}`,
-        url: path,
-        headers: {
-            "Content-type": "application/xml",
-            "Content-Length": xml.length,
-            "User-Agent": "calDavClient",
-            "Connection": "close",
-            "Depth": "1"
-        },
-        data: xml
-    }
-
-    if (user && pass) {
-        conf.auth = {
-            username: user,
-            password: pass
+        if (user && pass) {
+            var userpass = Buffer.from(user + ":" + pass).toString('base64');
+            options.headers["Authorization"] = "Basic " + userpass;
         }
-    }
 
-    try {
-        let data = await axios(conf);
-        const json = JSON.parse(xmlParser.xml2json(data.data, { compact: true, spaces: 0 }));
-        debug(`json: ${json}`)
-        return json;
-    } catch (err) {
-        console.error(err);
-    }
+        var req = https.request(options, function (res) {
+            var s = "";
+            res.on('data', function (chunk) {
+                s += chunk;
+            });
+
+            req.on('close', function () {
+
+                try {
+                    const json = JSON.parse(xmlParser.xml2json(s, { compact: true, spaces: 0 }));
+
+                    resolve(json);
+                } catch (e) {
+                    console.error("Error parsing response", e)
+                }
+            });
+        });
+
+        req.end(xml);
+
+        req.on('error', function (e) {
+            console.error('problem with request: ' + e.message);
+        });
+    });
 }
 
 export async function ICloud(whenMoment:moment.Moment, config: Config, kalEv:KalenderEvents) {
