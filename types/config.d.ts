@@ -20,4 +20,5 @@ export interface Config {
     pastviewUnits?: string
     offsetUnits?:string,
     offset?: number,
+    now?:Date
 }

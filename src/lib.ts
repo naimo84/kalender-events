@@ -91,11 +91,13 @@ export class KalenderEvents {
                 this.config = Object.assign(this.config, config);
             }
             let data = await this.getCal();
-
             var realnow = new Date();
             var preview = new Date();
             var pastview = new Date();
 
+            if (config.now) {
+                realnow = preview = pastview = config.now;
+            }
             if (this.config.previewUnits === 'days') {
                 if (this.config.preview == 1) {
                     preview = moment(preview).endOf('day').add(this.config.preview - 1, 'days').toDate();
@@ -307,8 +309,12 @@ export class KalenderEvents {
     private async getCal(): Promise<IKalenderEvent[]> {
         if (this.config.type && this.config.type === 'icloud') {
             debug('icloud');
+
             const now = moment();
-            const when = now.toDate();
+            let when = now.toDate();
+            if(this.config.now){
+                when = this.config.now
+            }
             try {
                 let list = await ICloud(moment(when), this.config, this);
                 return list;
@@ -374,7 +380,7 @@ export class KalenderEvents {
         }
     }
 
-    private processRRule(ev: IKalenderEvent, preview: Date, today: Date) {
+    private processRRule(ev: IKalenderEvent, preview: Date, today: Date, now:Date) {
         var eventLength = ev.eventEnd.getTime() - ev.eventStart.getTime();
         var options = RRule.parseString(ev.rrule.toString());
         options.dtstart = this.addOffset(ev.eventStart, -this.getTimezoneOffset(ev.eventStart));
@@ -384,7 +390,7 @@ export class KalenderEvents {
         debug('options:' + JSON.stringify(options));
 
         var rule = new RRule(options);
-        var now2 = new Date();
+        var now2 = new Date(now);
         now2.setHours(0, 0, 0, 0);
         var now3 = new Date(now2.getTime() - eventLength);
         if (now2 < now3) now3 = now2;
@@ -500,7 +506,7 @@ export class KalenderEvents {
                 if (ev.rrule === undefined) {
                     this.checkDates(ev, preview, pastview, realnow, ' ', reslist);
                 } else {
-                    let evlist = this.processRRule(ev, preview, pastview);
+                    let evlist = this.processRRule(ev, preview, pastview,realnow);
                     for (let ev2 of evlist) {
                         this.checkDates(ev2, preview, pastview, realnow, ' rrule ', reslist);
                     }
