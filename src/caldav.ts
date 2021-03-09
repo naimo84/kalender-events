@@ -53,8 +53,8 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
 
     let calDavUri = config.url;
     let url = URL.parse(calDavUri);
-    let host = url.protocol + '//' + url.host+'/';
- 
+    let host = url.protocol + '//' + url.host + '/';
+
     const account = await dav.createAccount({ server: calDavUri, xhr: xhr, loadCollections: true, loadObjects: true })
 
     if (!account.calendars) {
@@ -79,13 +79,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                             retEntries[event.uid.uid] = event;
                         }
                     });
-                }
-            }
-
-            //@ts-ignore
-            calendarEntries = await dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
-            for (let calendarEntry of calendarEntries) {
-                if (calendarEntry.calendar.objects) {
+                } else if (calendarEntry.calendar.objects) {
                     for (let calendarObject of calendarEntry.calendar.objects) {
                         if (calendarObject.data && calendarObject.data.href) {
                             let ics = host + calendarObject.data.href;
@@ -100,13 +94,13 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                                     },
                                 };
                             }
-                           
+
                             const data = await ical.async.fromURL(ics, header);
                             for (var k in data) {
                                 //debug(`caldav - href: ${JSON.stringify(data[k])}`)
                                 var ev = ke.convertEvent(data[k]);
                                 if (ev) {
-                                    ev.calendarName = calendar.displayName;                                    
+                                    ev.calendarName = calendar.displayName;
                                     retEntries[ev.uid.uid] = ev;
                                 }
                             }
@@ -114,8 +108,10 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                         }
                     }
                 }
-            }
 
+
+
+            }
         }
     }
     return retEntries;
@@ -129,10 +125,10 @@ export async function Fallback(config: Config) {
             user: config.username,
             pass: config.password
         },
-        uri: encodeURI(config.url).replace('@','%40'),
+        uri: encodeURI(config.url).replace('@', '%40'),
         rejectUnauthorized: config.rejectUnauthorized,
-        headers:{
-            "Content-Type":"application/xml"
+        headers: {
+            "Content-Type": "application/xml"
         }
     });
 

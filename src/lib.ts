@@ -260,7 +260,7 @@ export class KalenderEvents {
             let startDate = moment(event.start).toDate();
             let endDate = moment(event.end).toDate();
 
-            const recurrence = event.recurrenceId;
+            const recurrence = event.recurrenceId || event.type?.recurring;
 
             if (event.duration?.wrappedJSObject) {
                 delete event.duration.wrappedJSObject
@@ -284,7 +284,7 @@ export class KalenderEvents {
                 date: date.text.trim(),
                 eventStart: startDate,
                 eventEnd: endDate,
-                summary: event.summary || '',
+                summary: event.summary || event.title || '',
                 description: event.description || '',
                 attendee: event.attendees,
                 duration: event.duration?.toICALString(),
@@ -332,6 +332,7 @@ export class KalenderEvents {
             catch (err) {
                 debug(`caldav - get calendar went wrong. Error Message: ${err}`)
                 debug(`caldav - using fallback`)
+                
                 try {
 
 
