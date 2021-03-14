@@ -312,7 +312,7 @@ export class KalenderEvents {
 
             const now = moment();
             let when = now.toDate();
-            if(this.config.now){
+            if (this.config.now) {
                 when = this.config.now
             }
             try {
@@ -332,7 +332,7 @@ export class KalenderEvents {
             catch (err) {
                 debug(`caldav - get calendar went wrong. Error Message: ${err}`)
                 debug(`caldav - using fallback`)
-                
+
                 try {
 
 
@@ -381,7 +381,7 @@ export class KalenderEvents {
         }
     }
 
-    private processRRule(ev: IKalenderEvent, preview: Date, today: Date, now:Date) {
+    private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date, now: Date) {
         var eventLength = ev.eventEnd.getTime() - ev.eventStart.getTime();
         var options = RRule.parseString(ev.rrule.toString());
         options.dtstart = this.addOffset(ev.eventStart, -this.getTimezoneOffset(ev.eventStart));
@@ -403,7 +403,7 @@ export class KalenderEvents {
             '; preview:' +
             preview.toString() +
             '; today:' +
-            today +
+            pastview +
             '; now2:' +
             now2 +
             '; now3:' +
@@ -414,6 +414,9 @@ export class KalenderEvents {
 
         var dates = [];
         try {
+            let test = rule.toText();
+            console.log(test);
+            //preview.setDate(preview.getDate()+3)
             dates = rule.between(now3, preview, true);
         } catch (e) {
             throw (
@@ -479,6 +482,19 @@ export class KalenderEvents {
                     reslist.push(ev2);
                 }
             }
+        } else if (ev.recurrences) {
+            for (var dOri in ev.recurrences) {
+                let recurrenceid = ev.recurrences[dOri].recurrenceid
+                if (recurrenceid) {
+                    let ev3 = ce.clone(ev.recurrences[dOri])
+                    let ev1 = this.convertEvent(ev3);
+                    if ((ev1.eventStart >= pastview && ev1.eventStart <= preview) || (ev1.eventEnd >= pastview && ev1.eventEnd <= preview)) {
+                        let date = this.formatDate(ev1.eventStart, ev1.eventEnd, true, true);
+                        ev1.date = date.text.trim();
+                        reslist.push(ev1);
+                    }
+                }
+            }
         }
         return reslist;
     }
@@ -507,7 +523,7 @@ export class KalenderEvents {
                 if (ev.rrule === undefined) {
                     this.checkDates(ev, preview, pastview, realnow, ' ', reslist);
                 } else {
-                    let evlist = this.processRRule(ev, preview, pastview,realnow);
+                    let evlist = this.processRRule(ev, preview, pastview, realnow);
                     for (let ev2 of evlist) {
                         this.checkDates(ev2, preview, pastview, realnow, ' rrule ', reslist);
                     }
