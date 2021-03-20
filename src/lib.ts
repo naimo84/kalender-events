@@ -228,8 +228,9 @@ export class KalenderEvents {
                 location: event.location || '',
                 organizer: event.organizer || '',
                 rrule: event.rrule,
+                rruleText: event.rrule?.toText(),
                 uid: uid,
-                isRecurring: !!recurrence,
+                isRecurring: !!recurrence || !!event.rrule,
                 datetype: 'date',
                 allDay: allday,
                 calendarName: null as any,
@@ -414,9 +415,7 @@ export class KalenderEvents {
 
         var dates = [];
         try {
-            let test = rule.toText();
-            console.log(test);
-            //preview.setDate(preview.getDate()+3)
+            
             dates = rule.between(now3, preview, true);
         } catch (e) {
             throw (
@@ -468,7 +467,7 @@ export class KalenderEvents {
                         let recurrenceid = ev.recurrences[dOri].recurrenceid
                         if (recurrenceid) {
                             if (recurrenceid.getTime() === ev2.eventStart.getTime()) {
-                                ev2 = this.convertEvent(ce.clone(ev.recurrences[dOri]));
+                                ev2 = this.convertEvent(ev.recurrences[dOri]);
                                 debug('   ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
                             }
                         }
@@ -525,7 +524,7 @@ export class KalenderEvents {
                 } else {
                     let evlist = this.processRRule(ev, preview, pastview, realnow);
                     for (let ev2 of evlist) {
-                        this.checkDates(ev2, preview, pastview, realnow, ' rrule ', reslist);
+                        this.checkDates(ev2, preview, pastview, realnow, ev.rrule, reslist);
                     }
 
                 }
@@ -646,7 +645,7 @@ export class KalenderEvents {
             debug('Event checkdates: ' + JSON.stringify(ev))
             delete ev.recurrences;
             delete ev.exdate;
-            delete ev.rrule;
+            //delete ev.rrule;
             if (fullday) {
                 if (
                     (ev.eventStart < preview && ev.eventStart >= pastview) ||
