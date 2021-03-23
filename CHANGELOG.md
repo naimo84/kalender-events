@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/naimo84/kalender-events/compare/v0.2.4...v0.3.0) (2021-03-23)
+
+
+### Features
+
+* added rrule Text to output ([beb1c13](https://github.com/naimo84/kalender-events/commit/beb1c1366ae6468c4834f10ff3680107fd9a0146))
+
 ### [0.2.4](https://github.com/naimo84/kalender-events/compare/v0.2.3...v0.2.4) (2021-03-14)
 
 
