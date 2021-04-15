@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/naimo84/kalender-events/compare/v0.3.0...v0.3.1) (2021-04-15)
+
+
+### Bug Fixes
+
+* caldav only returns last event ([ade6104](https://github.com/naimo84/kalender-events/commit/ade61041e59610c737bae5f2c5f8d14f5fb2d3b5))
+
 ## [0.3.0](https://github.com/naimo84/kalender-events/compare/v0.2.4...v0.3.0) (2021-03-23)
 
 
