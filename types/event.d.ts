@@ -36,8 +36,8 @@ export interface IKalenderEvent {
     recurrences?: any;
     summary?: string,
     location?: string,
-    eventStart?: Date
-    eventEnd?: Date,
+    eventStart?: Date | string,
+    eventEnd?: Date | string,
     date?: string,
     event?: string,
     description?: string,

@@ -12,13 +12,14 @@ export interface Config {
     filter?: string,
     filter2?: string,
     filterProperty?: string,
-    filterOperator?:string,
+    filterOperator?: string,
     trigger?: string,
     preview?: number,
     previewUnits?: string,
     pastview?: number,
     pastviewUnits?: string
-    offsetUnits?:string,
+    offsetUnits?: string,
     offset?: number,
-    now?:Date
+    now?: Date,
+    timezone: string;
 }
