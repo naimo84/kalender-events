@@ -178,7 +178,7 @@ export class KalenderEvents {
     public convertEvent(event: iCalEvent): IKalenderEvent {
         if (event) {
             let startDate = new Date(event.startDate?.toJSDate() || event.start);
-            let endDate = new Date(event.endDate?.toJSDate() || event.end);
+            let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()));
 
             const recurrence = event.recurrenceId;
 
@@ -186,9 +186,13 @@ export class KalenderEvents {
                 event = event.item
             }
 
-            if (event.type && event.type !== "VEVENT") {
+            if (event.type && (event.type !== "VEVENT" && event.type !== "VTODO")) {
                 return;
             }
+            if(event.type==="VTODO" && !this.config.includeTodo){
+                return;
+            }
+            
             if (event.duration?.wrappedJSObject) {
                 delete event.duration.wrappedJSObject
             }
@@ -231,7 +235,7 @@ export class KalenderEvents {
                 rruleText: event.rrule?.toText(),
                 uid: uid,
                 isRecurring: !!recurrence || !!event.rrule,
-                datetype: 'date',
+                datetype: event.type === "VEVENT" ? 'date' : 'todo',
                 allDay: allday,
                 calendarName: null as any,
                 exdate: event.exdate,
@@ -415,7 +419,7 @@ export class KalenderEvents {
 
         var dates = [];
         try {
-            
+
             dates = rule.between(now3, preview, true);
         } catch (e) {
             throw (

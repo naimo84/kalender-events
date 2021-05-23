@@ -21,5 +21,6 @@ export interface Config {
     offsetUnits?: string,
     offset?: number,
     now?: Date,
-    timezone: string;
+    timezone?: string;
+    includeTodo?:boolean
 }

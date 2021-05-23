@@ -1,5 +1,6 @@
 
 export interface iCalEvent {
+    due?: string | number | Date;
     exdate: any;
     recurrences: any;
     rrule?: any;
@@ -36,8 +37,8 @@ export interface IKalenderEvent {
     recurrences?: any;
     summary?: string,
     location?: string,
-    eventStart?: Date | string,
-    eventEnd?: Date | string,
+    eventStart?: Date,
+    eventEnd?: Date,
     date?: string,
     event?: string,
     description?: string,

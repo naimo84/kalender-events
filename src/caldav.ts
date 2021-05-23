@@ -62,8 +62,35 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     }
     let retEntries: IKalenderEvent[] = [];
     for (let calendar of account.calendars) {
-
         if (!calName || !calName.length || (calName && calName.length && calName.toLowerCase() === calendar.displayName.toLowerCase())) {
+            if (config.includeTodo) {
+                let todoEntries = await dav.syncCalendar(calendar, {
+                    xhr: xhr, filters: [
+                        {
+                            type: 'comp-filter',
+                            attrs: { name: 'VTODO' },
+                        }
+                    ]
+                })            
+                
+                for (let todoEntry of todoEntries.objects) {
+                    const ics = todoEntry.calendarData;
+                    if (ics) {
+                        const data = await ical.async.parseICS(ics);
+                        for (var k in data) {
+                            //debug(`caldav - href: ${JSON.stringify(data[k])}`)
+                            if (data[k].type !== 'VTODO')
+                                continue;
+                            var ev = ke.convertEvent(data[k]);
+                            if (ev) {
+                                ev.calendarName = calendar.displayName;
+                                retEntries[`${ev.uid.uid + ev.uid.date}`] = ev;
+                            }
+                        }
+                    }
+                }
+            }
+
             //@ts-ignore
             let calendarEntries = await dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
             for (let calendarEntry of calendarEntries) {
@@ -76,7 +103,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                         debug(`caldav - ical: ${JSON.stringify(event)}`)
                         if (event) {
                             event.calendarName = calendar.displayName;
-                            retEntries[`${event.uid.uid+event.uid.date}`] = event;
+                            retEntries[`${event.uid.uid + event.uid.date}`] = event;
                         }
                     });
                 } else if (calendarEntry.calendar.objects) {
@@ -101,7 +128,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                                 var ev = ke.convertEvent(data[k]);
                                 if (ev) {
                                     ev.calendarName = calendar.displayName;
-                                    retEntries[`${ev.uid.uid+ev.uid.date}`] = ev;
+                                    retEntries[`${ev.uid.uid + ev.uid.date}`] = ev;
                                 }
                             }
 
