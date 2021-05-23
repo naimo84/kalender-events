@@ -235,7 +235,7 @@ export class KalenderEvents {
                 rruleText: event.rrule?.toText(),
                 uid: uid,
                 isRecurring: !!recurrence || !!event.rrule,
-                datetype: event.type === "VEVENT" ? 'date' : 'todo',
+                datetype: event.type === "VTODO" ? 'todo' : 'date',
                 allDay: allday,
                 calendarName: null as any,
                 exdate: event.exdate,
