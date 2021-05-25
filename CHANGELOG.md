@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/naimo84/kalender-events/compare/v0.4.1...v0.5.0) (2021-05-25)
+
+
+### Bug Fixes
+
+* datetype todo ([59fe020](https://github.com/naimo84/kalender-events/commit/59fe0208f0fea9ff2ebd277fa82a4e100506c3c5))
+* ignore array events ([c608627](https://github.com/naimo84/kalender-events/commit/c6086278366fc18fecf733609548f73c68dbbce0))
+
 ### [0.4.1](https://github.com/naimo84/kalender-events/compare/v0.4.0...v0.4.1) (2021-05-23)
 
 ## [0.4.0](https://github.com/naimo84/kalender-events/compare/v0.3.2...v0.4.0) (2021-05-23)
