@@ -176,7 +176,7 @@ export class KalenderEvents {
     }
 
     public convertEvent(event: iCalEvent): IKalenderEvent {
-        if (event) {
+        if (event && !Array.isArray(event)) {
             let startDate = new Date(event.startDate?.toJSDate() || event.start);
             let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()));
 
