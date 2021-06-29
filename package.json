@@ -1,6 +1,6 @@
 {
   "name": "kalender-events",
-  "version": "0.6.0",
+  "version": "0.9.0",
   "description": "calendar events for nodejs",
   "main": "dist/lib.js",
   "scripts": {
@@ -31,7 +31,7 @@
     "axios": "^0.21.1",
     "cloneextend": "0.0.3",
     "crypto-js": "^3.1.9-1",
-    "dav": "git+https://github.com/naimo84/dav.git",
+    "@naimo84/dav": "^1.9.0",
     "debug": "^4.1.1",
     "ical-expander": "^2.1.0",
     "lodash": "^4.17.15",
