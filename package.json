@@ -1,6 +1,6 @@
 {
   "name": "kalender-events",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "calendar events for nodejs",
   "main": "dist/lib.js",
   "scripts": {
@@ -46,7 +46,6 @@
   },
   "devDependencies": {
     "@types/chai": "^4.2.14",
-    "@types/dav": "^1.7.1",
     "@types/expect": "^24.3.0",
     "@types/lodash": "^4.14.149",
     "@types/mocha": "^8.2.0",
