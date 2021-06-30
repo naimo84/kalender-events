@@ -1,12 +1,12 @@
 {
   "name": "kalender-events",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "calendar events for nodejs",
   "main": "dist/lib.js",
   "scripts": {
     "start": "node-red",
     "test": "ts-mocha --paths test/**/*_spec.ts",
-    "release": "npm run build; standard-version  --release-as minor",    
+    "release": "npm run build; standard-version  --release-as minor",
     "release-bugfix": "npm run build; standard-version",
     "watch": "gulp --watch",
     "dev": "gulp develop",

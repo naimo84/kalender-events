@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.15.0](https://github.com/naimo84/kalender-events/compare/v0.14.0...v0.15.0) (2021-06-30)
+
+
+### Bug Fixes
+
+* remove prepare script ([dfb6f63](https://github.com/naimo84/kalender-events/commit/dfb6f63c73b4942a4c75a9a404f408b8d3d3c1cf))
+
 ## [0.14.0](https://github.com/naimo84/kalender-events/compare/v0.13.0...v0.14.0) (2021-06-30)
 
 
