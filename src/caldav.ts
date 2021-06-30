@@ -1,6 +1,6 @@
 import { Config } from 'config';
 
-import dav = require('dav');
+import dav = require('@naimo84/dav');
 import Scrapegoat = require("scrapegoat");
 import moment = require('moment');
 import IcalExpander = require('ical-expander');

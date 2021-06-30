@@ -21,10 +21,10 @@ export class KalenderEvents {
         if (!this.config) {
             this.config = {};
         }
-        if (!this.config.pastview) this.config.pastview = 10;
-        if (!this.config.pastviewUnits) this.config.pastviewUnits = "days";
-        if (!this.config.preview) this.config.preview = 10;
-        if (!this.config.previewUnits) this.config.previewUnits = "days";
+        if (this.config.pastview === undefined) this.config.pastview = 10;
+        if (this.config.pastviewUnits === undefined) this.config.pastviewUnits = "days";
+        if (this.config.preview === undefined) this.config.preview = 10;
+        if (this.config.previewUnits === undefined) this.config.previewUnits = "days"
         this.cache = new NodeCache();
     }
 
