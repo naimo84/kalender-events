@@ -5,7 +5,7 @@ import { Config } from 'config';
 import nodeIcal = require('node-ical');
 import * as NodeCache from 'node-cache';
 import { IKalenderEvent, iCalEvent } from 'event';
-var debug = require('debug')('kalendar-events')
+var debug = require('debug')('kalender-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
 export interface Job {
@@ -123,10 +123,10 @@ export class KalenderEvents {
                     .subtract(this.config.pastview, this.config.pastviewUnits.charAt(0))
                     .toDate();
             }
-            debug(`pastview: ${pastview}`)
-            debug(`preview: ${preview}`)
+            debug(`getEvents - pastview: ${pastview}`)
+            debug(`getEvents - preview: ${preview}`)
             let processedData = this.processData(data, realnow, pastview, preview);
-            debug(`processedData: ${JSON.stringify(processedData)}`)
+            debug(`getEvents - processedData: ${JSON.stringify(processedData)}`)
 
             if (this.config.usecache && this.cache) {
                 if (data) {
@@ -313,7 +313,7 @@ export class KalenderEvents {
 
     private async getCal(): Promise<IKalenderEvent[]> {
         if (this.config.type && this.config.type === 'icloud') {
-            debug('icloud');
+            debug('getCal - icloud');
 
             const now = moment();
             let when = now.toDate();
@@ -328,15 +328,15 @@ export class KalenderEvents {
                 throw err;
             }
         } else if (this.config.type && this.config.type === 'caldav') {
-            debug('caldav');
+            debug('getCal - caldav');
 
             try {
                 let data = await CalDav(this.config);
                 return data;
             }
             catch (err) {
-                debug(`caldav - get calendar went wrong. Error Message: ${err}`)
-                debug(`caldav - using fallback`)
+                debug(`getCal - caldav - get calendar went wrong. Error Message: ${err}`)
+                debug(`getCal - caldav - using fallback`)
 
                 try {
 
@@ -349,7 +349,7 @@ export class KalenderEvents {
                 }
             };
         } else {
-            debug('ical');
+            debug('getCal - ical');
 
             if (this.config?.url?.match(/^webcal:\/\//)) {
                 this.config.url = this.config.url.replace("webcal", "https")
@@ -401,7 +401,7 @@ export class KalenderEvents {
         var now3 = new Date(now2.getTime() - eventLength);
         if (now2 < now3) now3 = now2;
         debug(
-            'RRule event:' +
+            'processRRule - RRule event:' +
             ev.summary +
             '; start:' +
             ev.eventStart.toString() +
@@ -443,7 +443,7 @@ export class KalenderEvents {
             );
         }
 
-        debug('dates:' + JSON.stringify(dates));
+        debug('processRRule - dates:' + JSON.stringify(dates));
         let reslist = [];
         if (dates.length > 0) {
             for (var i = 0; i < dates.length; i++) {
@@ -454,14 +454,14 @@ export class KalenderEvents {
                 var end = new Date(start.getTime() + eventLength);
                 ev2.eventEnd = this.addOffset(end, this.getTimezoneOffset(end));
 
-                debug('   ' + i + ': Event (' + JSON.stringify(ev2.exdate) + '):' + ev2.eventStart.toString() + ' ' + ev2.eventEnd.toString());
+                debug('processRRule - ' + i + ': Event (' + JSON.stringify(ev2.exdate) + '):' + ev2.eventStart.toString() + ' ' + ev2.eventEnd.toString());
 
                 var checkDate = true;
                 if (ev2.exdate) {
                     for (var d in ev2.exdate) {
                         if (ev2.exdate[d].getTime() === ev2.eventStart.getTime()) {
                             checkDate = false;
-                            debug('   ' + i + ': sort out');
+                            debug('processRRule - ' + i + ': sort out');
                             break;
                         }
                     }
@@ -472,7 +472,7 @@ export class KalenderEvents {
                         if (recurrenceid) {
                             if (recurrenceid.getTime() === ev2.eventStart.getTime()) {
                                 ev2 = this.convertEvent(ev.recurrences[dOri]);
-                                debug('   ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
+                                debug('processRRule - ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
                             }
                         }
                     }
@@ -514,7 +514,7 @@ export class KalenderEvents {
         for (var k in data) {
             const ev: IKalenderEvent = data[k];
             delete data[k];
-            debug(`event ProcessData: ${JSON.stringify(ev)}`)
+            debug(`processDataRev - event: ${JSON.stringify(ev)}`)
             if (ev) {
                 if (!ev.eventEnd) {
                     ev.eventEnd = ce.clone(ev.eventStart);
@@ -646,7 +646,7 @@ export class KalenderEvents {
 
         let output = this.filterOutput(ev)
         if (output) {
-            debug('Event checkdates: ' + JSON.stringify(ev))
+            debug('checkDates - event: ' + JSON.stringify(ev))
             delete ev.recurrences;
             delete ev.exdate;
             //delete ev.rrule;
@@ -657,7 +657,7 @@ export class KalenderEvents {
                     (ev.eventStart < pastview && ev.eventEnd > pastview)
                 ) {
                     this.insertSorted(reslist, ev);
-                    debug('Event (full day) added : ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
+                    debug('checkDates - Event (full day) added : ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
                 }
             } else {
                 // Event with time              
@@ -667,7 +667,7 @@ export class KalenderEvents {
                     (ev.eventStart < realnow && ev.eventEnd > realnow)
                 ) {
                     this.insertSorted(reslist, ev);
-                    debug('Event with time added: ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
+                    debug('checkDates - Event with time added: ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
                 }
             }
         }
