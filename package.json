@@ -1,6 +1,6 @@
 {
   "name": "kalender-events",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "calendar events for nodejs",
   "main": "dist/lib.js",
   "scripts": {
