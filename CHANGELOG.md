@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.1](https://github.com/naimo84/kalender-events/compare/v0.15.0...v0.15.1) (2021-07-27)
+
+
+### Bug Fixes
+
+* issue [#92](https://github.com/naimo84/kalender-events/issues/92), gethours of undefined ([7903f31](https://github.com/naimo84/kalender-events/commit/7903f319edd0d62af5cbb73106264d2fb0f8ca78))
+
 ## [0.15.0](https://github.com/naimo84/kalender-events/compare/v0.14.0...v0.15.0) (2021-06-30)
 
 
