@@ -69,7 +69,7 @@ export class KalenderEvents {
     */
     public countdown(date: Date) {
 
-        var seconds = (date.getTime() - new Date().getTime()) / 1000;
+        var seconds = (new Date(date).getTime() - new Date().getTime()) / 1000;
         seconds = Number(seconds);
 
         var d = Math.floor(seconds / (3600 * 24));
@@ -189,10 +189,10 @@ export class KalenderEvents {
             if (event.type && (event.type !== "VEVENT" && event.type !== "VTODO")) {
                 return;
             }
-            if(event.type==="VTODO" && !this.config.includeTodo){
+            if (event.type === "VTODO" && !this.config.includeTodo) {
                 return;
             }
-            
+
             if (event.duration?.wrappedJSObject) {
                 delete event.duration.wrappedJSObject
             }
@@ -515,7 +515,7 @@ export class KalenderEvents {
             const ev: IKalenderEvent = data[k];
             delete data[k];
             debug(`processDataRev - event: ${JSON.stringify(ev)}`)
-            if (ev) {
+            if (ev !== undefined && ev.eventStart) {
                 if (!ev.eventEnd) {
                     ev.eventEnd = ce.clone(ev.eventStart);
                     if (!ev.eventStart.getHours() && !ev.eventStart.getMinutes() && !ev.eventStart.getSeconds()) {
