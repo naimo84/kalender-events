@@ -25,7 +25,7 @@ export class KalenderEvents {
         if (this.config.pastviewUnits === undefined) this.config.pastviewUnits = "days";
         if (this.config.preview === undefined) this.config.preview = 10;
         if (this.config.previewUnits === undefined) this.config.previewUnits = "days"
-        this.cache = new NodeCache();
+        this.cache = this.config.cache ? this.config.cache : new NodeCache();
     }
 
     /**    

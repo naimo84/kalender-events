@@ -1,3 +1,4 @@
+import NodeCache = require("node-cache");
 
 export interface Config {
     usecache?: boolean;
@@ -22,5 +23,6 @@ export interface Config {
     offset?: number,
     now?: Date,
     timezone?: string;
-    includeTodo?:boolean
+    includeTodo?:boolean;
+    cache?: NodeCache;
 }
