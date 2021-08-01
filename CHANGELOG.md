@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.3](https://github.com/naimo84/kalender-events/compare/v0.15.2...v0.15.3) (2021-08-01)
+
+
+### Bug Fixes
+
+* set preview and pastview settings to lowercase ([ed73957](https://github.com/naimo84/kalender-events/commit/ed73957c8ef02d923adaa53336cd0974fa2864b4))
+
 ### [0.15.2](https://github.com/naimo84/kalender-events/compare/v0.15.1...v0.15.2) (2021-07-27)
 
 
