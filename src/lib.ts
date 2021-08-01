@@ -21,11 +21,18 @@ export class KalenderEvents {
         if (!this.config) {
             this.config = {};
         }
+        this.calcPrePastView();
+        this.cache = this.config.cache ? this.config.cache : new NodeCache();
+    }
+
+    private calcPrePastView(){
         if (this.config.pastview === undefined) this.config.pastview = 10;
         if (this.config.pastviewUnits === undefined) this.config.pastviewUnits = "days";
         if (this.config.preview === undefined) this.config.preview = 10;
         if (this.config.previewUnits === undefined) this.config.previewUnits = "days"
-        this.cache = this.config.cache ? this.config.cache : new NodeCache();
+
+        this.config.pastviewUnits=this.config.pastviewUnits.toLocaleLowerCase();
+        this.config.previewUnits=this.config.previewUnits.toLocaleLowerCase();
     }
 
     /**    
@@ -90,6 +97,7 @@ export class KalenderEvents {
             if (config) {
                 this.config = Object.assign(this.config, config);
             }
+            this.calcPrePastView();
             let data = await this.getCal();
             var realnow = new Date();
             var preview = new Date();
