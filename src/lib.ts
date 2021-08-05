@@ -25,14 +25,14 @@ export class KalenderEvents {
         this.cache = this.config.cache ? this.config.cache : new NodeCache();
     }
 
-    private calcPrePastView(){
+    private calcPrePastView() {
         if (this.config.pastview === undefined) this.config.pastview = 10;
         if (this.config.pastviewUnits === undefined) this.config.pastviewUnits = "days";
         if (this.config.preview === undefined) this.config.preview = 10;
         if (this.config.previewUnits === undefined) this.config.previewUnits = "days"
 
-        this.config.pastviewUnits=this.config.pastviewUnits.toLocaleLowerCase();
-        this.config.previewUnits=this.config.previewUnits.toLocaleLowerCase();
+        this.config.pastviewUnits = this.config.pastviewUnits.toLocaleLowerCase();
+        this.config.previewUnits = this.config.previewUnits.toLocaleLowerCase();
     }
 
     /**    
@@ -186,7 +186,7 @@ export class KalenderEvents {
     public convertEvent(event: iCalEvent): IKalenderEvent {
         if (event && !Array.isArray(event)) {
             let startDate = new Date(event.startDate?.toJSDate() || event.start);
-            let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()));
+            let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()) || event.start);
 
             const recurrence = event.recurrenceId;
 
@@ -224,7 +224,12 @@ export class KalenderEvents {
                 seconds = Number(seconds);
                 allday = ((seconds % 86400) === 0)
             } else {
-                allday = ((duration.toSeconds() % 86400) === 0)
+                if (/(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?(?:T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?)?/.test(duration)) {
+                    allday = ((moment.duration(duration).asSeconds() % 86400) === 0)
+                }
+                else {
+                    allday = ((duration.toSeconds() % 86400) === 0)
+                }
             }
             let date = this.formatDate(startDate, endDate, true, allday);
 
@@ -235,8 +240,8 @@ export class KalenderEvents {
                 summary: event.summary || '',
                 description: event.description || '',
                 attendee: event.attendees || event.attendee,
-                duration: event.duration?.toICALString(),
-                durationSeconds: event.duration?.toSeconds(),
+                duration: (typeof event.duration?.toICALString === 'function') ? event.duration?.toICALString() : event.duration,
+                durationSeconds: (typeof event.duration?.toSeconds === 'function') ? event.duration?.toSeconds() : (moment.duration(duration).asSeconds()),
                 location: event.location || '',
                 organizer: event.organizer || '',
                 rrule: event.rrule,
@@ -289,7 +294,12 @@ export class KalenderEvents {
                 seconds = Number(seconds);
                 allday = ((seconds % 86400) === 0)
             } else {
-                allday = ((duration.toSeconds() % 86400) === 0)
+                if (/(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?(?:T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?)?/.test(duration)) {
+                    allday = ((moment.duration(duration).asSeconds() % 86400) === 0)
+                }
+                else {
+                    allday = ((duration.toSeconds() % 86400) === 0)
+                }
             }
             let date = this.formatDate(startDate, endDate, true, allday);
 
@@ -299,9 +309,9 @@ export class KalenderEvents {
                 eventEnd: endDate,
                 summary: event.summary || event.title || '',
                 description: event.description || '',
-                attendee: event.attendees,
-                duration: event.duration?.toICALString(),
-                durationSeconds: event.duration?.toSeconds(),
+                attendee: event.attendees,                
+                duration: (typeof event.duration?.toICALString === 'function') ? event.duration?.toICALString() : event.duration,
+                durationSeconds: (typeof event.duration?.toSeconds === 'function') ? event.duration?.toSeconds() : (moment.duration(duration).asSeconds()),
                 location: event.location || '',
                 organizer: event.organizer || '',
                 uid: uid,
