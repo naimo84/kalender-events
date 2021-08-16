@@ -194,7 +194,7 @@ export class KalenderEvents {
                 event = event.item
             }
 
-            if (event.type && (event.type !== "VEVENT" && event.type !== "VTODO")) {
+            if (event.type===undefined || (event.type && (event.type !== "VEVENT" && event.type !== "VTODO"))) {
                 return;
             }
             if (event.type === "VTODO" && !this.config.includeTodo) {
