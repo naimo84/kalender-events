@@ -477,7 +477,7 @@ export class KalenderEvents {
                 var checkDate = true;
                 if (ev2.exdate) {
                     for (var d in ev2.exdate) {
-                        if (ev2.exdate[d].getTime() === ev2.eventStart.getTime()) {
+                        if (ev2.exdate[d] && (typeof ev2.exdate[d].getTime === 'function') && ev2.exdate[d].getTime() === ev2.eventStart.getTime()) {
                             checkDate = false;
                             debug('processRRule - ' + i + ': sort out');
                             break;
@@ -487,7 +487,7 @@ export class KalenderEvents {
                 if (checkDate && ev.recurrences) {
                     for (var dOri in ev.recurrences) {
                         let recurrenceid = ev.recurrences[dOri].recurrenceid
-                        if (recurrenceid) {
+                        if (recurrenceid && (typeof recurrenceid.getTime === 'function')) {
                             if (recurrenceid.getTime() === ev2.eventStart.getTime()) {
                                 ev2 = this.convertEvent(ev.recurrences[dOri]);
                                 debug('processRRule - ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
