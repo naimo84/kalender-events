@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.7](https://github.com/naimo84/kalender-events/compare/v0.15.6...v0.15.7) (2021-10-08)
+
+
+### Bug Fixes
+
+* ev2.exdate[d].getTime is not a function, naimo84/node-red-contrib-ical-events[#102](https://github.com/naimo84/kalender-events/issues/102) ([0f0f7e1](https://github.com/naimo84/kalender-events/commit/0f0f7e181cbcaacdaa630327d3b6ce90c0f85f3f))
+
 ### [0.15.6](https://github.com/naimo84/kalender-events/compare/v0.15.5...v0.15.6) (2021-08-20)
 
 
