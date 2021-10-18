@@ -29,7 +29,8 @@ export interface iCalEvent {
     countdown?: object,
     calendarName?: string,
     uid?: string,
-    categories?: string[]
+    categories?: string[],
+    alarms?: any[]
 }
 
 export interface IKalenderEvent {
@@ -45,7 +46,7 @@ export interface IKalenderEvent {
     id?: string,
     allDay?: boolean,
     rrule?: any,
-    rruleText?:string,
+    rruleText?: string,
     countdown?: object,
     calendarName?: string,
     uid?: { uid: string, date: string },
@@ -55,5 +56,15 @@ export interface IKalenderEvent {
     isRecurring?: boolean,
     datetype?: string,
     attendee?: any,
-    categories?: string[]
+    categories?: string[],
+    alarms?: IKalenderAlarm[]
+}
+
+export interface IKalenderAlarm {
+    trigger?: string,
+    triggerParsed?: Date,
+    description?: string,
+    action?: string,
+    attendee?: any,
+    summary?: string,
 }

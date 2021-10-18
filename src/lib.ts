@@ -194,7 +194,7 @@ export class KalenderEvents {
                 event = event.item
             }
 
-            if ((this.config.type === "ical" && event.type===undefined) || (event.type && (event.type !== "VEVENT" && event.type !== "VTODO"))) {
+            if ((this.config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
                 return;
             }
             if (event.type === "VTODO" && !this.config.includeTodo) {
@@ -253,7 +253,29 @@ export class KalenderEvents {
                 calendarName: null as any,
                 exdate: event.exdate,
                 recurrences: event.recurrences,
-                categories: event.categories
+                categories: event.categories,
+                alarms: []
+            }
+
+            for (let key of Object.keys(event)) {
+                const alarm = event[key];
+                if (alarm.type === "VALARM") {
+                    returnEvent.alarms.push({
+                        trigger: (typeof alarm.trigger?.toICALString === 'function') ? alarm.trigger?.toICALString() : alarm.trigger,
+                        triggerParsed: moment(startDate).add(moment.duration(alarm.trigger)).toDate(),
+                        action: alarm.action,
+                        summary: alarm.summary,
+                        description: alarm.description,
+                        attendee: alarm.attendees || alarm.attendee,
+                    })
+                    Object.keys(returnEvent.alarms).forEach(key => {
+                        Object.keys(returnEvent.alarms[key]).forEach(key2 => {
+                            if (returnEvent.alarms[key][key2] === undefined || returnEvent.alarms[key][key2] === "") {
+                                delete returnEvent.alarms[key][key2];
+                            }
+                        });
+                    });
+                }
             }
 
             Object.keys(returnEvent).forEach(key => {
@@ -266,12 +288,7 @@ export class KalenderEvents {
         }
     }
 
-    private uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
+
 
     private convertScrapegoat(event: any): IKalenderEvent {
         if (event) {
@@ -309,7 +326,7 @@ export class KalenderEvents {
                 eventEnd: endDate,
                 summary: event.summary || event.title || '',
                 description: event.description || '',
-                attendee: event.attendees,                
+                attendee: event.attendees,
                 duration: (typeof event.duration?.toICALString === 'function') ? event.duration?.toICALString() : event.duration,
                 durationSeconds: (typeof event.duration?.toSeconds === 'function') ? event.duration?.toSeconds() : (moment.duration(duration).asSeconds()),
                 location: event.location || '',
@@ -323,11 +340,7 @@ export class KalenderEvents {
         }
     }
 
-    private getTimezoneOffset(date: Date) {
-        const isoDate = date.toISOString();
-        var offset = moment(isoDate).utcOffset();
-        return -offset;
-    }
+
 
     private async getCal(): Promise<IKalenderEvent[]> {
         if (this.config.type && this.config.type === 'icloud') {
@@ -471,6 +484,12 @@ export class KalenderEvents {
 
                 var end = new Date(start.getTime() + eventLength);
                 ev2.eventEnd = this.addOffset(end, this.getTimezoneOffset(end));
+
+                if (ev2.alarms && ev2.alarms.length > 0) {
+                    for (let alarm of ev2.alarms) {
+                        alarm.triggerParsed = moment(ev2.eventStart).add(moment.duration(alarm.trigger).asSeconds(),'seconds').toDate()
+                    }
+                }
 
                 debug('processRRule - ' + i + ': Event (' + JSON.stringify(ev2.exdate) + '):' + ev2.eventStart.toString() + ' ' + ev2.eventEnd.toString());
 
@@ -722,6 +741,19 @@ export class KalenderEvents {
                 }
             }
         }
+    }
+
+    private getTimezoneOffset(date: Date) {
+        const isoDate = date.toISOString();
+        var offset = moment(isoDate).utcOffset();
+        return -offset;
+    }
+
+    private uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 
     private formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean) {
