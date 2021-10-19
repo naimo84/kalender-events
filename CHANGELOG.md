@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.16.0](https://github.com/naimo84/kalender-events/compare/v0.15.7...v0.16.0) (2021-10-19)
+
+
+### Features
+
+* add uuidv4, and test (naimo84/node-red-contrib-ical-events[#103](https://github.com/naimo84/kalender-events/issues/103)) ([3b6a900](https://github.com/naimo84/kalender-events/commit/3b6a9004d060ee68e902d6781fb6dbc4f4cf48d9))
+* get alarms, naimo84/node-red-contrib-ical-events[#103](https://github.com/naimo84/kalender-events/issues/103) ([4f1a8fe](https://github.com/naimo84/kalender-events/commit/4f1a8feb8d19dab4dece437e169f105547d34a4e))
+* gh action for test ([65efdd9](https://github.com/naimo84/kalender-events/commit/65efdd9c09c61cc5876c4ea1f3aaab2fa7023a64))
+
 ### [0.15.7](https://github.com/naimo84/kalender-events/compare/v0.15.6...v0.15.7) (2021-10-08)
 
 
