@@ -8,30 +8,33 @@ import { getEvents } from './test_helper';
 use(require('chai-like'));
 use(require('chai-things'));
 
-describe('events', () => {
+describe('alarms', () => {
+
     before(async function () {
         let stub = sinon.stub(nodeIcal.async, "fromURL");
-        let eventstub = getEvents();
-
-        eventstub["1"].start = moment().subtract(1, 'hour').toDate();
-        eventstub["1"].end = moment().add(1, 'hour').toDate();
-        eventstub["2"].start = moment().add(1, 'day').toDate();
-        eventstub["2"].end = moment().add(1, 'day').toDate();
-        stub.returns(eventstub);
+        let data = await nodeIcal.async.parseFile('./test/mocks/testalarms.ics');
+        stub.returns(data);
     });
 
     after(function () {
         nodeIcal.async.fromURL.restore();
     });
 
-    it('ical - today 1 - tomorrow 1 - total 2', async () => {
+
+    it('ical', async () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
                     url: "https://domain.com/calendar.ics"
                 });
-                let events = await ke.getEvents();
-                expect(events).to.have.lengthOf(2)
+
+                let events = await ke.getEvents({});
+                for (const event of events) {
+                    expect(event).to.have.property("alarms")
+                    expect(event.alarms).to.have.lengthOf(2)
+                    expect(moment(event.alarms[0].triggerParsed).diff(moment(event.eventStart))).to.eq(-600000)
+                    expect(moment(event.alarms[1].triggerParsed).diff(moment(event.eventStart))).to.eq(-1200000)
+                }
                 resolve();
             } catch (err) {
                 reject(err);

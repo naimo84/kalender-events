@@ -103,7 +103,7 @@ export class KalenderEvents {
             var preview = new Date();
             var pastview = new Date();
 
-            if (config.now) {
+            if (config && config.now) {
                 realnow = preview = pastview = config.now;
             }
             if (this.config.previewUnits === 'days') {
@@ -279,7 +279,7 @@ export class KalenderEvents {
             }
 
             Object.keys(returnEvent).forEach(key => {
-                if (returnEvent[key] === undefined || returnEvent[key] === "") {
+                if (returnEvent[key] === undefined || returnEvent[key] === "" || (Array.isArray(returnEvent[key]) && returnEvent[key].length === 0)) {
                     delete returnEvent[key];
                 }
             });
@@ -487,7 +487,7 @@ export class KalenderEvents {
 
                 if (ev2.alarms && ev2.alarms.length > 0) {
                     for (let alarm of ev2.alarms) {
-                        alarm.triggerParsed = moment(ev2.eventStart).add(moment.duration(alarm.trigger).asSeconds(),'seconds').toDate()
+                        alarm.triggerParsed = moment(ev2.eventStart).add(moment.duration(alarm.trigger).asSeconds(), 'seconds').toDate()
                     }
                 }
 
