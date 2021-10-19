@@ -2,6 +2,7 @@ import moment = require('moment');
 import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
 import { Config } from 'config';
+import { uuid } from 'uuidv4';
 import nodeIcal = require('node-ical');
 import * as NodeCache from 'node-cache';
 import { IKalenderEvent, iCalEvent } from 'event';
@@ -206,7 +207,7 @@ export class KalenderEvents {
             }
 
             let uid = {
-                uid: event.uid || this.uuidv4(),
+                uid: event.uid || uuid(),
                 date: ''
             };
             if (recurrence) {
@@ -256,25 +257,22 @@ export class KalenderEvents {
                 categories: event.categories,
                 alarms: []
             }
-
+            const makeProperty = (k, v) => {
+                const tmpObj = {};
+                tmpObj[k] = v;
+                return (v !== undefined && v !== "") ? tmpObj : {}
+            }
             for (let key of Object.keys(event)) {
                 const alarm = event[key];
                 if (alarm.type === "VALARM") {
-                    returnEvent.alarms.push({
-                        trigger: (typeof alarm.trigger?.toICALString === 'function') ? alarm.trigger?.toICALString() : alarm.trigger,
-                        triggerParsed: moment(startDate).add(moment.duration(alarm.trigger)).toDate(),
-                        action: alarm.action,
-                        summary: alarm.summary,
-                        description: alarm.description,
-                        attendee: alarm.attendees || alarm.attendee,
-                    })
-                    Object.keys(returnEvent.alarms).forEach(key => {
-                        Object.keys(returnEvent.alarms[key]).forEach(key2 => {
-                            if (returnEvent.alarms[key][key2] === undefined || returnEvent.alarms[key][key2] === "") {
-                                delete returnEvent.alarms[key][key2];
-                            }
-                        });
-                    });
+                    returnEvent.alarms.push(Object.assign({},
+                        makeProperty("trigger", (typeof alarm.trigger?.toICALString === 'function') ? alarm.trigger?.toICALString() : alarm.trigger),
+                        makeProperty("triggerParsed", moment(startDate).add(moment.duration(alarm.trigger)).toDate()),
+                        makeProperty("action", alarm.action),
+                        makeProperty("summary", alarm.summary),
+                        makeProperty("description", alarm.description),
+                        makeProperty("attendee", alarm.attendees || alarm.attendee)
+                    ))
                 }
             }
 
@@ -301,7 +299,7 @@ export class KalenderEvents {
                 delete event.duration.wrappedJSObject
             }
 
-            let uid = event.uid || this.uuidv4();
+            let uid = event.uid || uuid();
             uid += startDate.getTime().toString();
 
             let duration = event.duration;
@@ -749,12 +747,7 @@ export class KalenderEvents {
         return -offset;
     }
 
-    private uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
+
 
     private formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean) {
         var day: any = _date.getDate();

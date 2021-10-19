@@ -28,10 +28,10 @@
   "types": "types/index.d.ts",
   "author": "naimo84",
   "dependencies": {
+    "@naimo84/dav": "^1.9.0",
     "axios": "^0.21.1",
     "cloneextend": "0.0.3",
     "crypto-js": "^3.1.9-1",
-    "@naimo84/dav": "^1.9.0",
     "debug": "^4.1.1",
     "ical-expander": "^2.1.0",
     "lodash": "^4.17.15",
@@ -41,6 +41,7 @@
     "node-ical": "0.10.0",
     "rrule": "2.6.4",
     "scrapegoat": "^1.0.1",
+    "uuidv4": "^6.2.12",
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
   },
