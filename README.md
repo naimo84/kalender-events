@@ -1,6 +1,7 @@
-# kalender-events (ka'lɛndɐ, german for calendar)
+# kalender-events (ka'lɛndɐ, german for calendar) <img src="https://github.com/naimo84/kalender-events/blob/master/docs/logo.png" width="200" align="right" alt="kalender-events">
 
 This Node module gets the events from an ical-URL, a caldav-server or from the iCloud.
+
 
 ## :question: Get Help
 
@@ -15,9 +16,8 @@ However, if you get some profit from this or just want to encourage me to contin
 
 -   Starring and sharing the projects you like :rocket:
 -   [![PayPal][badge_paypal]][paypal-donations] **PayPal**— You can make one-time donations via PayPal. I'll probably buy a ~~coffee~~ tea. :tea:
--   [![Support me on using Brave Browser][badge_brave]][brave] **Brave**— It's free for you. Brave is a browser that improves the security and the access time of websites by blocking ads, trackers and scripts. Give the new Brave Browser a try and Brave will contribute to me on your behalf. :wink:
 -   [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T412CXA) **Ko-fi**— I'll buy a ~~tea~~ coffee. :coffee: :wink:
--   ![](./docs/bitcoin.png) **Bitcoin**—You can send me bitcoins at this address (or scanning the code): `3KDjCmXsGFYawmycXRsVwfFbphog117N8P`
+-   ![](./docs/bitcoin.png) **Bitcoin**—You can send me bitcoins at this address (or scanning the code): `3GqiebqcZeonziRUMYxU35J3jPSMJzpTAc`
 
 Thanks! :heart:
 
