@@ -9,9 +9,10 @@
     "watch": "tsc --watch",   
     "build": "node ./buildSrc/esbuild.js",
     "esbuild": "node ./buildSrc/esbuild.js",
-    "tsc": "tsc --declaration --emitDeclarationOnly",
-    "prepack": "npm run compile",
-    "compile": "npm run build && npm run tsc"
+    "tsc":"tsc",
+		"tsc-declaration": "tsc --declaration --emitDeclarationOnly",
+		"compile": "npm run esbuild && tsc-declaration && npm run tsc",
+    "prepack": "npm run compile"
   },
   "repository": {
     "type": "git",
