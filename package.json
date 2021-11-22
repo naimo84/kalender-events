@@ -11,7 +11,7 @@
     "esbuild": "node ./buildSrc/esbuild.js",
     "tsc":"tsc",
 		"tsc-declaration": "tsc --declaration --emitDeclarationOnly",
-		"compile": "npm run esbuild && tsc-declaration && npm run tsc",
+		"compile": "npm run esbuild && npm run tsc-declaration && npm run tsc",
     "prepack": "npm run compile"
   },
   "repository": {
