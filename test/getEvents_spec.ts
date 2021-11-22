@@ -1,6 +1,7 @@
 
 import { expect, should, use } from "chai";
-const nodeIcal = require("node-ical");
+import nodeIcal = require('node-ical');
+
 var sinon = require('sinon');
 import moment = require('moment');
 import { KalenderEvents } from '../dist/lib';
@@ -11,26 +12,26 @@ use(require('chai-things'));
 describe('events', () => {
     before(async function () {
         let stub = sinon.stub(nodeIcal.async, "fromURL");
-        let eventstub = getEvents();
-
-        eventstub["1"].start = moment().subtract(1, 'hour').toDate();
-        eventstub["1"].end = moment().add(1, 'hour').toDate();
-        eventstub["2"].start = moment().add(1, 'day').toDate();
-        eventstub["2"].end = moment().add(1, 'day').toDate();
-        stub.returns(eventstub);
+        let data = await nodeIcal.async.parseFile('./test/mocks/events.ics');
+        stub.returns(data);
     });
+
 
     after(function () {
         nodeIcal.async.fromURL.restore();
     });
 
-    it('ical - today 1 - tomorrow 1 - total 2', async () => {
+    it('ical - great preview', async () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
                     url: "https://domain.com/calendar.ics"
                 });
-                let events = await ke.getEvents();
+                let events = await ke.getEvents({
+                    now: moment('20210325').toDate(),
+                    pastview:1,
+                    preview:14
+                });
                 expect(events).to.have.lengthOf(2)
                 resolve();
             } catch (err) {
@@ -39,4 +40,42 @@ describe('events', () => {
         });
     });
 
+    it('ical - only today', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "https://domain.com/calendar.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20200616').toDate(),
+                    pastview:1,
+                    preview:1
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
+    it('ical - weekly', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "https://domain.com/calendar.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20211121').toDate(),
+                    pastview:1,
+                    preview:3
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+    
 });

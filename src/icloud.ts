@@ -1,9 +1,8 @@
 import xmlParser = require('xml-js');
 import icalExpander = require('ical-expander');
-import { Config } from 'config';
-import axios, { AxiosRequestConfig } from "axios";
+import { Config } from './config';
 import {KalenderEvents} from './lib';
-import { iCalEvent, IKalenderEvent } from '../types/event';
+import { IKalenderEvent } from './event';
 import moment = require('moment');
 const   https = require('https');
 var debug = require('debug')('kalendar-events_icloud')
@@ -13,21 +12,22 @@ function process(reslist:IKalenderEvent[], start:any, end:any, ics:any, kalEv:Ka
     const events = cal.between(start.toDate(), end.toDate());
 
     for (let event of kalEv.convertEvents(events)) {
-        reslist[event.uid.uid + event.uid.date] = event;
+        const key = event?.uid?.uid! + event?.uid?.date!;
+        reslist[<any>key] = event;
     }
 }
 
-function requestIcloudSecure(config: Config, start, end): Promise<any> {
-    return new Promise((resolve, reject) => {
+function requestIcloudSecure(config: Config, start: moment.Moment, end: moment.Moment): Promise<any> {
+    return new Promise((resolve) => {
         const DavTimeFormat = 'YYYYMMDDTHHmms\\Z',
             url = config.url,
             user = config.username,
             pass = config.password,
-            urlparts = /(https?)\:\/\/(.*?):?(\d*)?(\/.*\/?)/gi.exec(url),
-            protocol = urlparts[1],
-            host = urlparts[2],
-            port = urlparts[3] || (protocol === "https" ? 443 : 80),
-            path = urlparts[4];
+            urlparts = /(https?)\:\/\/(.*?):?(\d*)?(\/.*\/?)/gi.exec(url!),
+            protocol = urlparts![1],
+            host = urlparts![2],
+            port = urlparts![3] || (protocol === "https" ? 443 : 80),
+            path = urlparts![4];
 
         var xml = '<?xml version="1.0" encoding="utf-8" ?>\n' +
             '<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">\n' +
@@ -60,12 +60,13 @@ function requestIcloudSecure(config: Config, start, end): Promise<any> {
 
         if (user && pass) {
             var userpass = Buffer.from(user + ":" + pass).toString('base64');
+            //@ts-ignore
             options.headers["Authorization"] = "Basic " + userpass;
         }
 
-        var req = https.request(options, function (res) {
+        var req = https.request(options, function (res: { on: (arg0: string, arg1: (chunk: any) => void) => void; }) {
             var s = "";
-            res.on('data', function (chunk) {
+            res.on('data', function (chunk: string) {
                 s += chunk;
             });
 
@@ -83,7 +84,7 @@ function requestIcloudSecure(config: Config, start, end): Promise<any> {
 
         req.end(xml);
 
-        req.on('error', function (e) {
+        req.on('error', function (e: { message: string; }) {
             console.error('problem with request: ' + e.message);
         });
     });
@@ -96,14 +97,14 @@ export async function ICloud(whenMoment:moment.Moment, config: Config, kalEv:Kal
     let end = whenMoment.clone().endOf('day').add(config.preview, config.previewUnits);
 
     if (config.pastviewUnits === 'days') {
-        start = whenMoment.clone().startOf('day').subtract(config.pastview + 1, 'days');
+        start = whenMoment.clone().startOf('day').subtract(config.pastview! + 1, 'days');
     }
     if (config.previewUnits === 'days') {
         end = whenMoment.clone().endOf('day').add(config.preview, 'days');
     }
 
     const json = await requestIcloudSecure(config, start, end);
-
+    debug(json);
     var reslist:IKalenderEvent[] = [];
     if (json && json.multistatus && json.multistatus.response) {
         if (json.multistatus.response.propstat) {

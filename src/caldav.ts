@@ -1,4 +1,4 @@
-import { Config } from 'config';
+import { Config } from './config';
 
 import dav = require('@naimo84/dav');
 import Scrapegoat = require("scrapegoat");
@@ -8,7 +8,7 @@ import * as  ical from 'node-ical';
 import { KalenderEvents } from './lib';
 import * as URL from "url";
 
-import { iCalEvent, IKalenderEvent } from 'event';
+import { IKalenderEvent } from './event';
 var debug = require('debug')('kalendar-events')
 
 export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
@@ -23,7 +23,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     let end = whenMoment.clone().endOf('day').add(config.preview, config.previewUnits);
 
     if (config.pastviewUnits === 'days') {
-        start = whenMoment.clone().startOf('day').subtract(config.pastview + 1, 'days');
+        start = whenMoment.clone().startOf('day').subtract(config.pastview! + 1, 'days');
     }
     if (config.previewUnits === 'days') {
         end = whenMoment.clone().endOf('day').add(config.preview, 'days');
@@ -52,7 +52,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     );
 
     let calDavUri = config.url;
-    let url = URL.parse(calDavUri);
+    let url = URL.parse(calDavUri as string);
     let host = url.protocol + '//' + url.host + '/';
 
     const account = await dav.createAccount({ server: calDavUri, xhr: xhr, loadCollections: true, loadObjects: true })
@@ -71,8 +71,8 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                             attrs: { name: 'VTODO' },
                         }
                     ]
-                })            
-                
+                })
+
                 for (let todoEntry of todoEntries.objects) {
                     const ics = todoEntry.calendarData;
                     if (ics) {
@@ -84,7 +84,8 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                             var ev = ke.convertEvent(data[k]);
                             if (ev) {
                                 ev.calendarName = calendar.displayName;
-                                retEntries[`${ev.uid.uid + ev.uid.date}`] = ev;
+                                const key = `${ev.uid!.uid! + ev.uid!.date!}`;
+                                retEntries[<any>key] = ev;
                             }
                         }
                     }
@@ -103,7 +104,8 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                         debug(`caldav - ical: ${JSON.stringify(event)}`)
                         if (event) {
                             event.calendarName = calendar.displayName;
-                            retEntries[`${event.uid.uid + event.uid.date}`] = event;
+                            const key = `${event.uid!.uid! + event.uid!.date!}`;
+                            retEntries[<any>key] = event;
                         }
                     });
                 } else if (calendarEntry.calendar.objects) {
@@ -128,7 +130,8 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                                 var ev = ke.convertEvent(data[k]);
                                 if (ev) {
                                     ev.calendarName = calendar.displayName;
-                                    retEntries[`${ev.uid.uid + ev.uid.date}`] = ev;
+                                    const key = `${ev.uid!.uid! + ev.uid!.date!}`;
+                                    retEntries[<any>key] = ev;
                                 }
                             }
 
@@ -152,7 +155,7 @@ export async function Fallback(config: Config) {
             user: config.username,
             pass: config.password
         },
-        uri: encodeURI(config.url).replace('@', '%40'),
+        uri: encodeURI(config.url as string).replace('@', '%40'),
         rejectUnauthorized: config.rejectUnauthorized,
         headers: {
             "Content-Type": "application/xml"

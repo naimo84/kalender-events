@@ -1,6 +1,6 @@
 import NodeCache = require("node-cache");
 
-export interface Config {
+export interface Config {    
     usecache?: boolean;
     rejectUnauthorized?: boolean;
     url?: string,
