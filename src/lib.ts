@@ -1,11 +1,11 @@
 import moment = require('moment');
 import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
-import { Config } from 'config';
+import { Config } from './config';
 import { uuid } from 'uuidv4';
 import nodeIcal = require('node-ical');
 import * as NodeCache from 'node-cache';
-import { IKalenderEvent, iCalEvent } from 'event';
+import { IKalenderEvent, iCalEvent } from './event';
 var debug = require('debug')('kalender-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
@@ -15,15 +15,14 @@ export interface Job {
 }
 export class KalenderEvents {
     private cache: NodeCache;
-    private config: Config;
+    private config: Config={};
 
     constructor(config?: Config) {
-        this.config = config;
-        if (!this.config) {
-            this.config = {};
-        }
+        if (config)
+            this.config = config;
+        
         this.calcPrePastView();
-        this.cache = this.config.cache ? this.config.cache : new NodeCache();
+        this.cache = this.config.cache ? this.config.cache : new NodeCache.default();
     }
 
     private calcPrePastView() {
@@ -116,7 +115,7 @@ export class KalenderEvents {
             } else {
                 //@ts-ignore
                 preview = moment(preview)
-                    .add(this.config.preview, this.config.previewUnits.charAt(0))
+                    .add(this.config.preview, this.config.previewUnits ? this.config.previewUnits.charAt(0) : 'd')
                     .toDate();
             }
 
@@ -129,7 +128,7 @@ export class KalenderEvents {
             } else {
                 //@ts-ignore
                 pastview = moment(pastview)
-                    .subtract(this.config.pastview, this.config.pastviewUnits.charAt(0))
+                    .subtract(this.config.pastview, this.config.pastviewUnits ? this.config.pastviewUnits.charAt(0) : 'd')
                     .toDate();
             }
             debug(`getEvents - pastview: ${pastview}`)
@@ -157,25 +156,29 @@ export class KalenderEvents {
             if (Array.isArray(events)) {
                 events.forEach(event => {
                     let ev = this.convertScrapegoat(event.data);
-                    retEntries.push(ev);
+                    if (ev)
+                        retEntries.push(ev);
                 });
             } else if (events.events || events.occurrences) {
                 if (events.events) {
                     events.events.forEach((event: any) => {
                         let ev = this.convertEvent(event);
-                        retEntries.push(ev);
+                        if (ev)
+                            retEntries.push(ev);
                     });
                 }
                 if (events.occurrences && events.occurrences.length > 0) {
                     events.occurrences.forEach((event: any) => {
                         let ev = this.convertEvent(event);
-                        retEntries.push(ev);
+                        if (ev)
+                            retEntries.push(ev);
                     });
                 }
             } else {
                 for (let index in events) {
                     let ev = this.convertEvent(events[index]);
-                    retEntries.push(ev);
+                    if (ev)
+                        retEntries.push(ev);
                 }
 
             }
@@ -184,10 +187,10 @@ export class KalenderEvents {
         return retEntries;
     }
 
-    public convertEvent(event: iCalEvent): IKalenderEvent {
+    public convertEvent(event: iCalEvent): IKalenderEvent | undefined {
         if (event && !Array.isArray(event)) {
-            let startDate = new Date(event.startDate?.toJSDate() || event.start);
-            let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()) || event.start);
+            let startDate = new Date(event.startDate?.toJSDate() || moment(event.start).toDate());
+            let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()) || moment(event.start).toDate());
 
             const recurrence = event.recurrenceId;
 
@@ -196,10 +199,10 @@ export class KalenderEvents {
             }
 
             if ((this.config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
-                return;
+                return undefined;
             }
             if (event.type === "VTODO" && !this.config.includeTodo) {
-                return;
+                return undefined;
             }
 
             if (event.duration?.wrappedJSObject) {
@@ -257,13 +260,13 @@ export class KalenderEvents {
                 categories: event.categories,
                 alarms: []
             }
-            const makeProperty = (k, v) => {
-                const tmpObj = {};
+            const makeProperty = (k: string, v: string | Date | undefined) => {
+                const tmpObj: any = {};
                 tmpObj[k] = v;
                 return (v !== undefined && v !== "") ? tmpObj : {}
             }
             for (let key of Object.keys(event)) {
-                const alarm = event[key];
+                const alarm = event[key as keyof iCalEvent];
                 if (alarm.type === "VALARM") {
                     returnEvent.alarms.push(Object.assign({},
                         makeProperty("trigger", (typeof alarm.trigger?.toICALString === 'function') ? alarm.trigger?.toICALString() : alarm.trigger),
@@ -277,18 +280,19 @@ export class KalenderEvents {
             }
 
             Object.keys(returnEvent).forEach(key => {
-                if (returnEvent[key] === undefined || returnEvent[key] === "" || (Array.isArray(returnEvent[key]) && returnEvent[key].length === 0)) {
-                    delete returnEvent[key];
+                if (returnEvent[key as keyof IKalenderEvent] === undefined || returnEvent[key as keyof IKalenderEvent] === "" || (Array.isArray(returnEvent[key as keyof IKalenderEvent]) && returnEvent[key as keyof IKalenderEvent].length === 0)) {
+                    delete returnEvent[key as keyof IKalenderEvent];
                 }
             });
 
             return returnEvent
         }
+        return undefined;
     }
 
 
 
-    private convertScrapegoat(event: any): IKalenderEvent {
+    private convertScrapegoat(event: any): IKalenderEvent | undefined {
         if (event) {
             let startDate = moment(event.start).toDate();
             let endDate = moment(event.end).toDate();
@@ -333,9 +337,11 @@ export class KalenderEvents {
                 isRecurring: !!recurrence,
                 datetype: 'date',
                 allDay: allday,
-                calendarName: null as any
+                calendarName: null as any,
+                alarms: []
             }
         }
+        return undefined;
     }
 
 
@@ -416,9 +422,9 @@ export class KalenderEvents {
     }
 
     private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date, now: Date) {
-        var eventLength = ev.eventEnd.getTime() - ev.eventStart.getTime();
+        var eventLength = ev.eventEnd!.getTime() - ev.eventStart!.getTime();
         var options = RRule.parseString(ev.rrule.toString());
-        options.dtstart = this.addOffset(ev.eventStart, -this.getTimezoneOffset(ev.eventStart));
+        options.dtstart = this.addOffset(ev.eventStart!, -this.getTimezoneOffset(ev.eventStart!));
         if (options.until) {
             options.until = this.addOffset(options.until, -this.getTimezoneOffset(options.until));
         }
@@ -433,7 +439,7 @@ export class KalenderEvents {
             'processRRule - RRule event:' +
             ev.summary +
             '; start:' +
-            ev.eventStart.toString() +
+            ev.eventStart?.toString() +
             '; preview:' +
             preview.toString() +
             '; today:' +
@@ -453,7 +459,7 @@ export class KalenderEvents {
         } catch (e) {
             throw (
                 'Issue detected in RRule, event ignored; ' +
-                e.stack +
+                (e as any).stack +
                 '\n' +
                 'RRule object: ' +
                 JSON.stringify(rule) +
@@ -505,8 +511,8 @@ export class KalenderEvents {
                     for (var dOri in ev.recurrences) {
                         let recurrenceid = ev.recurrences[dOri].recurrenceid
                         if (recurrenceid && (typeof recurrenceid.getTime === 'function')) {
-                            if (recurrenceid.getTime() === ev2.eventStart.getTime()) {
-                                ev2 = this.convertEvent(ev.recurrences[dOri]);
+                            if (recurrenceid.getTime() === ev2.eventStart?.getTime()) {
+                                ev2 = this.convertEvent(ev.recurrences[dOri]) as IKalenderEvent;
                                 debug('processRRule - ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
                             }
                         }
@@ -515,7 +521,7 @@ export class KalenderEvents {
 
 
                 if (checkDate) {
-                    let date = this.formatDate(ev2.eventStart, ev2.eventEnd, true, true);
+                    let date = this.formatDate(ev2.eventStart as Date, ev2.eventEnd as Date, true, true);
                     ev2.date = date.text.trim();
                     reslist.push(ev2);
                 }
@@ -526,9 +532,9 @@ export class KalenderEvents {
                 if (recurrenceid) {
                     let ev3 = ce.clone(ev.recurrences[dOri])
                     let ev1 = this.convertEvent(ev3);
-                    if ((ev1.eventStart >= pastview && ev1.eventStart <= preview) || (ev1.eventEnd >= pastview && ev1.eventEnd <= preview)) {
-                        let date = this.formatDate(ev1.eventStart, ev1.eventEnd, true, true);
-                        ev1.date = date.text.trim();
+                    if ((ev1?.eventStart! >= pastview && ev1?.eventStart! <= preview) || (ev1?.eventEnd! >= pastview && ev1?.eventEnd! <= preview)) {
+                        let date = this.formatDate(ev1?.eventStart as Date, ev1?.eventEnd as Date, true, true);
+                        ev1!.date = date.text.trim();
                         reslist.push(ev1);
                     }
                 }
@@ -554,7 +560,7 @@ export class KalenderEvents {
                 if (!ev.eventEnd) {
                     ev.eventEnd = ce.clone(ev.eventStart);
                     if (!ev.eventStart.getHours() && !ev.eventStart.getMinutes() && !ev.eventStart.getSeconds()) {
-                        ev.eventEnd.setDate(ev.eventEnd.getDate() + 1);
+                        ev.eventEnd!.setDate(ev.eventEnd!.getDate() + 1);
                     }
                 }
 
@@ -563,7 +569,7 @@ export class KalenderEvents {
                 } else {
                     let evlist = this.processRRule(ev, preview, pastview, realnow);
                     for (let ev2 of evlist) {
-                        this.checkDates(ev2, preview, pastview, realnow, ev.rrule, reslist);
+                        this.checkDates(ev2 as IKalenderEvent, preview, pastview, realnow, ev.rrule, reslist);
                     }
 
                 }
@@ -582,12 +588,12 @@ export class KalenderEvents {
     }
 
 
-    private filterOutput(ev) {
+    private filterOutput(ev: IKalenderEvent) {
         let output = false;
         let filterProperty = ev.summary;
-        let regex = null;
+
         if (this.config.filterProperty) {
-            filterProperty = ev[this.config.filterProperty]
+            filterProperty = ev[this.config.filterProperty as keyof IKalenderEvent];
         }
 
         if (filterProperty) {
@@ -712,24 +718,26 @@ export class KalenderEvents {
         if (!arr.length) {
             arr.push(element);
         } else {
-            if (arr[0].eventStart > element.eventStart) {
+            if (arr[0].eventStart! > element.eventStart!) {
                 arr.unshift(element);
-            } else if (arr[arr.length - 1].eventStart < element.eventStart) {
+            } else if (arr[arr.length - 1].eventStart! < element?.eventStart!) {
                 arr.push(element);
             } else {
                 if (arr.length === 1) {
                     arr.push(element);
                 } else {
                     for (var i = 0; i < arr.length; i++) {
-                        if (arr[i].uid.uid == element.uid.uid && element.eventStart.getTime() == arr[i].eventStart.getTime()) {
+                        if (arr[i].uid!.uid == element.uid?.uid && element.eventStart!.getTime() == arr[i].eventStart?.getTime()) {
+                            //@ts-ignore
                             element = null;
                             break;
                         }
                     }
                     if (element) {
                         for (var i = 0; i < arr.length - 1; i++) {
-                            if (arr[i].eventStart <= element.eventStart && element.eventStart < arr[i + 1].eventStart) {
+                            if (arr[i].eventStart! <= element?.eventStart! && element?.eventStart! < arr[i + 1].eventStart!) {
                                 arr.splice(i + 1, 0, element);
+                                //@ts-ignore
                                 element = null;
                                 break;
                             }
@@ -991,7 +999,7 @@ export class KalenderEvents {
         if (!text) return '';
 
         if (this.dictionary[text]) {
-            var newText = this.dictionary[text][this.config.language];
+            var newText = this.dictionary[text][this.config.language as string];
             if (newText) {
                 return newText;
             } else if (this.config.language !== 'en') {
