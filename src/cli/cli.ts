@@ -49,7 +49,11 @@ export async function execute(rawArgs: string[]) {
     const pastviewOption = new Option('--pastview [pastview]', 'Type can be ical, icloud or caldav');
     const pastviewUnitsOption = new Option('--pastview-unit [pastview-unit]', 'Type can be ical, icloud or caldav');
     const previewOption = new Option('--preview [preview]', 'Type can be ical, icloud or caldav');
-    const previewUnitsOption = new Option('preview-unit [preview-unit]', 'Type can be ical, icloud or caldav');
+    const previewUnitsOption = new Option('--preview-unit [preview-unit]', 'Type can be ical, icloud or caldav');
+    const filterOption = new Option('--filter [filter]', 'Type can be ical, icloud or caldav');
+    const filterPropertyOption = new Option('--filter-property [filterProperty]', 'Type can be ical, icloud or caldav');
+    const triggerOption = new Option('--trigger [trigger]', 'Type can be ical, icloud or caldav');
+    const nowOption = new Option('--now [now]', 'Type can be ical, icloud or caldav');
 
     program.addOption(urlOption);
     program.addOption(typeOption);
@@ -57,6 +61,10 @@ export async function execute(rawArgs: string[]) {
     program.addOption(pastviewUnitsOption);
     program.addOption(previewOption);
     program.addOption(previewUnitsOption);
+    program.addOption(filterOption);
+    program.addOption(filterPropertyOption);
+    program.addOption(triggerOption);
+    program.addOption(nowOption);
 
     program
       .command('upcoming')

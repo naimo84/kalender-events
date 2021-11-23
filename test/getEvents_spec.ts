@@ -21,6 +21,25 @@ describe('events', () => {
         nodeIcal.async.fromURL.restore();
     });
 
+    it('ical - exdate', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "https://domain.com/calendar.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20011123').toDate(),
+                    pastview:1,
+                    preview:1
+                });
+                expect(events).to.have.lengthOf(0)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
     it('ical - great preview', async () => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -70,7 +89,7 @@ describe('events', () => {
                     pastview:1,
                     preview:3
                 });
-                expect(events).to.have.lengthOf(1)
+                expect(events).to.have.lengthOf(2)
                 resolve();
             } catch (err) {
                 reject(err);

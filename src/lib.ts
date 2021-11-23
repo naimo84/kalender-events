@@ -15,12 +15,12 @@ export interface Job {
 }
 export class KalenderEvents {
     private cache: NodeCache;
-    private config: Config={};
+    private config: Config = {};
 
     constructor(config?: Config) {
         if (config)
             this.config = config;
-        
+
         this.calcPrePastView();
         this.cache = this.config.cache ? this.config.cache : new NodeCache.default();
     }
@@ -104,7 +104,7 @@ export class KalenderEvents {
             var pastview = new Date();
 
             if (config && config.now) {
-                realnow = preview = pastview = config.now;
+                realnow = preview = pastview = moment(config.now).toDate();
             }
             if (this.config.previewUnits === 'days') {
                 if (this.config.preview == 1) {
@@ -280,7 +280,9 @@ export class KalenderEvents {
             }
 
             Object.keys(returnEvent).forEach(key => {
-                if (returnEvent[key as keyof IKalenderEvent] === undefined || returnEvent[key as keyof IKalenderEvent] === "" || (Array.isArray(returnEvent[key as keyof IKalenderEvent]) && returnEvent[key as keyof IKalenderEvent].length === 0)) {
+                if (returnEvent[key as keyof IKalenderEvent] === undefined
+                    || returnEvent[key as keyof IKalenderEvent] === ""
+                    || (Array.isArray(returnEvent[key as keyof IKalenderEvent]) && Object.keys(returnEvent[key as keyof IKalenderEvent]).length === 0 && returnEvent[key as keyof IKalenderEvent].length === 0)) {
                     delete returnEvent[key as keyof IKalenderEvent];
                 }
             });
