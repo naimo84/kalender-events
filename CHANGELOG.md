@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.17.0](https://github.com/naimo84/kalender-events/compare/v0.16.0...v0.17.0) (2021-11-23)
+
+
+### Features
+
+* esbuild +  naimo84/node-red-contrib-ical-events[#104](https://github.com/naimo84/kalender-events/issues/104) ([912b7a2](https://github.com/naimo84/kalender-events/commit/912b7a2f218e1c3d634a82cbf88f1282fc6074cc))
+* esbuild +  naimo84/node-red-contrib-ical-events[#104](https://github.com/naimo84/kalender-events/issues/104) ([88870ad](https://github.com/naimo84/kalender-events/commit/88870ad7a9f548fc55781f01badc37b82ac26a73))
+* gh action for tests ([def3d3f](https://github.com/naimo84/kalender-events/commit/def3d3f37d2c8e6d66e9ab63c74bcb42a393d60e))
+* gh action for tests ([bdf667e](https://github.com/naimo84/kalender-events/commit/bdf667ec9bc03d108a8cec2fa3a30495a61315a3))
+* gh action for tests ([12cba1b](https://github.com/naimo84/kalender-events/commit/12cba1bc73fb85869bff866e81eab90a682fe961))
+
+
+### Bug Fixes
+
+* [#3](https://github.com/naimo84/kalender-events/issues/3), exdate handling ([94eda9c](https://github.com/naimo84/kalender-events/commit/94eda9c7b4df1bd75439f8189d104a23d81f0cd5))
+
 ## [0.16.0](https://github.com/naimo84/kalender-events/compare/v0.15.7...v0.16.0) (2021-10-19)
 
 
