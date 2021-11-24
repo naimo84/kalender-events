@@ -5,7 +5,8 @@
 		"outDir": "dist",
 		"lib": [
 			"es2019"
-		],	
+		],
+		"baseUrl": "./",	
 		"sourceMap": true,
 		"rootDir": "src",
 		"strict": true,

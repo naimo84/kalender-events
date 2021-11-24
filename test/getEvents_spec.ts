@@ -96,5 +96,28 @@ describe('events', () => {
             }
         });
     });
+
+    it('ical - location filter', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "https://domain.com/calendar.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20210111').toDate(),
+                    pastview:5,
+                    preview:3,
+                    filter: 'Demo.*',
+                    filterProperty: 'location',
+                    trigger:'match'
+
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });  
     
 });
