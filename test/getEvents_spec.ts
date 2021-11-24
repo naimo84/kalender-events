@@ -29,8 +29,8 @@ describe('events', () => {
                 });
                 let events = await ke.getEvents({
                     now: moment('20011123').toDate(),
-                    pastview:1,
-                    preview:1
+                    pastview: 1,
+                    preview: 1
                 });
                 expect(events).to.have.lengthOf(0)
                 resolve();
@@ -48,8 +48,8 @@ describe('events', () => {
                 });
                 let events = await ke.getEvents({
                     now: moment('20210325').toDate(),
-                    pastview:1,
-                    preview:14
+                    pastview: 1,
+                    preview: 14
                 });
                 expect(events).to.have.lengthOf(2)
                 resolve();
@@ -67,8 +67,8 @@ describe('events', () => {
                 });
                 let events = await ke.getEvents({
                     now: moment('20200616').toDate(),
-                    pastview:1,
-                    preview:1
+                    pastview: 1,
+                    preview: 1
                 });
                 expect(events).to.have.lengthOf(1)
                 resolve();
@@ -86,8 +86,8 @@ describe('events', () => {
                 });
                 let events = await ke.getEvents({
                     now: moment('20211121').toDate(),
-                    pastview:1,
-                    preview:3
+                    pastview: 1,
+                    preview: 3
                 });
                 expect(events).to.have.lengthOf(2)
                 resolve();
@@ -105,11 +105,11 @@ describe('events', () => {
                 });
                 let events = await ke.getEvents({
                     now: moment('20210111').toDate(),
-                    pastview:5,
-                    preview:3,
+                    pastview: 5,
+                    preview: 3,
                     filter: 'Demo.*',
                     filterProperty: 'location',
-                    trigger:'match'
+                    trigger: 'match'
 
                 });
                 expect(events).to.have.lengthOf(1)
@@ -118,6 +118,28 @@ describe('events', () => {
                 reject(err);
             }
         });
-    });  
-    
+    });
+
+
+    it('ical - categories', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "https://domain.com/calendar.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20201205').toDate(),
+                    pastview: 1,
+                    preview: 2,
+                    filter: 'EDUCATION.*',
+                    filterProperty: 'categories',
+                    trigger: 'match'
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
 });
