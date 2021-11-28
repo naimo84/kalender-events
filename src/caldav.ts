@@ -2,7 +2,6 @@ import { Config } from './config';
 
 import dav = require('@naimo84/dav');
 import Scrapegoat = require("scrapegoat");
-import moment = require('moment');
 import IcalExpander = require('ical-expander');
 import * as  ical from 'node-ical';
 import { KalenderEvents } from './lib';
@@ -11,23 +10,11 @@ import * as URL from "url";
 import { IKalenderEvent } from './event';
 var debug = require('debug')('kalendar-events')
 
-export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
+export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKalenderEvent[]> {
     const calName = config.calendar;
     const ke = new KalenderEvents(config);
-    const now = moment();
-    const whenMoment = moment(now.toDate());
+    let { preview, pastview } = kalEv.getPreviews(config)
 
-    // @ts-ignore
-    let start = whenMoment.clone().startOf('day').subtract(config.pastview, config.pastviewUnits);
-    // @ts-ignore
-    let end = whenMoment.clone().endOf('day').add(config.preview, config.previewUnits);
-
-    if (config.pastviewUnits === 'days') {
-        start = whenMoment.clone().startOf('day').subtract(config.pastview! + 1, 'days');
-    }
-    if (config.previewUnits === 'days') {
-        end = whenMoment.clone().endOf('day').add(config.preview, 'days');
-    }
     const filters = [{
         type: 'comp-filter',
         attrs: { name: 'VCALENDAR' },
@@ -37,8 +24,8 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
             children: [{
                 type: 'time-range',
                 attrs: {
-                    start: start.format('YYYYMMDD[T]HHmmss[Z]'),
-                    end: end.format('YYYYMMDD[T]HHmmss[Z]'),
+                    start: pastview.format('YYYYMMDD[T]HHmmss[Z]'),
+                    end: preview.format('YYYYMMDD[T]HHmmss[Z]'),
                 },
             }],
         }],
@@ -98,7 +85,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                 const ics = calendarEntry.calendarData;
                 if (ics) {
                     const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
-                    const events = icalExpander.between(start.toDate(), end.toDate());
+                    const events = icalExpander.between(pastview.toDate(), preview.toDate());
 
                     ke.convertEvents(events).forEach((event: IKalenderEvent) => {
                         debug(`caldav - ical: ${JSON.stringify(event)}`)

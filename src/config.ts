@@ -1,6 +1,6 @@
 import NodeCache = require("node-cache");
 
-export interface Config {    
+export interface Config {
     usecache?: boolean;
     rejectUnauthorized?: boolean;
     url?: string,
@@ -15,14 +15,14 @@ export interface Config {
     filterProperty?: string,
     filterOperator?: string,
     trigger?: string,
-    preview?: number,
+    preview?: number | string,
     previewUnits?: string,
-    pastview?: number,
+    pastview?: number | string,
     pastviewUnits?: string
     offsetUnits?: string,
     offset?: number,
     now?: Date,
     timezone?: string;
-    includeTodo?:boolean;
+    includeTodo?: boolean;
     cache?: NodeCache;
 }

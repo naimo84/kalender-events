@@ -46,14 +46,14 @@ export async function execute(rawArgs: string[]) {
 
     const urlOption = new Option('-u, --url [url]', 'URL to Calendar');
     const typeOption = new Option('-t, --type [type]', 'Type can be ical, icloud or caldav');
-    const pastviewOption = new Option('--pastview [pastview]', 'Type can be ical, icloud or caldav');
-    const pastviewUnitsOption = new Option('--pastview-unit [pastview-unit]', 'Type can be ical, icloud or caldav');
-    const previewOption = new Option('--preview [preview]', 'Type can be ical, icloud or caldav');
-    const previewUnitsOption = new Option('--preview-unit [preview-unit]', 'Type can be ical, icloud or caldav');
-    const filterOption = new Option('--filter [filter]', 'Type can be ical, icloud or caldav');
-    const filterPropertyOption = new Option('--filter-property [filterProperty]', 'Type can be ical, icloud or caldav');
-    const triggerOption = new Option('--trigger [trigger]', 'Type can be ical, icloud or caldav');
-    const nowOption = new Option('--now [now]', 'Type can be ical, icloud or caldav');
+    const pastviewOption = new Option('--pastview [pastview]', '');
+    const pastviewUnitsOption = new Option('--pastview-units [pastviewUnits]', '');
+    const previewOption = new Option('--preview [preview]', '');
+    const previewUnitsOption = new Option('--preview-units [previewUnits]', '');
+    const filterOption = new Option('--filter [filter]', '');
+    const filterPropertyOption = new Option('--filter-property [filterProperty]', '');
+    const triggerOption = new Option('--trigger [trigger]', '');
+    const nowOption = new Option('--now [now]', '');
 
     program.addOption(urlOption);
     program.addOption(typeOption);

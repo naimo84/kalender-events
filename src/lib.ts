@@ -92,6 +92,56 @@ export class KalenderEvents {
         };
     }
 
+    public getPreviews(config: Config): { preview: moment.Moment, pastview: moment.Moment } {
+        let preview = new Date();
+        let pastview = new Date();
+        if (config && config.now) {
+            preview = pastview = moment(config.now).toDate();
+        }
+        let preMoment = moment(preview)
+        let previewDuration = moment.duration(JSON.parse(`{"${this.config.previewUnits}" : "${this.config.preview === 1 && this.config.previewUnits === 'days' ? this.config.preview - 1 : this.config.preview}" }`));
+        if (typeof this.config.preview === 'string') {
+            if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.preview as string)) {
+                previewDuration = moment.duration(this.config.preview as string)
+            } else {
+                throw new Error('preview must be a duration string or a number');
+            }
+        } else {
+            if (previewDuration.days() > 0 || this.config.preview === 1 && this.config.previewUnits === 'days') {
+                preMoment = preMoment.endOf('day')
+            } else if (previewDuration.hours() > 0) {
+                preMoment = preMoment.endOf('hour')
+            } else if (previewDuration.minutes() > 0) {
+                preMoment = preMoment.endOf('minute')
+            } else if (previewDuration.seconds() > 0) {
+                preMoment = preMoment.endOf('second')
+            }
+        }
+        const pre: moment.Moment = preMoment.add(previewDuration)
+
+        let pastMoment = moment(pastview).startOf('day')
+        let pastviewDuration = moment.duration(JSON.parse(`{"${this.config.pastviewUnits}" : "${this.config.pastview === 1 && this.config.pastviewUnits === 'days' ? this.config.pastview - 1 : this.config.pastview}" }`));
+        if (typeof this.config.pastview === 'string') {
+            if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.pastview as string)) {
+                pastviewDuration = moment.duration(this.config.pastview)
+            } else {
+                throw new Error('pastview must be a duration string or a number');
+            }
+        } else {
+            if (pastviewDuration.days() > 0 || this.config.pastview === 1 && this.config.pastviewUnits === 'days') {
+                pastMoment = pastMoment.startOf('day')
+            } else if (pastviewDuration.hours() > 0) {
+                pastMoment = pastMoment.startOf('hour')
+            } else if (pastviewDuration.minutes() > 0) {
+                pastMoment = pastMoment.startOf('minute')
+            } else if (pastviewDuration.seconds() > 0) {
+                pastMoment = pastMoment.startOf('second')
+            }
+        }
+        const past: moment.Moment = pastMoment.subtract(pastviewDuration);
+        return { preview: pre, pastview: past };
+    }
+
     public async getEvents(config?: Config): Promise<IKalenderEvent[]> {
         try {
             if (config) {
@@ -99,41 +149,17 @@ export class KalenderEvents {
             }
             this.calcPrePastView();
             let data = await this.getCal();
-            var realnow = new Date();
-            var preview = new Date();
-            var pastview = new Date();
+            let realnow = new Date();
 
             if (config && config.now) {
-                realnow = preview = pastview = moment(config.now).toDate();
-            }
-            if (this.config.previewUnits === 'days') {
-                if (this.config.preview == 1) {
-                    preview = moment(preview).endOf('day').add(this.config.preview - 1, 'days').toDate();
-                } else {
-                    preview = moment(preview).endOf('day').add(this.config.preview, 'days').toDate();
-                }
-            } else {
-                //@ts-ignore
-                preview = moment(preview)
-                    .add(this.config.preview, this.config.previewUnits ? this.config.previewUnits.charAt(0) : 'd')
-                    .toDate();
+                realnow = moment(config.now).toDate();
             }
 
-            if (this.config.pastviewUnits === 'days') {
-                if (this.config.pastview == 1) {
-                    pastview = moment(pastview).startOf('day').subtract(this.config.pastview - 1, 'days').toDate();
-                } else {
-                    pastview = moment(pastview).startOf('day').subtract(this.config.pastview, 'days').toDate();
-                }
-            } else {
-                //@ts-ignore
-                pastview = moment(pastview)
-                    .subtract(this.config.pastview, this.config.pastviewUnits ? this.config.pastviewUnits.charAt(0) : 'd')
-                    .toDate();
-            }
+            const { preview, pastview } = this.getPreviews(config as Config);
+
             debug(`getEvents - pastview: ${pastview}`)
             debug(`getEvents - preview: ${preview}`)
-            let processedData = this.processData(data, realnow, pastview, preview);
+            let processedData = this.processData(data, realnow, pastview.toDate(), preview.toDate());
             debug(`getEvents - processedData: ${JSON.stringify(processedData)}`)
 
             if (this.config.usecache && this.cache) {
@@ -352,13 +378,8 @@ export class KalenderEvents {
         if (this.config.type && this.config.type === 'icloud') {
             debug('getCal - icloud');
 
-            const now = moment();
-            let when = now.toDate();
-            if (this.config.now) {
-                when = this.config.now
-            }
             try {
-                let list = await ICloud(moment(when), this.config, this);
+                let list = await ICloud(this.config, this);
                 return list;
             } catch (err) {
                 debug(err);
@@ -368,7 +389,7 @@ export class KalenderEvents {
             debug('getCal - caldav');
 
             try {
-                let data = await CalDav(this.config);
+                let data = await CalDav(this.config, this);
                 return data;
             }
             catch (err) {

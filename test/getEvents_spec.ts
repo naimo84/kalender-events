@@ -28,9 +28,9 @@ describe('events', () => {
                     url: "https://domain.com/calendar.ics"
                 });
                 let events = await ke.getEvents({
-                    now: moment('20011123').toDate(),
+                    now: moment('20111123').toDate(),
                     pastview: 1,
-                    preview: 1
+                    preview: 2
                 });
                 expect(events).to.have.lengthOf(0)
                 resolve();
@@ -74,6 +74,44 @@ describe('events', () => {
                 resolve();
             } catch (err) {
                 reject(err);
+            }
+        });
+    });
+
+    it('ical - iso 8601 duration', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "https://domain.com/calendar.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20200616').toDate(),
+                    pastview: "P1D",
+                    preview: "P1D"
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
+    it('ical - iso 8601 wrong duration', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "https://domain.com/calendar.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20200616').toDate(),
+                    pastview: "1D",
+                    preview: "1D"
+                });
+                reject(new Error("should not be here"));
+            } catch (err) {
+                expect(err.message).to.be.a('string', 'preview must be a duration string or a number');
+                resolve(err);
             }
         });
     });
