@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.0](https://github.com/naimo84/kalender-events/compare/v0.18.0...v0.19.0) (2021-11-28)
+
+
+### Features
+
+* durations [#4](https://github.com/naimo84/kalender-events/issues/4) ([63e72c7](https://github.com/naimo84/kalender-events/commit/63e72c7535ea5f1ceefbe8ffa35a6eb0bb304723))
+* unittest for location filter ([5e1fe25](https://github.com/naimo84/kalender-events/commit/5e1fe2503bdd17be0091444413b8160cabf1b75b))
+
 ## [0.18.0](https://github.com/naimo84/kalender-events/compare/v0.17.0...v0.18.0) (2021-11-23)
 
 ## [0.17.0](https://github.com/naimo84/kalender-events/compare/v0.16.0...v0.17.0) (2021-11-23)
