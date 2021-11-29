@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.19.1](https://github.com/naimo84/kalender-events/compare/v0.19.0...v0.19.1) (2021-11-29)
+
+
+### Features
+
+* add username an password to cli ([49e5d2c](https://github.com/naimo84/kalender-events/commit/49e5d2c3545df956994c5533e5e3f860c25ac741))
+
 ## [0.19.0](https://github.com/naimo84/kalender-events/compare/v0.18.0...v0.19.0) (2021-11-28)
 
 
