@@ -8,7 +8,7 @@ import { KalenderEvents } from './lib';
 import * as URL from "url";
 
 import { IKalenderEvent } from './event';
-var debug = require('debug')('kalendar-events')
+var debug = require('debug')('kalender-events:caldav');
 
 export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKalenderEvent[]> {
     const calName = config.calendar;
@@ -137,6 +137,7 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
 
 export async function Fallback(config: Config) {
     const ke = new KalenderEvents(config);
+    debug(`Fallback`)
     let scrapegoat = new Scrapegoat({
         auth: {
             user: config.username,
@@ -150,6 +151,7 @@ export async function Fallback(config: Config) {
     });
 
     let data = await scrapegoat.getAllEvents();
+    debug(`Fallback - data: ${JSON.stringify(data)}`)
 
     return ke.convertEvents(data);
 }
