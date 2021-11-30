@@ -50,7 +50,7 @@
     "node-cache": "^5.1.0",
     "node-ical": "0.10.0",
     "rrule": "2.6.4",
-    "scrapegoat": "^2.0.0",
+    "scrapegoat": "1.0.1",
     "uuidv4": "^6.2.12",
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
