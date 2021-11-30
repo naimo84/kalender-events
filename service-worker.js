@@ -27,7 +27,7 @@ self.addEventListener('message', (event) => {
 self.__precacheManifest = [
   {
     "url": "404.html",
-    "revision": "cd2fd01dcb324ca9c8a70f5b5b7fe3e9"
+    "revision": "fe15cb3053f7dcf3af9f4e6c91f55d41"
   },
   {
     "url": "assets/css/0.styles.73517480.css",
@@ -42,12 +42,12 @@ self.__precacheManifest = [
     "revision": "1240afd4d1c781c07f75e48b74ab63a4"
   },
   {
-    "url": "assets/js/11.0586a2d8.js",
-    "revision": "9f7e10ba37dace112b0f808985c3496a"
+    "url": "assets/js/11.ef024d31.js",
+    "revision": "b6e2fd3a38b392a5ae020833b2a7f22b"
   },
   {
-    "url": "assets/js/12.a8c7a0d9.js",
-    "revision": "df9f36c74222939c7e52f34209b46d29"
+    "url": "assets/js/12.be977d70.js",
+    "revision": "88d645285d7c6ee8f24f1a81b3bb50a0"
   },
   {
     "url": "assets/js/13.04f2c9df.js",
@@ -82,8 +82,8 @@ self.__precacheManifest = [
     "revision": "a30db5fcc21fea23a20b4aedbabf3857"
   },
   {
-    "url": "assets/js/app.21395935.js",
-    "revision": "c2052dc64b4c241d7b7e6156619167f3"
+    "url": "assets/js/app.ea7b87f8.js",
+    "revision": "1ae21ba01eaeafb74edea550f231a124"
   },
   {
     "url": "assets/js/vendors~flowchart.6f010d76.js",
@@ -91,11 +91,11 @@ self.__precacheManifest = [
   },
   {
     "url": "config/index.html",
-    "revision": "0a09e768b23b3de3120583520bcc4a00"
+    "revision": "ad1148b6d8d5c9b73353850a91ab7664"
   },
   {
     "url": "favicon.png",
-    "revision": "d14c965fe422698a3c614b9883b0d687"
+    "revision": "3bafa54ce075d3f5efd9bad5ed734fdb"
   },
   {
     "url": "github.svg",
@@ -103,63 +103,75 @@ self.__precacheManifest = [
   },
   {
     "url": "guide/debug.html",
-    "revision": "273dc23c5a7ad071f4cdc4c9c4d0e510"
+    "revision": "7b2ded8d2cd94a93d59678bbe8c27090"
   },
   {
     "url": "guide/index.html",
-    "revision": "1121cbf3ee07287b3c1427632620a70a"
+    "revision": "7eeedf0042ffc3f5ec9e8634003e13c9"
   },
   {
     "url": "icons/android-chrome-192x192.png",
-    "revision": "2ae129bfbc670ddbc5d83130fdca51fb"
+    "revision": "d11db6a43debb45ba0d20e8c8f3a284f"
   },
   {
     "url": "icons/android-chrome-512x512.png",
-    "revision": "b9a6b0d549941f5938bbbc106f19b0a6"
+    "revision": "071599deccb807ff8f9d38deaaadc36e"
+  },
+  {
+    "url": "icons/android-chrome-maskable-192x192.png",
+    "revision": "d11db6a43debb45ba0d20e8c8f3a284f"
+  },
+  {
+    "url": "icons/android-chrome-maskable-512x512.png",
+    "revision": "071599deccb807ff8f9d38deaaadc36e"
   },
   {
     "url": "icons/apple-touch-icon-120x120.png",
-    "revision": "45a3cf74cc54976ac5eaf03ee8451eac"
+    "revision": "44ceae857825d1f345891eab3cbaf83e"
   },
   {
     "url": "icons/apple-touch-icon-152x152.png",
-    "revision": "c22351d8fe58c26e346cd9d8370e8ff7"
+    "revision": "b367b1caa953e3a6ff06d3c018a3f6b3"
   },
   {
     "url": "icons/apple-touch-icon-180x180.png",
-    "revision": "2409468249cc81a1dba5e16b6cb3fee2"
+    "revision": "7444d6986e036c065287a839928d05f3"
   },
   {
     "url": "icons/apple-touch-icon-60x60.png",
-    "revision": "569ba17f0b57bd947718f5e8b8345868"
+    "revision": "938b7681af2299b0ac47af9b7f2759db"
   },
   {
     "url": "icons/apple-touch-icon-76x76.png",
-    "revision": "172d0bea737e2d830879364b85452448"
+    "revision": "92ded4dd7ddc347f05535ddeea343220"
   },
   {
     "url": "icons/apple-touch-icon.png",
-    "revision": "2409468249cc81a1dba5e16b6cb3fee2"
+    "revision": "7444d6986e036c065287a839928d05f3"
   },
   {
     "url": "icons/favicon-16x16.png",
-    "revision": "b0f966ce21204938666d3b76146f3216"
+    "revision": "cf4b7492f6e85fd8de4c76de2971ef8c"
   },
   {
     "url": "icons/favicon-32x32.png",
-    "revision": "2956e5675d6247e0e540b1ab30681412"
+    "revision": "bb9c62ab93da02a9488963b2d7dc0f0b"
   },
   {
     "url": "icons/msapplication-icon-144x144.png",
-    "revision": "958b57c19149628a3c387108247dc15a"
+    "revision": "bf6d6fd10a317810158361ecfd363f2c"
   },
   {
     "url": "icons/mstile-150x150.png",
-    "revision": "6b18d32232681d531a8c949c8e8beb62"
+    "revision": "866e357ba94d906be308e45d05b5e99e"
+  },
+  {
+    "url": "icons/safari-pinned-tab.svg",
+    "revision": "2fca233f65923be1c98ddf04f2cc3241"
   },
   {
     "url": "index.html",
-    "revision": "431c549187fde5a3d732847aeb719f42"
+    "revision": "49383dcc339fbe48f21665158f84f34a"
   }
 ].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
