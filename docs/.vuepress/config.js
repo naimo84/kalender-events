@@ -64,17 +64,7 @@ module.exports = {
               title: 'Debug',
               path: '/guide/debug',
               collapsable: false             
-            },
-            {
-              title: 'Nodes',
-              collapsable: false,
-              path: '/guide/nodes',
-              children: [
-                '/guide/upcoming',
-                '/guide/trigger',
-                '/guide/sensors',
-              ]
-            },
+            },            
             // '/guide/troubleshooting',
             // {
             //   title: 'Examples',
