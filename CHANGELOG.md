@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.20.1](https://github.com/naimo84/kalender-events/compare/v0.20.0...v0.20.1) (2021-12-01)
+
+
+### Bug Fixes
+
+* broken icloud - naimo84/node-red-contrib-ical-events[#110](https://github.com/naimo84/kalender-events/issues/110) ([73fb899](https://github.com/naimo84/kalender-events/commit/73fb899f3c167452778584fc36c841ba5f79653e))
+
 ## [0.20.0](https://github.com/naimo84/kalender-events/compare/v0.19.3...v0.20.0) (2021-11-30)
 
 ### [0.19.2](https://github.com/naimo84/kalender-events/compare/v0.19.1...v0.19.2) (2021-11-30)
