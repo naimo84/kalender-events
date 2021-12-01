@@ -92,17 +92,17 @@ function requestIcloudSecure(config: Config, start: moment.Moment, end: moment.M
 
 export async function ICloud(config: Config, kalEv: KalenderEvents) {
 
-    let { preview, pastview } = kalEv.getPreviews(config)
+    let { pastview, preview } = kalEv.getPreviews(config)
 
 
-    const json = await requestIcloudSecure(config, preview, pastview);
+    const json = await requestIcloudSecure(config, pastview, preview);
     debug(json);
     var reslist: IKalenderEvent[] = [];
     if (json && json.multistatus && json.multistatus.response) {
         if (json.multistatus.response.propstat) {
-            process(reslist, preview, pastview, json.multistatus.response.propstat.prop['calendar-data']._cdata, kalEv);
+            process(reslist, pastview, preview, json.multistatus.response.propstat.prop['calendar-data']._cdata, kalEv);
         } else {
-            json.multistatus.response.forEach((response: any) => process(reslist, preview, pastview, response.propstat.prop['calendar-data']._cdata, kalEv));
+            json.multistatus.response.forEach((response: any) => process(reslist, pastview, preview, response.propstat.prop['calendar-data']._cdata, kalEv));
         }
     }
     return reslist;
