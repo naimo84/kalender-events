@@ -102,10 +102,10 @@
       "tag": true
     }
   },
-  "npm": {
-    "publish": false
-  },
   "release-it": {
+    "npm": {
+      "publish": false
+    },
     "git": {
       "commitMessage": "chore: release v${version}"
     },
