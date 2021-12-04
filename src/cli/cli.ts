@@ -54,6 +54,7 @@ export async function execute(rawArgs: string[]) {
     const filterPropertyOption = new Option('--filter-property [filterProperty]', '');
     const triggerOption = new Option('--trigger [trigger]', '');
     const nowOption = new Option('--now [now]', '');
+    const includeTodoOption = new Option('--includeTodo', '');
     const usernameOption = new Option('--username [username]', '');
     const passwordOption = new Option('--password [password]', '');
 
@@ -69,6 +70,7 @@ export async function execute(rawArgs: string[]) {
     program.addOption(nowOption);
     program.addOption(usernameOption);
     program.addOption(passwordOption);
+    program.addOption(includeTodoOption);
 
     program
       .command('upcoming')

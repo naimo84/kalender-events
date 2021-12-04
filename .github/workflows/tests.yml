@@ -18,3 +18,9 @@ jobs:
           ICLOUD_URL: ${{secrets.ICLOUD_URL}}
           ICLOUD_USERNAME: ${{secrets.ICLOUD_USERNAME}}
           ICLOUD_PASSWORD: ${{secrets.ICLOUD_PASSWORD}}
+          CALDAV1_URL: ${{secrets.CALDAV1_URL}}
+          CALDAV1_USERNAME: ${{secrets.CALDAV1_USERNAME}}
+          CALDAV1_PASSWORD: ${{secrets.CALDAV1_PASSWORD}}
+          CALDAV2_URL: ${{secrets.CALDAV2_URL}}
+          CALDAV2_USERNAME: ${{secrets.CALDAV2_USERNAME}}
+          CALDAV2_PASSWORD: ${{secrets.CALDAV2_PASSWORD}}

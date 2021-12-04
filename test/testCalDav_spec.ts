@@ -8,17 +8,17 @@ import { KalenderEvents } from '../dist/lib';
 use(require('chai-like'));
 use(require('chai-things'));
 
-describe('icloud', () => {
+describe('caldav', () => {
 
     it('preview = pastview = 1', async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!process.env.ICLOUD_URL) resolve();
+                if (!process.env.CALDAV1_URL) resolve();
                 let ke = new KalenderEvents({
-                    url: process.env.ICLOUD_URL,
-                    username: process.env.ICLOUD_USERNAME,
-                    password: process.env.ICLOUD_PASSWORD,
-                    type: 'icloud'
+                    url: process.env.CALDAV1_URL,
+                    username: process.env.CALDAV1_USERNAME,
+                    password: process.env.CALDAV1_PASSWORD,
+                    type: 'caldav'
                 });
                 let events = await ke.getEvents({
                     now: moment('20210101').toDate(),
@@ -34,46 +34,52 @@ describe('icloud', () => {
         });
     });
 
-    it('preview 7, pastview 0', async () => {
+    it('todos', async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!process.env.ICLOUD_URL) resolve();
+                if (!process.env.CALDAV1_URL) resolve();
                 let ke = new KalenderEvents({
-                    url: process.env.ICLOUD_URL,
-                    username: process.env.ICLOUD_USERNAME,
-                    password: process.env.ICLOUD_PASSWORD,
-                    type: 'icloud'
+                    url: process.env.CALDAV1_URL,
+                    username: process.env.CALDAV1_USERNAME,
+                    password: process.env.CALDAV1_PASSWORD,
+                    type: 'caldav'
                 });
                 let events = await ke.getEvents({
-                    now: moment('20210201').toDate(),
-                    pastview: 0,
-                    preview: 7
+                    now: moment('20210623').toDate(),
+                    pastview: 1,
+                    preview: 1,
+                    includeTodo: true
                 });
-                expect(events).to.have.lengthOf(7)
-                expect(events[0].summary).to.equal('kalender-events');
+                expect(events).to.have.lengthOf(1)
+                expect(events[0].summary).to.equal('test-2');
+                expect(events[0].datetype).to.equal('todo');
                 resolve();
             } catch (err) {
                 reject(err);
             }
         });
     });
+    
 
-    it('error', async () => {
+    it('fallback', async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!process.env.ICLOUD_URL) resolve();
+                if (!process.env.CALDAV2_URL) resolve();
                 let ke = new KalenderEvents({
-                    url: process.env.ICLOUD_URL+'error',                    
-                    type: 'icloud'
+                    url: 'http://example.com/',
+                    username: 'test',
+                    password: 'test',
+                    type: 'caldav'
                 });
                 let events = await ke.getEvents({
-                    now: moment('20210201').toDate(),
-                    pastview: 0,
-                    preview: 7
+                    now: moment('20211130').toDate(),
+                    pastview: 1,
+                    preview: 1,
+                    includeTodo: true
                 });
-               reject('should not be here');
+                reject();
             } catch (err) {
-                expect(err).to.be.an('error');
+                expect(err).to.contain('get calendar went wrong');
                 resolve();
             }
         });

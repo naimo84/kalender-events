@@ -18,7 +18,7 @@ function process(reslist: IKalenderEvent[], start: any, end: any, ics: any, kalE
 }
 
 function requestIcloudSecure(config: Config, start: moment.Moment, end: moment.Moment): Promise<any> {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
         const DavTimeFormat = 'YYYYMMDDTHHmms\\Z',
             url = config.url,
             user = config.username,
@@ -71,13 +71,14 @@ function requestIcloudSecure(config: Config, start: moment.Moment, end: moment.M
             });
 
             req.on('close', function () {
-
                 try {
                     const json = JSON.parse(xmlParser.xml2json(s, { compact: true, spaces: 0 }));
-
+                    if (Object.keys(json).length === 0) {
+                        throw new Error("No data")
+                    }
                     resolve(json);
                 } catch (e) {
-                    console.error("Error parsing response", e)
+                    reject(e);
                 }
             });
         });
@@ -85,7 +86,8 @@ function requestIcloudSecure(config: Config, start: moment.Moment, end: moment.M
         req.end(xml);
 
         req.on('error', function (e: { message: string; }) {
-            console.error('problem with request: ' + e.message);
+            /* istanbul ignore next */
+            throw e;
         });
     });
 }
@@ -99,9 +101,10 @@ export async function ICloud(config: Config, kalEv: KalenderEvents) {
     debug(json);
     var reslist: IKalenderEvent[] = [];
     if (json && json.multistatus && json.multistatus.response) {
+         /* istanbul ignore else */
         if (json.multistatus.response.propstat) {
             process(reslist, pastview, preview, json.multistatus.response.propstat.prop['calendar-data']._cdata, kalEv);
-        } else {
+        } else {            
             json.multistatus.response.forEach((response: any) => process(reslist, pastview, preview, response.propstat.prop['calendar-data']._cdata, kalEv));
         }
     }

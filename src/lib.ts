@@ -46,6 +46,7 @@ export class KalenderEvents {
     * ```
     */
     public addOffset(date: Date, ...args: any): Date {
+        /* istanbul ignore else */
         if (args.length == 1) {
             let dat = new Date(date.getTime() + parseInt(args) * 60 * 1000);
             return dat;
@@ -227,6 +228,7 @@ export class KalenderEvents {
             if ((this.config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
                 return undefined;
             }
+            /* istanbul ignore if */
             if (event.type === "VTODO" && !this.config.includeTodo) {
                 return undefined;
             }
@@ -254,6 +256,7 @@ export class KalenderEvents {
                 seconds = Number(seconds);
                 allday = ((seconds % 86400) === 0)
             } else {
+                /* istanbul ignore else */
                 if (/(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?(?:T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?)?/.test(duration)) {
                     allday = ((moment.duration(duration).asSeconds() % 86400) === 0)
                 }
@@ -293,7 +296,7 @@ export class KalenderEvents {
             }
             for (let key of Object.keys(event)) {
                 const alarm = event[key as keyof iCalEvent];
-                if (alarm.type === "VALARM") {
+                if (alarm?.type === "VALARM") {
                     returnEvent.alarms.push(Object.assign({},
                         makeProperty("trigger", (typeof alarm.trigger?.toICALString === 'function') ? alarm.trigger?.toICALString() : alarm.trigger),
                         makeProperty("triggerParsed", moment(startDate).add(moment.duration(alarm.trigger)).toDate()),
@@ -319,6 +322,7 @@ export class KalenderEvents {
     }
 
 
+    /* istanbul ignore next */
 
     private convertScrapegoat(event: any): IKalenderEvent | undefined {
         if (event) {
@@ -397,8 +401,6 @@ export class KalenderEvents {
                 debug(`getCal - caldav - using fallback`)
 
                 try {
-
-
                     let data = await Fallback(this.config)
                     return data;
                 }
@@ -433,6 +435,7 @@ export class KalenderEvents {
                 let converted = await this.convertEvents(data);
                 return converted;
             } else {
+                /* istanbul ignore if */
                 if (!this.config.url) {
                     throw "URL/File is not defined";
                 }
@@ -633,6 +636,7 @@ export class KalenderEvents {
         return output;
     }
 
+
     private checkRegex(filterProperty: any) {
         if (this.config.filterProperty && this.config.filterProperty == "attendee") {
             let regex = new RegExp(this.config.filter || "");
@@ -737,6 +741,7 @@ export class KalenderEvents {
         }
     }
 
+    /* istanbul ignore next */
     private insertSorted(arr: IKalenderEvent[], element: IKalenderEvent) {
         if (!arr.length) {
             arr.push(element);
@@ -778,8 +783,7 @@ export class KalenderEvents {
         return -offset;
     }
 
-
-
+    /* istanbul ignore next */
     private formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean) {
         var day: any = _date.getDate();
         var month: any = _date.getMonth() + 1;
@@ -1017,7 +1021,7 @@ export class KalenderEvents {
         };
     }
 
-
+    /* istanbul ignore next */
     private replaceText(text: string) {
         if (!text) return '';
 

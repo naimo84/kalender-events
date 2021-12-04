@@ -3,7 +3,7 @@
   "version": "0.20.1",
   "description": "calendar events for nodejs",
   "scripts": {
-    "test": "ts-mocha --paths test/**/*_spec.ts",
+    "test": "ts-mocha --timeout 10000 --paths test/**/*_spec.ts",
     "version": "standard-version --release-as minor",
     "version-bugfix": "standard-version",
     "watch": "tsc --watch",
@@ -13,7 +13,8 @@
     "tsc-declaration": "tsc --declaration --emitDeclarationOnly",
     "compile": "npm run esbuild && npm run tsc-declaration && npm run tsc",
     "prepack": "npm run compile",
-    "release": "release-it"
+    "release": "release-it",
+    "coverage": "nyc --reporter=json-summary npm run test"
   },
   "bin": {
     "kalender-events": "./bin/kalender-events.js",
@@ -45,8 +46,8 @@
     "globby": "^11.0.4",
     "ical-expander": "^2.1.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
-    "moment-range": "^4.0.2",
+    "moment": "^2.29.0",
+    "moment-range": "^4.0.2",    
     "node-cache": "^5.1.0",
     "node-ical": "0.10.0",
     "rrule": "2.6.4",
@@ -74,6 +75,7 @@
     "gulp-typescript": "^2.12.2",
     "gulp-watch": "^4.0.1",
     "mocha": "^8.0.0",
+    "nyc": "^15.1.0",
     "release-it": "^14.11.8",
     "sinon": "9.0.1",
     "standard-version": "^9.3.2",

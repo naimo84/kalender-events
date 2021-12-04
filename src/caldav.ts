@@ -83,6 +83,7 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
             let calendarEntries = await dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
             for (let calendarEntry of calendarEntries) {
                 const ics = calendarEntry.calendarData;
+                /* istanbul ignore else */
                 if (ics) {
                     const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
                     const events = icalExpander.between(pastview.toDate(), preview.toDate());
