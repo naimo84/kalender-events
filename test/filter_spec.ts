@@ -118,7 +118,7 @@ describe('filter', () => {
                     now: moment('20211121').toDate(),
                     pastview: 1,
                     preview: 3,
-                    filter: '2021-11-23_00:00:00',
+                    filter: '2021-11-23_01:00:00',
                     filter2: '2021-11-25_00:00:00',
                     filterProperty: 'eventStart',
                     filterOperator: 'between',
