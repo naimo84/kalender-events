@@ -3,7 +3,7 @@ import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
 import { Config } from './config';
 import { uuid } from 'uuidv4';
-import nodeIcal = require('node-ical');
+import * as nodeIcal from './nodeIcal';
 import * as NodeCache from 'node-cache';
 import { IKalenderEvent, iCalEvent } from './event';
 var debug = require('debug')('kalender-events')
@@ -429,7 +429,7 @@ export class KalenderEvents {
                     };
                 }
 
-                let data = await nodeIcal.async.fromURL(this.config.url, header);
+                let data = await nodeIcal.fromURL(this.config.url, header,null);
                 debug(data)
 
                 let converted = await this.convertEvents(data);
@@ -439,7 +439,7 @@ export class KalenderEvents {
                 if (!this.config.url) {
                     throw "URL/File is not defined";
                 }
-                let data = await nodeIcal.async.parseFile(this.config.url);
+                let data = await nodeIcal.parseFile(this.config.url,null);
                 debug(data)
                 let converted = await this.convertEvents(data);
                 return converted;

@@ -1,6 +1,7 @@
 
 import { expect, should, use } from "chai";
 import nodeIcal = require('node-ical');
+import Ical = require('../dist/nodeIcal');
 
 var sinon = require('sinon');
 import moment = require('moment');
@@ -11,14 +12,14 @@ use(require('chai-things'));
 
 describe('events', () => {
     before(async function () {
-        let stub = sinon.stub(nodeIcal.async, "fromURL");
+        let stub = sinon.stub(Ical, "fromURL");
         let data = await nodeIcal.async.parseFile('./test/mocks/events.ics');
         stub.returns(data);
     });
 
 
     after(function () {
-        nodeIcal.async.fromURL.restore();
+        (Ical.fromURL as any).restore();
     });
 
     it('no default override', async () => {

@@ -1,6 +1,8 @@
 
 import { expect, should, use } from "chai";
 import nodeIcal = require('node-ical');
+import Ical = require('../dist/nodeIcal');
+
 var sinon = require('sinon');
 import moment = require('moment');
 import { KalenderEvents } from '../dist/lib';
@@ -8,18 +10,17 @@ import { getEvents } from './test_helper';
 use(require('chai-like'));
 use(require('chai-things'));
 
-describe('issues', () => {
-
+describe('events', () => {
     before(async function () {
-        let stub = sinon.stub(nodeIcal.async, "fromURL");
+        let stub = sinon.stub(Ical, "fromURL");
         let data = await nodeIcal.async.parseFile('./test/mocks/104.ics');
         stub.returns(data);
     });
 
-    after(function () {
-        nodeIcal.async.fromURL.restore();
-    });
 
+    after(function () {
+        (Ical.fromURL as any).restore();
+    });
 
     it('test #104', async () => {
         return new Promise(async (resolve, reject) => {
