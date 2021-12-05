@@ -126,11 +126,13 @@ describe('filter', () => {
                 });
                 console.log('events1', events1);
                 console.log('events2', events2);
+                console.log('events2 - filter', moment('2021-11-24_13:00:00', "YYYY-MM-DD_hh:mm:ss"));
+
                 console.log('events3', events3);
                 expect(events1).to.have.lengthOf(2)
                 expect(events2).to.have.lengthOf(1)
                 expect(events3).to.have.lengthOf(1)
-                
+
 
 
                 resolve();
