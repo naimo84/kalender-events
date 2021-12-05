@@ -52,6 +52,7 @@ export async function execute(rawArgs: string[]) {
     const previewUnitsOption = new Option('--preview-units [previewUnits]', '');
     const filterOption = new Option('--filter [filter]', '');
     const filterPropertyOption = new Option('--filter-property [filterProperty]', '');
+    const filterOperatorOption = new Option('--filter-operator [filterOperator]', '');
     const triggerOption = new Option('--trigger [trigger]', '');
     const nowOption = new Option('--now [now]', '');
     const includeTodoOption = new Option('--includeTodo', '');
@@ -66,6 +67,7 @@ export async function execute(rawArgs: string[]) {
     program.addOption(previewUnitsOption);
     program.addOption(filterOption);
     program.addOption(filterPropertyOption);
+    program.addOption(filterOperatorOption);
     program.addOption(triggerOption);
     program.addOption(nowOption);
     program.addOption(usernameOption);

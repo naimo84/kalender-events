@@ -101,7 +101,7 @@ export class KalenderEvents {
         }
         let preMoment = moment(preview)
         let previewDuration = moment.duration(JSON.parse(`{"${this.config.previewUnits}" : "${this.config.preview === 1 && this.config.previewUnits === 'days' ? this.config.preview - 1 : this.config.preview}" }`));
-        if (typeof this.config.preview === 'string') {
+        if (typeof this.config.preview === 'string' && !parseInt(this.config.preview)) {
             if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.preview as string)) {
                 previewDuration = moment.duration(this.config.preview as string)
             } else {
@@ -122,7 +122,7 @@ export class KalenderEvents {
 
         let pastMoment = moment(pastview).startOf('day')
         let pastviewDuration = moment.duration(JSON.parse(`{"${this.config.pastviewUnits}" : "${this.config.pastview === 1 && this.config.pastviewUnits === 'days' ? this.config.pastview - 1 : this.config.pastview}" }`));
-        if (typeof this.config.pastview === 'string') {
+        if (typeof this.config.pastview === 'string' && !parseInt(this.config.pastview)) {
             if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.pastview as string)) {
                 pastviewDuration = moment.duration(this.config.pastview)
             } else {
@@ -656,18 +656,17 @@ export class KalenderEvents {
             if (filterProperty instanceof Date) {
                 switch (this.config.filterOperator) {
                     case 'before':
-                        if (moment(filterProperty) < moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss")) {
+                        if (moment(filterProperty).isBefore(moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss"))) {
                             return true;
                         }
                         break;
                     case 'after':
-                        if (moment(filterProperty) > moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss")) {
+                        if (moment(filterProperty).isAfter(moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss"))) {
                             return true;
                         }
                         break;
                     case 'between':
-                        if (moment(filterProperty) > moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss") &&
-                            moment(filterProperty) < moment(this.config.filter2, "YYYY-MM-DD_hh:mm:ss")) {
+                        if (moment(filterProperty).isBetween(moment(this.config.filter, "YYYY-MM-DD_hh:mm:ss"), moment(this.config.filter2, "YYYY-MM-DD_hh:mm:ss"))) {
                             return true;
                         }
                         break;
