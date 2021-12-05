@@ -101,13 +101,11 @@ export class KalenderEvents {
         }
         let preMoment = moment(preview)
         let previewDuration = moment.duration(JSON.parse(`{"${this.config.previewUnits}" : "${this.config.preview === 1 && this.config.previewUnits === 'days' ? this.config.preview - 1 : this.config.preview}" }`));
-        if (typeof this.config.preview === 'string' && !parseInt(this.config.preview)) {
-            if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.preview as string)) {
-                previewDuration = moment.duration(this.config.preview as string)
-            } else {
-                throw new Error('preview must be a duration string or a number');
-            }
-        } else {
+        if (typeof this.config.preview === 'string'
+            && isNaN(this.config.preview as unknown as number)
+            && (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.preview as string))) {
+            previewDuration = moment.duration(this.config.preview as string)
+        } else if (typeof this.config.preview === 'number' || !isNaN(this.config.preview as unknown as number)) {
             if (previewDuration.days() > 0 || this.config.preview === 1 && this.config.previewUnits === 'days') {
                 preMoment = preMoment.endOf('day')
             } else if (previewDuration.hours() > 0) {
@@ -117,18 +115,18 @@ export class KalenderEvents {
             } else if (previewDuration.seconds() > 0) {
                 preMoment = preMoment.endOf('second')
             }
+        } else {
+            throw new Error('preview must be a duration string or a number');
         }
         const pre: moment.Moment = preMoment.add(previewDuration)
 
         let pastMoment = moment(pastview).startOf('day')
         let pastviewDuration = moment.duration(JSON.parse(`{"${this.config.pastviewUnits}" : "${this.config.pastview === 1 && this.config.pastviewUnits === 'days' ? this.config.pastview - 1 : this.config.pastview}" }`));
-        if (typeof this.config.pastview === 'string' && !parseInt(this.config.pastview)) {
-            if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.pastview as string)) {
-                pastviewDuration = moment.duration(this.config.pastview)
-            } else {
-                throw new Error('pastview must be a duration string or a number');
-            }
-        } else {
+        if (typeof this.config.pastview === 'string'
+            && isNaN(this.config.pastview as unknown as number)
+            && (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.pastview as string))) {
+            pastviewDuration = moment.duration(this.config.pastview)
+        } else if (typeof this.config.pastview === 'number' || !isNaN(this.config.pastview as unknown as number)) {
             if (pastviewDuration.days() > 0 || this.config.pastview === 1 && this.config.pastviewUnits === 'days') {
                 pastMoment = pastMoment.startOf('day')
             } else if (pastviewDuration.hours() > 0) {
@@ -138,6 +136,8 @@ export class KalenderEvents {
             } else if (pastviewDuration.seconds() > 0) {
                 pastMoment = pastMoment.startOf('second')
             }
+        } else {
+            throw new Error('pastview must be a duration string or a number');
         }
         const past: moment.Moment = pastMoment.subtract(pastviewDuration);
         return { preview: pre, pastview: past };

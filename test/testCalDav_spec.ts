@@ -61,28 +61,5 @@ describe('caldav', () => {
     });
     
 
-    it('fallback', async () => {
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (!process.env.CALDAV2_URL) resolve();
-                let ke = new KalenderEvents({
-                    url: 'http://example.com/',
-                    username: 'test',
-                    password: 'test',
-                    type: 'caldav'
-                });
-                let events = await ke.getEvents({
-                    now: moment('20211130').toDate(),
-                    pastview: 1,
-                    preview: 1,
-                    includeTodo: true
-                });
-                reject();
-            } catch (err) {
-                expect(err).to.contain('get calendar went wrong');
-                resolve();
-            }
-        });
-    });
 });
 
