@@ -109,7 +109,7 @@ describe('filter', () => {
                     now: moment('20211121').toDate(),
                     pastview: 1,
                     preview: 3,
-                    filter: '2021-11-24_13:01:00',
+                    filter: '2021-11-24_11:00:00',
                     filterProperty: 'eventStart',
                     filterOperator: 'before',
                     trigger: 'match'
