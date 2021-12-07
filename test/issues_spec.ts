@@ -5,9 +5,9 @@ import { KalenderEvents } from '../dist/lib';
 use(require('chai-like'));
 use(require('chai-things'));
 
-describe('events', () => {
+describe('issues', () => {
    
-    it('test #104', async () => {
+    it('#104', async () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
@@ -17,6 +17,26 @@ describe('events', () => {
                 let events = await ke.getEvents({
                     now: moment("20211119").toDate(),
                     pastview:0,
+                    preview:1
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
+    it('#111', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let ke = new KalenderEvents({
+                    url: "./test/mocks/111.ics"
+                });
+
+                let events = await ke.getEvents({
+                    now: moment("20210524").toDate(),
+                    pastview:1,
                     preview:1
                 });
                 expect(events).to.have.lengthOf(1)

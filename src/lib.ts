@@ -2,7 +2,7 @@ import moment = require('moment');
 import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
 import { Config } from './interfaces/config';
-import { uuid } from 'uuidv4';
+import { v4 } from 'uuid';
 import { parseFile, fromURL } from './ical';
 import * as NodeCache from 'node-cache';
 import { IKalenderEvent, iCalEvent } from './interfaces';
@@ -238,7 +238,7 @@ export class KalenderEvents {
             }
 
             let uid = {
-                uid: event.uid || uuid(),
+                uid: event.uid || v4(),
                 date: ''
             };
             if (recurrence) {
@@ -335,7 +335,7 @@ export class KalenderEvents {
                 delete event.duration.wrappedJSObject
             }
 
-            let uid = event.uid || uuid();
+            let uid = event.uid || v4();
             uid += startDate.getTime().toString();
 
             let duration = event.duration;
