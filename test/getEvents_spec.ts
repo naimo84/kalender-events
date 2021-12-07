@@ -1,32 +1,20 @@
 
 import { expect, should, use } from "chai";
-import nodeIcal = require('node-ical');
-import Ical = require('../dist/nodeIcal');
-
-var sinon = require('sinon');
 import moment = require('moment');
 import { KalenderEvents } from '../dist/lib';
-import { getEvents } from './test_helper';
+
+import Ical = require('../dist/ical');
+
+var sinon = require('sinon');
 use(require('chai-like'));
 use(require('chai-things'));
 
 describe('events', () => {
-    before(async function () {
-        let stub = sinon.stub(Ical, "fromURL");
-        let data = await nodeIcal.async.parseFile('./test/mocks/events.ics');
-        stub.returns(data);
-    });
-
-
-    after(function () {
-        (Ical.fromURL as any).restore();
-    });
-
     it('no default override', async () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20111123').toDate(),
@@ -43,7 +31,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20111123').toDate(),
@@ -62,7 +50,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20210325').toDate(),
@@ -81,7 +69,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20210325').toDate(),
@@ -101,7 +89,7 @@ describe('events', () => {
     it('countdown + Duration parse Error', async () => {
         return new Promise(async (resolve, reject) => {
             let ke = new KalenderEvents({
-                url: "https://domain.com/calendar.ics"
+                url: "./test/mocks/events.ics"
             });
             try {
                 await ke.getEvents({ pastview: 'wrongFormat' })
@@ -119,7 +107,7 @@ describe('events', () => {
     it('caching', async () => {
         return new Promise(async (resolve, reject) => {
             let ke = new KalenderEvents({
-                url: "https://domain.com/calendar.ics"
+                url: "./test/mocks/events.ics"
             });
             try {
                 await ke.getEvents({
@@ -148,7 +136,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20200616').toDate(),
@@ -163,7 +151,18 @@ describe('events', () => {
         });
     });
 
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('webcal', async () => {
+
+        
+            let stub = sinon.stub(Ical, "fromURL");
+            let data = await Ical.parseFile('./test/mocks/events.ics');
+            stub.returns(data);
+      
+        
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
@@ -205,7 +204,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20200616').toDate(),
@@ -224,7 +223,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/ev2.ics",            
                 });
                 let events = await ke.getEvents({
                     now: moment('20200616').toDate(),
@@ -243,7 +242,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20211121').toDate(),
@@ -258,3 +257,5 @@ describe('events', () => {
         });
     });
 });
+
+

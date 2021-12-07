@@ -1,13 +1,13 @@
-import { Config } from './config';
+import { Config } from './interfaces/config';
 
 import dav = require('@naimo84/dav');
 import Scrapegoat = require("scrapegoat");
 import IcalExpander = require('ical-expander');
-import * as  ical from 'node-ical';
+import * as  ical from './ical';
 import { KalenderEvents } from './lib';
 import * as URL from "url";
 
-import { IKalenderEvent } from './event';
+import { IKalenderEvent } from './interfaces/event';
 var debug = require('debug')('kalender-events:caldav');
 
 export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKalenderEvent[]> {
@@ -63,11 +63,13 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
                 for (let todoEntry of todoEntries.objects) {
                     const ics = todoEntry.calendarData;
                     if (ics) {
-                        const data = await ical.async.parseICS(ics);
+                        const data = await ical.parseICS(ics);
                         for (var k in data) {
                             //debug(`caldav - href: ${JSON.stringify(data[k])}`)
+                            //@ts-ignore
                             if (data[k].type !== 'VTODO')
                                 continue;
+                            //@ts-ignore
                             var ev = ke.convertEvent(data[k]);
                             if (ev) {
                                 ev.calendarName = calendar.displayName;
@@ -112,9 +114,10 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
                                 };
                             }
 
-                            const data = await ical.async.fromURL(ics, header);
+                            const data = await ical.fromURL(ics, header);
                             for (var k in data) {
                                 //debug(`caldav - href: ${JSON.stringify(data[k])}`)
+                                //@ts-ignore
                                 var ev = ke.convertEvent(data[k]);
                                 if (ev) {
                                     ev.calendarName = calendar.displayName;

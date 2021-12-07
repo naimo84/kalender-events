@@ -1,17 +1,15 @@
+
+import fs from 'fs';
+
+import axios from 'axios';
+
 /* eslint-disable max-depth, max-params, no-warning-comments, complexity */
 
 const { v4: uuid } = require('uuid');
 const rrule = require('rrule').RRule;
+import moment = require('moment-timezone');
 
-/** **************
- *  A tolerant, minimal icalendar parser
- *  (http://tools.ietf.org/html/rfc5545)
- *
- *  <peterbraden@peterbraden.co.uk>
- * ************* */
-
-// Unescape Text re RFC 4.3.11
-const text = function (t = '') {
+function text(t = '') {
     return t
         .replace(/\\,/g, ',')
         .replace(/\\;/g, ';')
@@ -19,7 +17,7 @@ const text = function (t = '') {
         .replace(/\\\\/g, '\\');
 };
 
-const parseValue = function (value: string) {
+function parseValue(value: string) {
     if (value === 'TRUE') {
         return true;
     }
@@ -36,7 +34,7 @@ const parseValue = function (value: string) {
     return value;
 };
 
-const parseParameters = function (p: any): any {
+function parseParameters(p: any): any {
     const out: any = {};
     for (const element of p) {
         if (element.includes('=')) {
@@ -45,14 +43,10 @@ const parseParameters = function (p: any): any {
             out[segs[0]] = parseValue(segs.slice(1).join('='));
         }
     }
-
-    // Sp is not defined in this scope, typo?
-    // original code from peterbraden
-    // return out || sp;
     return out;
 };
 
-const storeValueParameter = function (name: string | number) {
+function storeValueParameter(name: string | number) {
     return function (value: any, curr: { [x: string]: any[]; }) {
         const current = curr[name];
 
@@ -71,7 +65,7 @@ const storeValueParameter = function (name: string | number) {
     };
 };
 
-const storeParameter = function (name: string) {
+function storeParameter(name: string) {
     return function (value: string | undefined, parameters: string | any[], curr: any) {
         const data = parameters && parameters.length > 0 && !(parameters.length === 1 && parameters[0] === 'CHARSET=utf-8') ? { params: parseParameters(parameters), val: text(value) } : text(value);
 
@@ -79,11 +73,10 @@ const storeParameter = function (name: string) {
     };
 };
 
-const addTZ = function (dt: any, parameters: any) {
+function addTZ(dt: any, parameters: any) {
     const p = parseParameters(parameters);
 
     if (dt.tz) {
-        // Date already has a timezone property
         return dt;
     }
 
@@ -162,15 +155,14 @@ function isDateOnly(value: string, parameters: string | string[]) {
     return dateOnly;
 }
 
-const typeParameter = function (name: string) {
-    // Typename is not used in this function?
+function typeParameter(name: string) {
     return function (value: any, parameters: any, curr: any) {
         const returnValue = isDateOnly(value, parameters) ? 'date' : 'date-time';
         return storeValueParameter(name)(returnValue, curr);
     };
 };
 
-const dateParameter = function (name: string) {
+function dateParameter(name: string) {
     return function (value: any, parameters: any, curr: any) {
         // The regex from main gets confued by extra :
         const pi = parameters.indexOf('TZID=tzone');
@@ -186,7 +178,6 @@ const dateParameter = function (name: string) {
         // Process 'VALUE=DATE' and EXDATE
         if (isDateOnly(value, parameters)) {
             // Just Date
-
             const comps = /^(\d{4})(\d{2})(\d{2}).*$/.exec(value);
             if (comps !== null) {
                 // No TZ info - assume same timezone as this computer
@@ -296,7 +287,7 @@ const dateParameter = function (name: string) {
     };
 };
 
-const geoParameter = function (name: string) {
+function geoParameter(name: string) {
     return function (value: string, parameters: any, curr: { [x: string]: { lat: number; lon: number; }; }) {
         //@ts-ignore
 
@@ -307,7 +298,7 @@ const geoParameter = function (name: string) {
     };
 };
 
-const categoriesParameter = function (name: string) {
+function categoriesParameter(name: string) {
     const separatorPattern = /\s*,\s*/g;
     return function (value: string, parameters: any, curr: { [x: string]: string | any[]; }) {
         //@ts-ignore
@@ -341,7 +332,7 @@ const categoriesParameter = function (name: string) {
 //             EXDATE:20171219T060000
 //       Even though "T060000" doesn't match or overlap "T1400000Z", it's still supposed to be excluded?  Odd. :(
 // TODO: See if this causes any problems with events that recur multiple times a day.
-const exdateParameter = function (name: string) {
+function exdateParameter(name: string) {
     return function (value: string, parameters: any, curr: { [x: string]: { [x: string]: any; }; }) {
         const separatorPattern = /\s*,\s*/g;
         curr[name] = curr[name] || [];
@@ -367,11 +358,11 @@ const exdateParameter = function (name: string) {
 
 // RECURRENCE-ID is the ID of a specific recurrence within a recurrence rule.
 // TODO:  It's also possible for it to have a range, like "THISANDPRIOR", "THISANDFUTURE".  This isn't currently handled.
-const recurrenceParameter = function (name: string) {
+function recurrenceParameter(name: string) {
     return dateParameter(name);
 };
 
-const addFBType = function (fb: { type?: any; }, parameters: any) {
+function addFBType(fb: { type?: any; }, parameters: any) {
     const p = parseParameters(parameters);
 
     if (parameters && p) {
@@ -381,7 +372,7 @@ const addFBType = function (fb: { type?: any; }, parameters: any) {
     return fb;
 };
 
-const freebusyParameter = function (name: string) {
+function freebusyParameter(name: string) {
     return function (value: string, parameters: any, curr: { [x: string]: any[]; }) {
         const fb = addFBType({}, parameters);
         curr[name] = curr[name] || [];
@@ -400,373 +391,370 @@ const freebusyParameter = function (name: string) {
     };
 };
 
-module.exports = {
-    objectHandlers: {
-        BEGIN(component: any, parameters: any, curr: any, stack: any[]) {
-            stack.push(curr);
+function getLineBreakChar(string: string | string[]) {
+    const indexOfLF = string.indexOf('\n', 1); // No need to check first-character
+    if (indexOfLF === -1) {
+        if (string.includes('\r')) {
+            return '\r';
+        }
+        return '\n';
+    }
+    if (string[indexOfLF - 1] === '\r') {
+        return '\r?\n';
+    }
+    return '\n';
+}
 
-            return { type: component, params: parameters };
-        },
-        END(value: string, parameters: any, curr: { rrule: string; start: any; }, stack: any) {
-            // Original end function
-            //@ts-ignore
-            const originalEnd = function (component: string, parameters_: any, curr: { [x: string]: any; end: Date; datetype: string; start: any; duration: string | undefined; uid: string | number; recurrenceid: { toISOString: () => string; } | undefined; }, stack: any[]) {
-                // Prevents the need to search the root of the tree for the VCALENDAR object
-                if (component === 'VCALENDAR') {
-                    // Scan all high level object in curr and drop all strings
-                    let key;
-                    let object;
+const objectHandlers: any = {
+    BEGIN(component: any, parameters: any, curr: any, stack: any[]) {
+        stack.push(curr);
 
-                    for (key in curr) {
-                        if (!{}.hasOwnProperty.call(curr, key)) {
-                            continue;
-                        }
+        return { type: component, params: parameters };
+    },
+    END(value: string, parameters: any, curr: { rrule: string; start: any; }, stack: any) {
+        // Original end function
+        //@ts-ignore
+        function originalEnd(component: string, parameters_: any, curr: { [x: string]: any; end: Date; datetype: string; start: any; duration: string | undefined; uid: string | number; recurrenceid: { toISOString: () => string; } | undefined; }, stack: any[]) {
+            // Prevents the need to search the root of the tree for the VCALENDAR object
+            if (component === 'VCALENDAR') {
+                // Scan all high level object in curr and drop all strings
+                let key;
+                let object;
 
-                        object = curr[key];
-                        if (typeof object === 'string') {
-                            delete curr[key];
-                        }
+                for (key in curr) {
+                    if (!{}.hasOwnProperty.call(curr, key)) {
+                        continue;
                     }
 
-                    return curr;
-                }
-
-                const par = stack.pop();
-
-                if (!curr.end) { // RFC5545, 3.6.1
-                    if (curr.datetype === 'date-time') {
-                        curr.end = curr.start;
-                        // If the duration is not set
-                    } else if (curr.duration === undefined) {
-                        // Set the end to the start plus one day RFC5545, 3.6.1
-                        curr.end = moment.utc(curr.start).add(1, 'days').toDate(); // New Date(moment(curr.start).add(1, 'days'));
-                    } else {
-                        const durationUnits =
-                        {
-                            // Y: 'years',
-                            // M: 'months',
-                            W: 'weeks',
-                            D: 'days',
-                            H: 'hours',
-                            M: 'minutes',
-                            S: 'seconds'
-                        };
-                        // Get the list of duration elements
-                        const r = curr.duration.match(/-?\d+[YMWDHS]/g);
-                        let newend = moment.utc(curr.start);
-                        // Is the 1st character a negative sign?
-                        const indicator = curr.duration.startsWith('-') ? -1 : 1;
-                        // Process each element
-                        if (r)
-                            for (const d of r) {
-                                //@ts-ignore
-
-                                newend = newend.add(Number.parseInt(d, 10) * indicator, durationUnits[d.slice(-1)]);
-                            }
-
-                        curr.end = newend.toDate();
+                    object = curr[key];
+                    if (typeof object === 'string') {
+                        delete curr[key];
                     }
                 }
 
-                if (curr.uid) {
-                    // If this is the first time we run into this UID, just save it.
-                    if (par[curr.uid] === undefined) {
-                        par[curr.uid] = curr;
+                return curr;
+            }
 
-                        if (par.method) { // RFC5545, 3.2
-                            par[curr.uid].method = par.method;
-                        }
-                    } else if (curr.recurrenceid === undefined) {
-                        // If we have multiple ical entries with the same UID, it's either going to be a
-                        // modification to a recurrence (RECURRENCE-ID), and/or a significant modification
-                        // to the entry (SEQUENCE).
+            const par = stack.pop();
 
-                        // TODO: Look into proper sequence logic.
-
-                        // If we have the same UID as an existing record, and it *isn't* a specific recurrence ID,
-                        // not quite sure what the correct behaviour should be.  For now, just take the new information
-                        // and merge it with the old record by overwriting only the fields that appear in the new record.
-                        let key;
-                        for (key in curr) {
-                            if (key !== null) {
-                                par[curr.uid][key] = curr[key];
-                            }
-                        }
-                    }
-
-                    // If we have recurrence-id entries, list them as an array of recurrences keyed off of recurrence-id.
-                    // To use - as you're running through the dates of an rrule, you can try looking it up in the recurrences
-                    // array.  If it exists, then use the data from the calendar object in the recurrence instead of the parent
-                    // for that day.
-
-                    // NOTE:  Sometimes the RECURRENCE-ID record will show up *before* the record with the RRULE entry.  In that
-                    // case, what happens is that the RECURRENCE-ID record ends up becoming both the parent record and an entry
-                    // in the recurrences array, and then when we process the RRULE entry later it overwrites the appropriate
-                    // fields in the parent record.
-
-                    if (typeof curr.recurrenceid !== 'undefined') {
-                        // TODO:  Is there ever a case where we have to worry about overwriting an existing entry here?
-
-                        // Create a copy of the current object to save in our recurrences array.  (We *could* just do par = curr,
-                        // except for the case that we get the RECURRENCE-ID record before the RRULE record.  In that case, we
-                        // would end up with a shared reference that would cause us to overwrite *both* records at the point
-                        // that we try and fix up the parent record.)
-                        const recurrenceObject: any = {};
-                        let key;
-                        for (key in curr) {
-                            if (key !== null) {
-                                recurrenceObject[key] = curr[key];
-                            }
-                        }
-
-                        if (typeof recurrenceObject.recurrences !== 'undefined') {
-                            delete recurrenceObject.recurrences;
-                        }
-
-                        // If we don't have an array to store recurrences in yet, create it.
-                        if (par[curr.uid].recurrences === undefined) {
-                            par[curr.uid].recurrences = {};
-                        }
-
-                        // Save off our cloned recurrence object into the array, keyed by date but not time.
-                        // We key by date only to avoid timezone and "floating time" problems (where the time isn't associated with a timezone).
-                        // TODO: See if this causes a problem with events that have multiple recurrences per day.
-                        if (typeof curr.recurrenceid.toISOString === 'function') {
-                            par[curr.uid].recurrences[curr.recurrenceid.toISOString().slice(0, 10)] = recurrenceObject;
-                        } else { // Removed issue 56
-                            throw new TypeError('No toISOString function in curr.recurrenceid' + curr.recurrenceid);
-                        }
-                    }
-
-                    // One more specific fix - in the case that an RRULE entry shows up after a RECURRENCE-ID entry,
-                    // let's make sure to clear the recurrenceid off the parent field.
-                    if (typeof par[curr.uid].rrule !== 'undefined' && typeof par[curr.uid].recurrenceid !== 'undefined') {
-                        delete par[curr.uid].recurrenceid;
-                    }
+            if (!curr.end) { // RFC5545, 3.6.1
+                if (curr.datetype === 'date-time') {
+                    curr.end = curr.start;
+                    // If the duration is not set
+                } else if (curr.duration === undefined) {
+                    // Set the end to the start plus one day RFC5545, 3.6.1
+                    curr.end = moment.utc(curr.start).add(1, 'days').toDate(); // New Date(moment(curr.start).add(1, 'days'));
                 } else {
-                    const id = uuid();
-                    par[id] = curr;
+                    const durationUnits =
+                    {
+                        // Y: 'years',
+                        // M: 'months',
+                        W: 'weeks',
+                        D: 'days',
+                        H: 'hours',
+                        M: 'minutes',
+                        S: 'seconds'
+                    };
+                    // Get the list of duration elements
+                    const r = curr.duration.match(/-?\d+[YMWDHS]/g);
+                    let newend = moment.utc(curr.start);
+                    // Is the 1st character a negative sign?
+                    const indicator = curr.duration.startsWith('-') ? -1 : 1;
+                    // Process each element
+                    if (r)
+                        for (const d of r) {
+                            //@ts-ignore
+
+                            newend = newend.add(Number.parseInt(d, 10) * indicator, durationUnits[d.slice(-1)]);
+                        }
+
+                    curr.end = newend.toDate();
+                }
+            }
+
+            if (curr.uid) {
+                // If this is the first time we run into this UID, just save it.
+                if (par[curr.uid] === undefined) {
+                    par[curr.uid] = curr;
 
                     if (par.method) { // RFC5545, 3.2
-                        par[id].method = par.method;
+                        par[curr.uid].method = par.method;
+                    }
+                } else if (curr.recurrenceid === undefined) {
+                    // If we have multiple ical entries with the same UID, it's either going to be a
+                    // modification to a recurrence (RECURRENCE-ID), and/or a significant modification
+                    // to the entry (SEQUENCE).
+
+                    // TODO: Look into proper sequence logic.
+
+                    // If we have the same UID as an existing record, and it *isn't* a specific recurrence ID,
+                    // not quite sure what the correct behaviour should be.  For now, just take the new information
+                    // and merge it with the old record by overwriting only the fields that appear in the new record.
+                    let key;
+                    for (key in curr) {
+                        if (key !== null) {
+                            par[curr.uid][key] = curr[key];
+                        }
                     }
                 }
 
-                return par;
-            };
+                // If we have recurrence-id entries, list them as an array of recurrences keyed off of recurrence-id.
+                // To use - as you're running through the dates of an rrule, you can try looking it up in the recurrences
+                // array.  If it exists, then use the data from the calendar object in the recurrence instead of the parent
+                // for that day.
 
-            // Recurrence rules are only valid for VEVENT, VTODO, and VJOURNAL.
-            // More specifically, we need to filter the VCALENDAR type because we might end up with a defined rrule
-            // due to the subtypes.
+                // NOTE:  Sometimes the RECURRENCE-ID record will show up *before* the record with the RRULE entry.  In that
+                // case, what happens is that the RECURRENCE-ID record ends up becoming both the parent record and an entry
+                // in the recurrences array, and then when we process the RRULE entry later it overwrites the appropriate
+                // fields in the parent record.
 
-            if ((value === 'VEVENT' || value === 'VTODO' || value === 'VJOURNAL') && curr.rrule) {
-                let rule = curr.rrule.replace('RRULE:', '');
-                // Make sure the rrule starts with FREQ=
-                rule = rule.slice(rule.lastIndexOf('FREQ='));
-                // If no rule start date
-                if (rule.includes('DTSTART') === false) {
-                    // Get date/time into a specific format for comapare
-                    let x = moment(curr.start).format('MMMM/Do/YYYY, h:mm:ss a');
-                    // If the local time value is midnight
-                    // This a whole day event
-                    if (x.slice(-11) === '12:00:00 am') {
-                        // Get the timezone offset
-                        // The internal date is stored in UTC format
-                        const offset = curr.start.getTimezoneOffset();
-                        // Only east of gmt is a problem
-                        if (offset < 0) {
-                            // Calculate the new startdate with the offset applied, bypass RRULE/Luxon confusion
-                            // Make the internally stored DATE the actual date (not UTC offseted)
-                            // Luxon expects local time, not utc, so gets start date wrong if not adjusted
-                            curr.start = new Date(curr.start.getTime() + (Math.abs(offset) * 60000));
-                        } else {
-                            // Get rid of any time (shouldn't be any, but be sure)
-                            x = moment(curr.start).format('MMMM/Do/YYYY');
-                            const comps = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(x);
-                            if (comps) {
-                                //@ts-ignore
+                if (typeof curr.recurrenceid !== 'undefined') {
+                    // TODO:  Is there ever a case where we have to worry about overwriting an existing entry here?
 
-                                curr.start = new Date(comps[3], comps[1] - 1, comps[2]);
-                            }
+                    // Create a copy of the current object to save in our recurrences array.  (We *could* just do par = curr,
+                    // except for the case that we get the RECURRENCE-ID record before the RRULE record.  In that case, we
+                    // would end up with a shared reference that would cause us to overwrite *both* records at the point
+                    // that we try and fix up the parent record.)
+                    const recurrenceObject: any = {};
+                    let key;
+                    for (key in curr) {
+                        if (key !== null) {
+                            recurrenceObject[key] = curr[key];
                         }
                     }
 
-                    // If the date has an toISOString function
-                    if (curr.start && typeof curr.start.toISOString === 'function') {
-                        try {
-                            // If the original date has a TZID, add it
-                            if (curr.start.tz) {
-                                const tz = getTimeZone(curr.start.tz);
-                                rule += `;DTSTART;TZID=${tz}:${curr.start.toISOString().replace(/[-:]/g, '')}`;
-                            } else {
-                                rule += `;DTSTART=${curr.start.toISOString().replace(/[-:]/g, '')}`;
-                            }
+                    if (typeof recurrenceObject.recurrences !== 'undefined') {
+                        delete recurrenceObject.recurrences;
+                    }
 
-                            rule = rule.replace(/\.\d{3}/, '');
-                        } catch (error) { // This should not happen, issue #56
-                            throw new Error('ERROR when trying to convert to ISOString' + error);
-                        }
-                    } else {
-                        throw new Error('No toISOString function in curr.start' + curr.start);
+                    // If we don't have an array to store recurrences in yet, create it.
+                    if (par[curr.uid].recurrences === undefined) {
+                        par[curr.uid].recurrences = {};
+                    }
+
+                    // Save off our cloned recurrence object into the array, keyed by date but not time.
+                    // We key by date only to avoid timezone and "floating time" problems (where the time isn't associated with a timezone).
+                    // TODO: See if this causes a problem with events that have multiple recurrences per day.
+                    if (typeof curr.recurrenceid.toISOString === 'function') {
+                        par[curr.uid].recurrences[curr.recurrenceid.toISOString().slice(0, 10)] = recurrenceObject;
+                    } else { // Removed issue 56
+                        throw new TypeError('No toISOString function in curr.recurrenceid' + curr.recurrenceid);
                     }
                 }
 
-                // Make sure to catch error from rrule.fromString()
-                try {
-                    curr.rrule = rrule.fromString(rule);
-                } catch (error) {
-                    throw error;
+                // One more specific fix - in the case that an RRULE entry shows up after a RECURRENCE-ID entry,
+                // let's make sure to clear the recurrenceid off the parent field.
+                if (typeof par[curr.uid].rrule !== 'undefined' && typeof par[curr.uid].recurrenceid !== 'undefined') {
+                    delete par[curr.uid].recurrenceid;
                 }
-            }
-            //@ts-ignore
-
-            return originalEnd.call(this, value, parameters, curr, stack);
-        },
-        SUMMARY: storeParameter('summary'),
-        DESCRIPTION: storeParameter('description'),
-        URL: storeParameter('url'),
-        UID: storeParameter('uid'),
-        LOCATION: storeParameter('location'),
-        DTSTART(value: any, parameters: any, curr: any) {
-            curr = dateParameter('start')(value, parameters, curr);
-            return typeParameter('datetype')(value, parameters, curr);
-        },
-        DTEND: dateParameter('end'),
-        EXDATE: exdateParameter('exdate'),
-        ' CLASS': storeParameter('class'), // Should there be a space in this property?
-        TRANSP: storeParameter('transparency'),
-        GEO: geoParameter('geo'),
-        'PERCENT-COMPLETE': storeParameter('completion'),
-        COMPLETED: dateParameter('completed'),
-        CATEGORIES: categoriesParameter('categories'),
-        FREEBUSY: freebusyParameter('freebusy'),
-        DTSTAMP: dateParameter('dtstamp'),
-        CREATED: dateParameter('created'),
-        'LAST-MODIFIED': dateParameter('lastmodified'),
-        'RECURRENCE-ID': recurrenceParameter('recurrenceid'),
-        //@ts-ignore
-        RRULE(value: any, parameters: any, curr: { rrule: any; }, stack: any, line: any) {
-            curr.rrule = line;
-            return curr;
-        }
-    },
-
-    handleObject(name: string, value: any, parameters: any, ctx: any, stack: string | any[], line: any) {
-        if (this.objectHandlers[name]) {
-            return this.objectHandlers[name](value, parameters, ctx, stack, line);
-        }
-
-        // Handling custom properties
-        if (/X-[\w-]+/.test(name) && stack.length > 0) {
-            // Trimming the leading and perform storeParam
-            name = name.slice(2);
-            //@ts-ignore
-
-            return storeParameter(name)(value, parameters, ctx, stack, line);
-        }
-
-        return storeParameter(name.toLowerCase())(value, parameters, ctx);
-    },
-
-    parseLines(lines: string | any[], limit: number, ctx: { type?: any; params?: any; } | undefined, stack: never[], lastIndex: number, cb: (arg0: null, arg1: any) => void) {
-        if (!cb && typeof ctx === 'function') {
-            cb = ctx;
-            ctx = undefined;
-        }
-
-        ctx = ctx || {};
-        stack = stack || [];
-
-        let limitCounter = 0;
-
-        let i = lastIndex || 0;
-        for (let ii = lines.length; i < ii; i++) {
-            let l = lines[i];
-            // Unfold : RFC#3.1
-            while (lines[i + 1] && /[ \t]/.test(lines[i + 1][0])) {
-                l += lines[i + 1].slice(1);
-                i++;
-            }
-
-            // Remove any double quotes in any tzid statement// except around (utc+hh:mm
-            if (l.indexOf('TZID=') && !l.includes('"(')) {
-                l = l.replace(/"/g, '');
-            }
-
-            const exp = /^([\w\d-]+)((?:;[\w\d-]+=(?:(?:"[^"]*")|[^":;]+))*):(.*)$/;
-            let kv = l.match(exp);
-
-            if (kv === null) {
-                // Invalid line - must have k&v
-                continue;
-            }
-
-            kv = kv.slice(1);
-
-            const value = kv[kv.length - 1];
-            const name = kv[0];
-            const parameters = kv[1] ? kv[1].split(';').slice(1) : [];
-
-            ctx = this.handleObject(name, value, parameters, ctx, stack, l) || {};
-            if (++limitCounter > limit) {
-                break;
-            }
-        }
-
-        if (i >= lines.length) {
-            // Type and params are added to the list of items, get rid of them.
-            delete ctx?.type;
-            delete ctx?.params;
-        }
-
-        if (cb) {
-            if (i < lines.length) {
-                setImmediate(() => {
-                    this.parseLines(lines, limit, ctx, stack, i + 1, cb);
-                });
             } else {
-                setImmediate(() => {
-                    cb(null, ctx);
-                });
-            }
-        } else {
-            return ctx;
-        }
-        return null;
-    },
+                const id = uuid();
+                par[id] = curr;
 
-    getLineBreakChar(string: string | string[]) {
-        const indexOfLF = string.indexOf('\n', 1); // No need to check first-character
-
-        if (indexOfLF === -1) {
-            if (string.includes('\r')) {
-                return '\r';
+                if (par.method) { // RFC5545, 3.2
+                    par[id].method = par.method;
+                }
             }
 
-            return '\n';
-        }
+            return par;
+        };
 
-        if (string[indexOfLF - 1] === '\r') {
-            return '\r?\n';
-        }
+        // Recurrence rules are only valid for VEVENT, VTODO, and VJOURNAL.
+        // More specifically, we need to filter the VCALENDAR type because we might end up with a defined rrule
+        // due to the subtypes.
 
-        return '\n';
+        if ((value === 'VEVENT' || value === 'VTODO' || value === 'VJOURNAL') && curr.rrule) {
+            let rule = curr.rrule.replace('RRULE:', '');
+            // Make sure the rrule starts with FREQ=
+            rule = rule.slice(rule.lastIndexOf('FREQ='));
+            // If no rule start date
+            if (rule.includes('DTSTART') === false) {
+                // Get date/time into a specific format for comapare
+                let x = moment(curr.start).format('MMMM/Do/YYYY, h:mm:ss a');
+                // If the local time value is midnight
+                // This a whole day event
+                if (x.slice(-11) === '12:00:00 am') {
+                    // Get the timezone offset
+                    // The internal date is stored in UTC format
+                    const offset = curr.start.getTimezoneOffset();
+                    // Only east of gmt is a problem
+                    if (offset < 0) {
+                        // Calculate the new startdate with the offset applied, bypass RRULE/Luxon confusion
+                        // Make the internally stored DATE the actual date (not UTC offseted)
+                        // Luxon expects local time, not utc, so gets start date wrong if not adjusted
+                        //curr.start = new Date(curr.start.getTime() + (Math.abs(offset) * 60000));
+                    } else {
+                        // Get rid of any time (shouldn't be any, but be sure)
+                        x = moment(curr.start).format('MMMM/Do/YYYY');
+                        const comps = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(x);
+                        if (comps) {
+                            //@ts-ignore
+
+                            curr.start = new Date(comps[3], comps[1] - 1, comps[2]);
+                        }
+                    }
+                }
+
+                // If the date has an toISOString function
+                if (curr.start && typeof curr.start.toISOString === 'function') {
+                    try {
+                        // If the original date has a TZID, add it
+                        if (curr.start.tz) {
+                            const tz = getTimeZone(curr.start.tz);
+                            rule += `;DTSTART;TZID=${tz}:${curr.start.toISOString().replace(/[-:]/g, '')}`;
+                        } else {
+                            rule += `;DTSTART=${curr.start.toISOString().replace(/[-:]/g, '')}`;
+                        }
+
+                        rule = rule.replace(/\.\d{3}/, '');
+                    } catch (error) { // This should not happen, issue #56
+                        throw new Error('ERROR when trying to convert to ISOString' + error);
+                    }
+                } else {
+                    throw new Error('No toISOString function in curr.start' + curr.start);
+                }
+            }
+
+            // Make sure to catch error from rrule.fromString()
+            try {
+                curr.rrule = rrule.fromString(rule);
+            } catch (error) {
+                throw error;
+            }
+        }
+        //@ts-ignore
+
+        return originalEnd.call(this, value, parameters, curr, stack);
     },
+    SUMMARY: storeParameter('summary'),
+    DESCRIPTION: storeParameter('description'),
+    URL: storeParameter('url'),
+    UID: storeParameter('uid'),
+    LOCATION: storeParameter('location'),
+    DTSTART(value: any, parameters: any, curr: any) {
+        curr = dateParameter('start')(value, parameters, curr);
+        return typeParameter('datetype')(value, parameters, curr);
+    },
+    DTEND: dateParameter('end'),
+    EXDATE: exdateParameter('exdate'),
+    ' CLASS': storeParameter('class'), // Should there be a space in this property?
+    TRANSP: storeParameter('transparency'),
+    GEO: geoParameter('geo'),
+    'PERCENT-COMPLETE': storeParameter('completion'),
+    COMPLETED: dateParameter('completed'),
+    CATEGORIES: categoriesParameter('categories'),
+    FREEBUSY: freebusyParameter('freebusy'),
+    DTSTAMP: dateParameter('dtstamp'),
+    CREATED: dateParameter('created'),
+    'LAST-MODIFIED': dateParameter('lastmodified'),
+    'RECURRENCE-ID': recurrenceParameter('recurrenceid'),
+    //@ts-ignore
+    RRULE(value: any, parameters: any, curr: { rrule: any; }, stack: any, line: any) {
+        curr.rrule = line;
+        return curr;
+    }
+}
 
-    parseICS(string: string, cb: any) {
-        const lineEndType = this.getLineBreakChar(string);
-        const lines = string.split(lineEndType === '\n' ? /\n/ : /\r?\n/);
-        let ctx;
+export function handleObject(name: string, value: any, parameters: any, ctx: any, stack: string | any[], line: any) {
+    if (objectHandlers[name]) {
+        return objectHandlers[name](value, parameters, ctx, stack, line);
+    }
 
-        if (cb) {
-            // Asynchronous execution
-            this.parseLines(lines, 2000, cb);
-        } else {
-            // Synchronous execution
-            ctx = this.parseLines(lines, lines.length);
-            return ctx;
+    // Handling custom properties
+    if (/X-[\w-]+/.test(name) && stack.length > 0) {
+        // Trimming the leading and perform storeParam
+        name = name.slice(2);
+        //@ts-ignore
+
+        return storeParameter(name)(value, parameters, ctx, stack, line);
+    }
+
+    return storeParameter(name.toLowerCase())(value, parameters, ctx);
+}
+
+export function parseLines(lines: string | any[], limit: number, ctx?: { type?: any; params?: any; } | undefined, stack?: never[], lastIndex?: number, cb?: (arg0: null, arg1: any) => void) {
+    if (!cb && typeof ctx === 'function') {
+        cb = ctx;
+        ctx = undefined;
+    }
+
+    ctx = ctx || {};
+    stack = stack || [];
+
+    let limitCounter = 0;
+
+    let i = lastIndex || 0;
+    for (let ii = lines.length; i < ii; i++) {
+        let l = lines[i];
+        // Unfold : RFC#3.1
+        while (lines[i + 1] && /[ \t]/.test(lines[i + 1][0])) {
+            l += lines[i + 1].slice(1);
+            i++;
+        }
+
+        // Remove any double quotes in any tzid statement// except around (utc+hh:mm
+        if (l.indexOf('TZID=') && !l.includes('"(')) {
+            l = l.replace(/"/g, '');
+        }
+
+        const exp = /^([\w\d-]+)((?:;[\w\d-]+=(?:(?:"[^"]*")|[^":;]+))*):(.*)$/;
+        let kv = l.match(exp);
+
+        if (kv === null) {
+            // Invalid line - must have k&v
+            continue;
+        }
+
+        kv = kv.slice(1);
+
+        const value = kv[kv.length - 1];
+        const name = kv[0];
+        const parameters = kv[1] ? kv[1].split(';').slice(1) : [];
+
+        ctx = handleObject(name, value, parameters, ctx, stack, l) || {};
+        if (++limitCounter > limit) {
+            break;
         }
     }
-};
 
+    if (i >= lines.length) {
+        // Type and params are added to the list of items, get rid of them.
+        delete ctx?.type;
+        delete ctx?.params;
+    }
 
+    if (cb) {
+        if (i < lines.length) {
+            setImmediate(() => {
+                parseLines(lines, limit, ctx, stack, i + 1, cb);
+            });
+        } else {
+            setImmediate(() => {
+                cb!(null, ctx);
+            });
+        }
+    } else {
+        return ctx;
+    }
+    return null;
+}
+
+export function parseICS(string: string) {
+    const lineEndType = getLineBreakChar(string);
+    const lines = string.split(lineEndType === '\n' ? /\n/ : /\r?\n/);
+    let ctx = parseLines(lines, lines.length);
+    return ctx;
+}
+
+export async function fromURL(url: any, options: any) {
+    const response = await axios.get(url, options)
+    if (Math.floor(response.status / 100) !== 2) {
+        throw new Error(`${response.status} ${response.statusText}`);
+    }
+    return parseICS(response.data);
+}
+
+export async function parseFile(filename: any) {
+    const data = await fs.promises.readFile(filename, 'utf8')
+    return parseICS(data)
+}

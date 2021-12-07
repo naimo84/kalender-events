@@ -1,11 +1,11 @@
 import moment = require('moment');
 import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
-import { Config } from './config';
+import { Config } from './interfaces/config';
 import { uuid } from 'uuidv4';
-import * as nodeIcal from './nodeIcal';
+import { parseFile, fromURL } from './ical';
 import * as NodeCache from 'node-cache';
-import { IKalenderEvent, iCalEvent } from './event';
+import { IKalenderEvent, iCalEvent } from './interfaces';
 var debug = require('debug')('kalender-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
@@ -429,7 +429,7 @@ export class KalenderEvents {
                     };
                 }
 
-                let data = await nodeIcal.fromURL(this.config.url, header,null);
+                let data = await fromURL(this.config.url, header);
                 debug(data)
 
                 let converted = await this.convertEvents(data);
@@ -439,7 +439,7 @@ export class KalenderEvents {
                 if (!this.config.url) {
                     throw "URL/File is not defined";
                 }
-                let data = await nodeIcal.parseFile(this.config.url,null);
+                let data = await parseFile(this.config.url);
                 debug(data)
                 let converted = await this.convertEvents(data);
                 return converted;

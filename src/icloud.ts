@@ -1,8 +1,8 @@
 import xmlParser = require('xml-js');
 import icalExpander = require('ical-expander');
-import { Config } from './config';
+import { Config } from './interfaces/config';
 import { KalenderEvents } from './lib';
-import { IKalenderEvent } from './event';
+import { IKalenderEvent } from './interfaces/event';
 import moment = require('moment');
 const https = require('https');
 var debug = require('debug')('kalendar-events_icloud')

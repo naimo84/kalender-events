@@ -1,5 +1,4 @@
 /* istanbul ignore file */
 export * from './lib';
-export * from './config';
-export * from './event';
+export * from './interfaces';
 export * as cli from './cli';
