@@ -746,7 +746,7 @@ export function parseLines(lines: string | any[], limit: number, ctx?: { type?: 
     return null;
 }
 
-export function parseICS(string: string) {
+export function parseICS(string: string) :any{
     const lineEndType = getLineBreakChar(string);
     const lines = string.split(lineEndType === '\n' ? /\n/ : /\r?\n/);
     let ctx = parseLines(lines, lines.length);

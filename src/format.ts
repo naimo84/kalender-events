@@ -3,7 +3,7 @@ import { isAllDay } from "./helper";
 import moment from "moment";
 
 /* istanbul ignore next */
-export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Date, _end: Date, withTime: boolean, config: any) {
+export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Date, _end: Date, withTime: boolean, config: any):string {
     var day: any = _date.getDate();
     var month: any = _date.getMonth() + 1;
     var year = _date.getFullYear();
@@ -124,17 +124,14 @@ export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Dat
 
         if (config.replacedates) {
             if (_class === 'ical_today')
-                return {
-                    text: replaceText('today', config) + _time,
-                    _class: _class,
-                };
-            if (_class === 'ical_tomorrow') return { text: replaceText('tomorrow', config) + _time, _class: _class };
-            if (_class === 'ical_dayafter') return { text: replaceText('dayafter', config) + _time, _class: _class };
-            if (_class === 'ical_3days') return { text: replaceText('3days', config) + _time, _class: _class };
-            if (_class === 'ical_4days') return { text: replaceText('4days', config) + _time, _class: _class };
-            if (_class === 'ical_5days') return { text: replaceText('5days', config) + _time, _class: _class };
-            if (_class === 'ical_6days') return { text: replaceText('6days', config) + _time, _class: _class };
-            if (_class === 'ical_oneweek') return { text: replaceText('oneweek', config) + _time, _class: _class };
+                return  replaceText('today', config) + _time;
+            if (_class === 'ical_tomorrow') return  replaceText('tomorrow', config) + _time;
+            if (_class === 'ical_dayafter') return  replaceText('dayafter', config) + _time;
+            if (_class === 'ical_3days') return  replaceText('3days', config) + _time;
+            if (_class === 'ical_4days') return replaceText('4days', config) + _time;
+            if (_class === 'ical_5days') return  replaceText('5days', config) + _time;
+            if (_class === 'ical_6days') return  replaceText('6days', config) + _time;
+            if (_class === 'ical_oneweek') return replaceText('oneweek', config) + _time;
         }
     } else {
         _class = 'ical_today';

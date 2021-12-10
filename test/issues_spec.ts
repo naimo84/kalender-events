@@ -7,6 +7,27 @@ use(require('chai-things'));
 
 describe('issues', () => {
    
+    it('#77', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!process.env.CALDAV1_URL) resolve();
+                let ke = new KalenderEvents({
+                    url: "./test/mocks/77.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20211013').toDate(),
+                    pastview: 1,
+                    preview: 1,
+                    includeTodo: true
+                });
+                expect(events).to.have.lengthOf(1)               
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
     it('#104', async () => {
         return new Promise(async (resolve, reject) => {
             try {

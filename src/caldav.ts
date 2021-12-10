@@ -8,8 +8,9 @@ import { KalenderEvents } from './lib';
 import * as URL from "url";
 
 import { IKalenderEvent } from './interfaces/event';
-import { convertEvents } from './convert';
+import { convertEvent, convertEvents } from './convert';
 import { getPreviews } from './helper';
+import { parseICS } from './ical';
 var debug = require('debug')('kalender-events:caldav');
 
 export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
@@ -65,14 +66,14 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                 for (let todoEntry of todoEntries.objects) {
                     const ics = todoEntry.calendarData;
                     if (ics) {
-                        const data = await ical.parseICS(ics);
+                        const data = await parseICS(ics);
                         for (var k in data) {
                             //debug(`caldav - href: ${JSON.stringify(data[k])}`)
                             //@ts-ignore
                             if (data[k].type !== 'VTODO')
                                 continue;
-                            //@ts-ignore
-                            var ev = ke.convertEvent(data[k]);
+                           
+                            var ev = convertEvent(data[k],config);
                             if (ev) {
                                 ev.calendarName = calendar.displayName;
                                 const key = `${ev.uid!.uid! + ev.uid!.date!}`;

@@ -30,7 +30,7 @@ export function convertEvents(events: any, config: Config): IKalenderEvent[] {
             }
         } else {
             for (let index in events) {
-                let ev = convertEvent(events[index],config);
+                let ev = convertEvent(events[index], config);
                 if (ev)
                     retEntries.push(ev);
             }
@@ -95,7 +95,11 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             exdate: event.exdate,
             recurrences: event.recurrences,
             categories: event.categories,
-            alarms: []
+            alarms: [],
+            status: event.type === "VTODO" ? {
+                completed: event.status === "COMPLETED",
+                percent: event.completion,
+            } : undefined
         }
 
         const makeProperty = (k: string, v: string | Date | undefined) => {
@@ -162,7 +166,7 @@ export function convertScrapegoat(event: any, config: Config): IKalenderEvent | 
         let date = formatDate(event, startDate, endDate, true, config);
 
         return {
-            date: date.text.trim(),
+            date: date.trim(),
             eventStart: startDate,
             eventEnd: endDate,
             summary: event.summary || event.title || '',

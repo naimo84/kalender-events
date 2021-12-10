@@ -4,7 +4,7 @@ import { CalDav, Fallback } from './caldav';
 import { Config } from './interfaces/config';
 import { parseFile, fromURL } from './ical';
 import * as NodeCache from 'node-cache';
-import { IKalenderEvent} from './interfaces';
+import { IKalenderEvent } from './interfaces';
 import { formatDate } from './format';
 import { getPreviews, getTimezoneOffset, insertSorted } from './helper';
 import { convertEvent, convertEvents } from './convert';
@@ -94,9 +94,7 @@ export class KalenderEvents {
             seconds: s,
         };
     }
-
     
-
     public async getEvents(config?: Config): Promise<IKalenderEvent[]> {
         try {
             if (config) {
@@ -110,7 +108,7 @@ export class KalenderEvents {
                 realnow = moment(config.now).toDate();
             }
 
-            const { preview, pastview } = getPreviews(config as Config);
+            const { preview, pastview } = getPreviews(this.config as Config);
 
             debug(`getEvents - pastview: ${pastview}`)
             debug(`getEvents - preview: ${preview}`)
@@ -185,7 +183,7 @@ export class KalenderEvents {
                 let data = await fromURL(this.config.url, header);
                 debug(data)
 
-                let converted = await convertEvents(data,this.config);
+                let converted = await convertEvents(data, this.config);
                 return converted;
             } else {
                 /* istanbul ignore if */
@@ -194,7 +192,7 @@ export class KalenderEvents {
                 }
                 let data = await parseFile(this.config.url);
                 debug(data)
-                let converted = await convertEvents(data,this.config);
+                let converted = await convertEvents(data, this.config);
                 return converted;
             }
         }
@@ -291,7 +289,7 @@ export class KalenderEvents {
                         let recurrenceid = ev.recurrences[dOri].recurrenceid
                         if (recurrenceid && (typeof recurrenceid.getTime === 'function')) {
                             if (recurrenceid.getTime() === ev2.eventStart?.getTime()) {
-                                ev2 = convertEvent(ev.recurrences[dOri],this.config) as IKalenderEvent;
+                                ev2 = convertEvent(ev.recurrences[dOri], this.config) as IKalenderEvent;
                                 debug('processRRule - ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
                             }
                         }
@@ -301,7 +299,7 @@ export class KalenderEvents {
 
                 if (checkDate) {
                     let date = formatDate(ev2, ev2.eventStart as Date, ev2.eventEnd as Date, true, this.config);
-                    ev2.date = date.text.trim();
+                    ev2.date = date.trim();
                     reslist.push(ev2);
                 }
             }
@@ -310,10 +308,10 @@ export class KalenderEvents {
                 let recurrenceid = ev.recurrences[dOri].recurrenceid
                 if (recurrenceid) {
                     let ev3 = ce.clone(ev.recurrences[dOri])
-                    let ev1 = convertEvent(ev3,this.config);
+                    let ev1 = convertEvent(ev3, this.config);
                     if ((ev1?.eventStart! >= pastview && ev1?.eventStart! <= preview) || (ev1?.eventEnd! >= pastview && ev1?.eventEnd! <= preview)) {
                         let date = formatDate(ev1, ev1?.eventStart as Date, ev1?.eventEnd as Date, true, this.config);
-                        ev1!.date = date.text.trim();
+                        ev1!.date = date.trim();
                         reslist.push(ev1);
                     }
                 }
