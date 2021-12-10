@@ -1,31 +1,19 @@
 
 import { expect, should, use } from "chai";
-import nodeIcal = require('node-ical');
-
 var sinon = require('sinon');
 import moment = require('moment');
 import { KalenderEvents } from '../dist/lib';
-import { getEvents } from './test_helper';
 use(require('chai-like'));
 use(require('chai-things'));
 
 describe('filter', () => {
-    before(async function () {
-        let stub = sinon.stub(nodeIcal.async, "fromURL");
-        let data = await nodeIcal.async.parseFile('./test/mocks/events.ics');
-        stub.returns(data);
-    });
-
-
-    after(function () {
-        nodeIcal.async.fromURL.restore();
-    });
+    
 
     it('location', async () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20210111').toDate(),
@@ -48,7 +36,7 @@ describe('filter', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20210111').toDate(),
@@ -72,7 +60,7 @@ describe('filter', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events = await ke.getEvents({
                     now: moment('20201205').toDate(),
@@ -94,7 +82,7 @@ describe('filter', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "https://domain.com/calendar.ics"
+                    url: "./test/mocks/events.ics"
                 });
                 let events1 = await ke.getEvents({
                     now: moment('20211121').toDate(),

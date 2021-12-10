@@ -1,19 +1,22 @@
-import { Config } from './config';
+import { Config } from './interfaces/config';
 
 import dav = require('@naimo84/dav');
 import Scrapegoat = require("scrapegoat");
 import IcalExpander = require('ical-expander');
-import * as  ical from 'node-ical';
+import * as  ical from './ical';
 import { KalenderEvents } from './lib';
 import * as URL from "url";
 
-import { IKalenderEvent } from './event';
+import { IKalenderEvent } from './interfaces/event';
+import { convertEvent, convertEvents } from './convert';
+import { getPreviews } from './helper';
+import { parseICS } from './ical';
 var debug = require('debug')('kalender-events:caldav');
 
-export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKalenderEvent[]> {
+export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     const calName = config.calendar;
     const ke = new KalenderEvents(config);
-    let { preview, pastview } = kalEv.getPreviews(config)
+    let { preview, pastview } = getPreviews(config)
 
     const filters = [{
         type: 'comp-filter',
@@ -63,12 +66,14 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
                 for (let todoEntry of todoEntries.objects) {
                     const ics = todoEntry.calendarData;
                     if (ics) {
-                        const data = await ical.async.parseICS(ics);
+                        const data = await parseICS(ics);
                         for (var k in data) {
                             //debug(`caldav - href: ${JSON.stringify(data[k])}`)
+                            //@ts-ignore
                             if (data[k].type !== 'VTODO')
                                 continue;
-                            var ev = ke.convertEvent(data[k]);
+                           
+                            var ev = convertEvent(data[k],config);
                             if (ev) {
                                 ev.calendarName = calendar.displayName;
                                 const key = `${ev.uid!.uid! + ev.uid!.date!}`;
@@ -88,7 +93,7 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
                     const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
                     const events = icalExpander.between(pastview.toDate(), preview.toDate());
 
-                    ke.convertEvents(events).forEach((event: IKalenderEvent) => {
+                    convertEvents(events,config).forEach((event: IKalenderEvent) => {
                         debug(`caldav - ical: ${JSON.stringify(event)}`)
                         if (event) {
                             event.calendarName = calendar.displayName;
@@ -112,9 +117,10 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
                                 };
                             }
 
-                            const data = await ical.async.fromURL(ics, header);
+                            const data = await ical.fromURL(ics, header);
                             for (var k in data) {
                                 //debug(`caldav - href: ${JSON.stringify(data[k])}`)
+                                //@ts-ignore
                                 var ev = ke.convertEvent(data[k]);
                                 if (ev) {
                                     ev.calendarName = calendar.displayName;
@@ -137,7 +143,6 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
 }
 
 export async function Fallback(config: Config) {
-    const ke = new KalenderEvents(config);
     debug(`Fallback`)
     let scrapegoat = new Scrapegoat({
         auth: {
@@ -154,5 +159,5 @@ export async function Fallback(config: Config) {
     let data = await scrapegoat.getAllEvents();
     debug(`Fallback - data: ${JSON.stringify(data)}`)
 
-    return ke.convertEvents(data);
+    return convertEvents(data,config);
 }

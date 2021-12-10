@@ -1,5 +1,7 @@
 
 export interface iCalEvent {
+    status?: any; 
+    completion?: any;
     due?: string | number | Date;
     exdate: any;
     recurrences: any;
@@ -57,7 +59,11 @@ export interface IKalenderEvent {
     datetype?: string,
     attendee?: any,
     categories?: string[],
-    alarms: IKalenderAlarm[]
+    alarms: IKalenderAlarm[];
+    status?: {
+        percent?: any;
+        completed?: any;
+    };
 }
 
 export interface IKalenderAlarm {

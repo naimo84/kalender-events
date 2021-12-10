@@ -1,8 +1,5 @@
 
-import { expect, should, use } from "chai";
-import nodeIcal = require('node-ical');
-
-var sinon = require('sinon');
+import { expect, use } from "chai";
 import moment = require('moment');
 import { KalenderEvents } from '../dist/lib';
 use(require('chai-like'));
