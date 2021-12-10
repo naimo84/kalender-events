@@ -4,7 +4,7 @@
   "description": "calendar events for nodejs",
   "scripts": {
     "test": "ts-mocha --timeout 10000 --paths test/**/*_spec.ts",
-    "testfile":"ts-mocha --timeout 10000 --paths ",
+    "testfile": "ts-mocha --timeout 10000 --paths ",
     "version": "standard-version --release-as minor",
     "version-bugfix": "standard-version",
     "watch": "tsc --watch",
@@ -60,6 +60,7 @@
     "@types/mocha": "^8.2.0",
     "@types/moment-timezone": "^0.5.30",
     "@types/node": "^13.11.0",
+    "@types/uuid": "^8.3.3",
     "chai": "4.2.0",
     "chai-like": "1.1.1",
     "chai-things": "0.2.0",

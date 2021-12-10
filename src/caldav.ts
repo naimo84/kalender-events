@@ -8,12 +8,14 @@ import { KalenderEvents } from './lib';
 import * as URL from "url";
 
 import { IKalenderEvent } from './interfaces/event';
+import { convertEvents } from './convert';
+import { getPreviews } from './helper';
 var debug = require('debug')('kalender-events:caldav');
 
-export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKalenderEvent[]> {
+export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     const calName = config.calendar;
     const ke = new KalenderEvents(config);
-    let { preview, pastview } = kalEv.getPreviews(config)
+    let { preview, pastview } = getPreviews(config)
 
     const filters = [{
         type: 'comp-filter',
@@ -90,7 +92,7 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
                     const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
                     const events = icalExpander.between(pastview.toDate(), preview.toDate());
 
-                    ke.convertEvents(events).forEach((event: IKalenderEvent) => {
+                    convertEvents(events,config).forEach((event: IKalenderEvent) => {
                         debug(`caldav - ical: ${JSON.stringify(event)}`)
                         if (event) {
                             event.calendarName = calendar.displayName;
@@ -140,7 +142,6 @@ export async function CalDav(config: Config, kalEv: KalenderEvents): Promise<IKa
 }
 
 export async function Fallback(config: Config) {
-    const ke = new KalenderEvents(config);
     debug(`Fallback`)
     let scrapegoat = new Scrapegoat({
         auth: {
@@ -157,5 +158,5 @@ export async function Fallback(config: Config) {
     let data = await scrapegoat.getAllEvents();
     debug(`Fallback - data: ${JSON.stringify(data)}`)
 
-    return ke.convertEvents(data);
+    return convertEvents(data,config);
 }

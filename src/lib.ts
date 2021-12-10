@@ -2,10 +2,12 @@ import moment = require('moment');
 import { ICloud } from './icloud';
 import { CalDav, Fallback } from './caldav';
 import { Config } from './interfaces/config';
-import { v4 } from 'uuid';
 import { parseFile, fromURL } from './ical';
 import * as NodeCache from 'node-cache';
-import { IKalenderEvent, iCalEvent } from './interfaces';
+import { IKalenderEvent} from './interfaces';
+import { formatDate } from './format';
+import { getPreviews, getTimezoneOffset, insertSorted } from './helper';
+import { convertEvent, convertEvents } from './convert';
 var debug = require('debug')('kalender-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
@@ -93,55 +95,7 @@ export class KalenderEvents {
         };
     }
 
-    public getPreviews(config: Config): { preview: moment.Moment, pastview: moment.Moment } {
-        let preview = new Date();
-        let pastview = new Date();
-        if (config && config.now) {
-            preview = pastview = moment(config.now).toDate();
-        }
-        let preMoment = moment(preview)
-        let previewDuration = moment.duration(JSON.parse(`{"${this.config.previewUnits}" : "${this.config.preview === 1 && this.config.previewUnits === 'days' ? this.config.preview - 1 : this.config.preview}" }`));
-        if (typeof this.config.preview === 'string') {
-            if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.preview as string)) {
-                previewDuration = moment.duration(this.config.preview as string)
-            } else {
-                throw new Error('preview must be a duration string or a number');
-            }
-        } else {
-            if (previewDuration.days() > 0 || this.config.preview === 1 && this.config.previewUnits === 'days') {
-                preMoment = preMoment.endOf('day')
-            } else if (previewDuration.hours() > 0) {
-                preMoment = preMoment.endOf('hour')
-            } else if (previewDuration.minutes() > 0) {
-                preMoment = preMoment.endOf('minute')
-            } else if (previewDuration.seconds() > 0) {
-                preMoment = preMoment.endOf('second')
-            }
-        }
-        const pre: moment.Moment = preMoment.add(previewDuration)
-
-        let pastMoment = moment(pastview).startOf('day')
-        let pastviewDuration = moment.duration(JSON.parse(`{"${this.config.pastviewUnits}" : "${this.config.pastview === 1 && this.config.pastviewUnits === 'days' ? this.config.pastview - 1 : this.config.pastview}" }`));
-        if (typeof this.config.pastview === 'string') {
-            if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(this.config.pastview as string)) {
-                pastviewDuration = moment.duration(this.config.pastview)
-            } else {
-                throw new Error('pastview must be a duration string or a number');
-            }
-        } else {
-            if (pastviewDuration.days() > 0 || this.config.pastview === 1 && this.config.pastviewUnits === 'days') {
-                pastMoment = pastMoment.startOf('day')
-            } else if (pastviewDuration.hours() > 0) {
-                pastMoment = pastMoment.startOf('hour')
-            } else if (pastviewDuration.minutes() > 0) {
-                pastMoment = pastMoment.startOf('minute')
-            } else if (pastviewDuration.seconds() > 0) {
-                pastMoment = pastMoment.startOf('second')
-            }
-        }
-        const past: moment.Moment = pastMoment.subtract(pastviewDuration);
-        return { preview: pre, pastview: past };
-    }
+    
 
     public async getEvents(config?: Config): Promise<IKalenderEvent[]> {
         try {
@@ -156,7 +110,7 @@ export class KalenderEvents {
                 realnow = moment(config.now).toDate();
             }
 
-            const { preview, pastview } = this.getPreviews(config as Config);
+            const { preview, pastview } = getPreviews(config as Config);
 
             debug(`getEvents - pastview: ${pastview}`)
             debug(`getEvents - preview: ${preview}`)
@@ -177,213 +131,12 @@ export class KalenderEvents {
         }
     }
 
-    public convertEvents(events: any): IKalenderEvent[] {
-        let retEntries: IKalenderEvent[] = [];
-        if (events) {
-            if (Array.isArray(events)) {
-                events.forEach(event => {
-                    let ev = this.convertScrapegoat(event.data);
-                    if (ev)
-                        retEntries.push(ev);
-                });
-            } else if (events.events || events.occurrences) {
-                if (events.events) {
-                    events.events.forEach((event: any) => {
-                        let ev = this.convertEvent(event);
-                        if (ev)
-                            retEntries.push(ev);
-                    });
-                }
-                if (events.occurrences && events.occurrences.length > 0) {
-                    events.occurrences.forEach((event: any) => {
-                        let ev = this.convertEvent(event);
-                        if (ev)
-                            retEntries.push(ev);
-                    });
-                }
-            } else {
-                for (let index in events) {
-                    let ev = this.convertEvent(events[index]);
-                    if (ev)
-                        retEntries.push(ev);
-                }
-
-            }
-        }
-
-        return retEntries;
-    }
-
-    public convertEvent(event: iCalEvent): IKalenderEvent | undefined {
-        if (event && !Array.isArray(event)) {
-            let startDate = new Date(event.startDate?.toJSDate() || moment(event.start).toDate());
-            let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()) || moment(event.start).toDate());
-
-            const recurrence = event.recurrenceId;
-
-            if (event.item) {
-                event = event.item
-            }
-
-            if ((this.config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
-                return undefined;
-            }
-            /* istanbul ignore if */
-            if (event.type === "VTODO" && !this.config.includeTodo) {
-                return undefined;
-            }
-
-            if (event.duration?.wrappedJSObject) {
-                delete event.duration.wrappedJSObject
-            }
-
-            let uid = {
-                uid: event.uid || v4(),
-                date: ''
-            };
-            if (recurrence) {
-                uid.date = new Date(recurrence.year, recurrence.month, recurrence.day, recurrence.hour, recurrence.minute, recurrence.second).getTime().toString();
-            } else {
-                uid.date = startDate.getTime().toString()
-            }
-
-
-
-            let duration = event.duration;
-            let allday = false;
-            if (!duration) {
-                var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
-                seconds = Number(seconds);
-                allday = ((seconds % 86400) === 0)
-            } else {
-                /* istanbul ignore else */
-                if (/(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?(?:T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?)?/.test(duration)) {
-                    allday = ((moment.duration(duration).asSeconds() % 86400) === 0)
-                }
-                else {
-                    allday = ((duration.toSeconds() % 86400) === 0)
-                }
-            }
-            let date = this.formatDate(startDate, endDate, true, allday);
-
-            let returnEvent: IKalenderEvent = {
-                date: date.text.trim(),
-                eventStart: startDate,
-                eventEnd: endDate,
-                summary: event.summary || '',
-                description: event.description || '',
-                attendee: event.attendees || event.attendee,
-                duration: (typeof event.duration?.toICALString === 'function') ? event.duration?.toICALString() : event.duration,
-                durationSeconds: (typeof event.duration?.toSeconds === 'function') ? event.duration?.toSeconds() : (moment.duration(duration).asSeconds()),
-                location: event.location || '',
-                organizer: event.organizer || '',
-                rrule: event.rrule,
-                rruleText: event.rrule?.toText(),
-                uid: uid,
-                isRecurring: !!recurrence || !!event.rrule,
-                datetype: event.type === "VTODO" ? 'todo' : 'date',
-                allDay: allday,
-                calendarName: null as any,
-                exdate: event.exdate,
-                recurrences: event.recurrences,
-                categories: event.categories,
-                alarms: []
-            }
-            const makeProperty = (k: string, v: string | Date | undefined) => {
-                const tmpObj: any = {};
-                tmpObj[k] = v;
-                return (v !== undefined && v !== "") ? tmpObj : {}
-            }
-            for (let key of Object.keys(event)) {
-                const alarm = event[key as keyof iCalEvent];
-                if (alarm?.type === "VALARM") {
-                    returnEvent.alarms.push(Object.assign({},
-                        makeProperty("trigger", (typeof alarm.trigger?.toICALString === 'function') ? alarm.trigger?.toICALString() : alarm.trigger),
-                        makeProperty("triggerParsed", moment(startDate).add(moment.duration(alarm.trigger)).toDate()),
-                        makeProperty("action", alarm.action),
-                        makeProperty("summary", alarm.summary),
-                        makeProperty("description", alarm.description),
-                        makeProperty("attendee", alarm.attendees || alarm.attendee)
-                    ))
-                }
-            }
-
-            Object.keys(returnEvent).forEach(key => {
-                if (returnEvent[key as keyof IKalenderEvent] === undefined
-                    || returnEvent[key as keyof IKalenderEvent] === ""
-                    || (Array.isArray(returnEvent[key as keyof IKalenderEvent]) && Object.keys(returnEvent[key as keyof IKalenderEvent]).length === 0 && returnEvent[key as keyof IKalenderEvent].length === 0)) {
-                    delete returnEvent[key as keyof IKalenderEvent];
-                }
-            });
-
-            return returnEvent
-        }
-        return undefined;
-    }
-
-
-    /* istanbul ignore next */
-
-    private convertScrapegoat(event: any): IKalenderEvent | undefined {
-        if (event) {
-            let startDate = moment(event.start).toDate();
-            let endDate = moment(event.end).toDate();
-
-            const recurrence = event.recurrenceId || event.type?.recurring;
-
-            if (event.duration?.wrappedJSObject) {
-                delete event.duration.wrappedJSObject
-            }
-
-            let uid = event.uid || v4();
-            uid += startDate.getTime().toString();
-
-            let duration = event.duration;
-            let allday = false;
-            if (!duration) {
-                var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
-                seconds = Number(seconds);
-                allday = ((seconds % 86400) === 0)
-            } else {
-                if (/(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?(?:T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?)?/.test(duration)) {
-                    allday = ((moment.duration(duration).asSeconds() % 86400) === 0)
-                }
-                else {
-                    allday = ((duration.toSeconds() % 86400) === 0)
-                }
-            }
-            let date = this.formatDate(startDate, endDate, true, allday);
-
-            return {
-                date: date.text.trim(),
-                eventStart: startDate,
-                eventEnd: endDate,
-                summary: event.summary || event.title || '',
-                description: event.description || '',
-                attendee: event.attendees,
-                duration: (typeof event.duration?.toICALString === 'function') ? event.duration?.toICALString() : event.duration,
-                durationSeconds: (typeof event.duration?.toSeconds === 'function') ? event.duration?.toSeconds() : (moment.duration(duration).asSeconds()),
-                location: event.location || '',
-                organizer: event.organizer || '',
-                uid: uid,
-                isRecurring: !!recurrence,
-                datetype: 'date',
-                allDay: allday,
-                calendarName: null as any,
-                alarms: []
-            }
-        }
-        return undefined;
-    }
-
-
-
     private async getCal(): Promise<IKalenderEvent[]> {
         if (this.config.type && this.config.type === 'icloud') {
             debug('getCal - icloud');
 
             try {
-                let list = await ICloud(this.config, this);
+                let list = await ICloud(this.config);
                 return list;
             } catch (err) {
                 debug(err);
@@ -393,7 +146,7 @@ export class KalenderEvents {
             debug('getCal - caldav');
 
             try {
-                let data = await CalDav(this.config, this);
+                let data = await CalDav(this.config);
                 return data;
             }
             catch (err) {
@@ -432,7 +185,7 @@ export class KalenderEvents {
                 let data = await fromURL(this.config.url, header);
                 debug(data)
 
-                let converted = await this.convertEvents(data);
+                let converted = await convertEvents(data,this.config);
                 return converted;
             } else {
                 /* istanbul ignore if */
@@ -441,7 +194,7 @@ export class KalenderEvents {
                 }
                 let data = await parseFile(this.config.url);
                 debug(data)
-                let converted = await this.convertEvents(data);
+                let converted = await convertEvents(data,this.config);
                 return converted;
             }
         }
@@ -450,9 +203,9 @@ export class KalenderEvents {
     private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date, now: Date) {
         var eventLength = ev.eventEnd!.getTime() - ev.eventStart!.getTime();
         var options = RRule.parseString(ev.rrule.toString());
-        options.dtstart = this.addOffset(ev.eventStart!, -this.getTimezoneOffset(ev.eventStart!));
+        options.dtstart = this.addOffset(ev.eventStart!, -getTimezoneOffset(ev.eventStart!));
         if (options.until) {
-            options.until = this.addOffset(options.until, -this.getTimezoneOffset(options.until));
+            options.until = this.addOffset(options.until, -getTimezoneOffset(options.until));
         }
         debug('options:' + JSON.stringify(options));
 
@@ -510,10 +263,10 @@ export class KalenderEvents {
             for (var i = 0; i < dates.length; i++) {
                 var ev2: IKalenderEvent = ce.clone(ev);
                 var start = dates[i];
-                ev2.eventStart = this.addOffset(start, this.getTimezoneOffset(start));
+                ev2.eventStart = this.addOffset(start, getTimezoneOffset(start));
 
                 var end = new Date(start.getTime() + eventLength);
-                ev2.eventEnd = this.addOffset(end, this.getTimezoneOffset(end));
+                ev2.eventEnd = this.addOffset(end, getTimezoneOffset(end));
 
                 if (ev2.alarms && ev2.alarms.length > 0) {
                     for (let alarm of ev2.alarms) {
@@ -538,7 +291,7 @@ export class KalenderEvents {
                         let recurrenceid = ev.recurrences[dOri].recurrenceid
                         if (recurrenceid && (typeof recurrenceid.getTime === 'function')) {
                             if (recurrenceid.getTime() === ev2.eventStart?.getTime()) {
-                                ev2 = this.convertEvent(ev.recurrences[dOri]) as IKalenderEvent;
+                                ev2 = convertEvent(ev.recurrences[dOri],this.config) as IKalenderEvent;
                                 debug('processRRule - ' + i + ': different recurring found replaced with Event:' + ev2.eventStart + ' ' + ev2.eventEnd);
                             }
                         }
@@ -547,7 +300,7 @@ export class KalenderEvents {
 
 
                 if (checkDate) {
-                    let date = this.formatDate(ev2.eventStart as Date, ev2.eventEnd as Date, true, true);
+                    let date = formatDate(ev2, ev2.eventStart as Date, ev2.eventEnd as Date, true, this.config);
                     ev2.date = date.text.trim();
                     reslist.push(ev2);
                 }
@@ -557,9 +310,9 @@ export class KalenderEvents {
                 let recurrenceid = ev.recurrences[dOri].recurrenceid
                 if (recurrenceid) {
                     let ev3 = ce.clone(ev.recurrences[dOri])
-                    let ev1 = this.convertEvent(ev3);
+                    let ev1 = convertEvent(ev3,this.config);
                     if ((ev1?.eventStart! >= pastview && ev1?.eventStart! <= preview) || (ev1?.eventEnd! >= pastview && ev1?.eventEnd! <= preview)) {
-                        let date = this.formatDate(ev1?.eventStart as Date, ev1?.eventEnd as Date, true, true);
+                        let date = formatDate(ev1, ev1?.eventStart as Date, ev1?.eventEnd as Date, true, this.config);
                         ev1!.date = date.text.trim();
                         reslist.push(ev1);
                     }
@@ -724,7 +477,7 @@ export class KalenderEvents {
                     (ev.eventEnd > pastview && ev.eventEnd <= preview) ||
                     (ev.eventStart < pastview && ev.eventEnd > pastview)
                 ) {
-                    this.insertSorted(reslist, ev);
+                    insertSorted(reslist, ev);
                     debug('checkDates - Event (full day) added : ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
                 }
             } else {
@@ -734,475 +487,11 @@ export class KalenderEvents {
                     (ev.eventEnd >= realnow && ev.eventEnd <= preview) ||
                     (ev.eventStart < realnow && ev.eventEnd > realnow)
                 ) {
-                    this.insertSorted(reslist, ev);
+                    insertSorted(reslist, ev);
                     debug('checkDates - Event with time added: ' + JSON.stringify(rule) + ' ' + ev.summary + ' at ' + ev.eventStart);
                 }
             }
         }
     }
 
-    /* istanbul ignore next */
-    private insertSorted(arr: IKalenderEvent[], element: IKalenderEvent) {
-        if (!arr.length) {
-            arr.push(element);
-        } else {
-            if (arr[0].eventStart! > element.eventStart!) {
-                arr.unshift(element);
-            } else if (arr[arr.length - 1].eventStart! < element?.eventStart!) {
-                arr.push(element);
-            } else {
-                if (arr.length === 1) {
-                    arr.push(element);
-                } else {
-                    for (var i = 0; i < arr.length; i++) {
-                        if (arr[i].uid!.uid == element.uid?.uid && element.eventStart!.getTime() == arr[i].eventStart?.getTime()) {
-                            //@ts-ignore
-                            element = null;
-                            break;
-                        }
-                    }
-                    if (element) {
-                        for (var i = 0; i < arr.length - 1; i++) {
-                            if (arr[i].eventStart! <= element?.eventStart! && element?.eventStart! < arr[i + 1].eventStart!) {
-                                arr.splice(i + 1, 0, element);
-                                //@ts-ignore
-                                element = null;
-                                break;
-                            }
-                        }
-                    }
-                    if (element) arr.push(element);
-                }
-            }
-        }
-    }
-
-    private getTimezoneOffset(date: Date) {
-        const isoDate = date.toISOString();
-        var offset = moment(isoDate).utcOffset();
-        return -offset;
-    }
-
-    /* istanbul ignore next */
-    private formatDate(_date: Date, _end: Date, withTime: boolean, fullday: boolean) {
-        var day: any = _date.getDate();
-        var month: any = _date.getMonth() + 1;
-        var year = _date.getFullYear();
-        var endday = _end.getDate();
-        var endmonth = _end.getMonth() + 1;
-        var endyear = _end.getFullYear();
-        var _time = '';
-        var alreadyStarted = _date < new Date();
-
-        if (withTime) {
-            var hours = _date.getHours().toString();
-            var minutes = _date.getMinutes().toString();
-
-            if (!alreadyStarted) {
-                if (parseInt(hours) < 10) hours = '0' + hours.toString();
-                if (parseInt(minutes) < 10) minutes = '0' + minutes.toString();
-                _time = ' ' + hours + ':' + minutes;
-            }
-            var timeDiff = _end.getTime() - _date.getTime();
-            if (timeDiff === 0 && parseInt(hours) === 0 && parseInt(minutes) === 0) {
-                _time = ' ';
-            } else if (timeDiff > 0) {
-                if (!alreadyStarted) {
-                    _time += '-';
-                } else {
-                    _time += ' ';
-                }
-
-                var endhours = _end.getHours().toString();
-                var endminutes = _end.getMinutes().toString();
-
-                if (parseInt(endhours) < 10) endhours = '0' + endhours.toString();
-
-                if (parseInt(endminutes) < 10) endminutes = '0' + endminutes.toString();
-                _time += endhours + ':' + endminutes;
-
-                var startDayEnd = new Date();
-                startDayEnd.setFullYear(_date.getFullYear());
-                startDayEnd.setMonth(_date.getMonth());
-                startDayEnd.setDate(_date.getDate() + 1);
-                startDayEnd.setHours(0, 0, 0, 0);
-
-                if (_end > startDayEnd) {
-                    var start = new Date();
-                    if (!alreadyStarted) {
-                        start.setDate(_date.getDate());
-                        start.setMonth(_date.getMonth());
-                        start.setFullYear(_date.getFullYear());
-                    }
-                    start.setHours(0, 0, 1, 0);
-                    var fullTimeDiff = timeDiff;
-                    timeDiff = _end.getTime() - start.getTime();
-
-                    if (fullTimeDiff >= 24 * 60 * 60 * 1000) {
-                        _time += '+' + Math.floor(timeDiff / (24 * 60 * 60 * 1000));
-                    }
-                } else if (this.config.replacedates && _end.getHours() === 0 && _end.getMinutes() === 0) {
-                    _time = ' ';
-                }
-            }
-        }
-        var _class = '';
-        var d = new Date();
-        d.setHours(0, 0, 0, 0);
-        var d2 = new Date();
-        d2.setDate(d.getDate() + 1);
-
-        var todayOnly = false;
-        if (
-            day === d.getDate() &&
-            month === d.getMonth() + 1 &&
-            year === d.getFullYear() &&
-            endday === d2.getDate() &&
-            endmonth === d2.getMonth() + 1 &&
-            endyear === d2.getFullYear() &&
-            fullday
-        ) {
-            todayOnly = true;
-        }
-
-        if (todayOnly || !alreadyStarted) {
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_today';
-            }
-
-            d.setDate(d.getDate() + 1);
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_tomorrow';
-            }
-
-            d.setDate(d.getDate() + 1);
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_dayafter';
-            }
-
-            d.setDate(d.getDate() + 1);
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_3days';
-            }
-
-            d.setDate(d.getDate() + 1);
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_4days';
-            }
-
-            d.setDate(d.getDate() + 1);
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_5days';
-            }
-
-            d.setDate(d.getDate() + 1);
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_6days';
-            }
-
-            d.setDate(d.getDate() + 1);
-            if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-                _class = 'ical_oneweek';
-            }
-
-            if (this.config.replacedates) {
-                if (_class === 'ical_today')
-                    return {
-                        text: this.replaceText('today') + _time,
-                        _class: _class,
-                    };
-                if (_class === 'ical_tomorrow') return { text: this.replaceText('tomorrow') + _time, _class: _class };
-                if (_class === 'ical_dayafter') return { text: this.replaceText('dayafter') + _time, _class: _class };
-                if (_class === 'ical_3days') return { text: this.replaceText('3days') + _time, _class: _class };
-                if (_class === 'ical_4days') return { text: this.replaceText('4days') + _time, _class: _class };
-                if (_class === 'ical_5days') return { text: this.replaceText('5days') + _time, _class: _class };
-                if (_class === 'ical_6days') return { text: this.replaceText('6days') + _time, _class: _class };
-                if (_class === 'ical_oneweek') return { text: this.replaceText('oneweek') + _time, _class: _class };
-            }
-        } else {
-            _class = 'ical_today';
-            var daysleft = Math.round((_end.getDate() - new Date().getDate()) / (1000 * 60 * 60 * 24));
-            var hoursleft = Math.round((_end.getDate() - new Date().getDate()) / (1000 * 60 * 60));
-
-            if (this.config.replacedates) {
-                var _left = this.replaceText('left') !== ' ' ? ' ' + this.replaceText('left') : '';
-                var text;
-                if (daysleft === 42) {
-                    text = this.replaceText('6week_left');
-                } else if (daysleft === 35) {
-                    text = this.replaceText('5week_left');
-                } else if (daysleft === 28) {
-                    text = this.replaceText('4week_left');
-                } else if (daysleft === 21) {
-                    text = this.replaceText('3week_left');
-                } else if (daysleft === 14) {
-                    text = this.replaceText('2week_left');
-                } else if (daysleft === 7) {
-                    text = this.replaceText('1week_left');
-                } else if (daysleft >= 1) {
-                    if (this.config.language === 'ru') {
-                        var c = daysleft % 10;
-                        var cc = Math.floor(daysleft / 10) % 10;
-                        if (daysleft === 1) {
-                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + daysleft + ' ' + this.replaceText('day') + _left;
-                        } else if (cc > 1 && (c > 1 || c < 5)) {
-                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + daysleft + ' ' + 'дня' + _left;
-                        } else {
-                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + daysleft + ' ' + this.replaceText('days') + _left;
-                        }
-                    } else {
-                        text =
-                            (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') +
-                            ' ' +
-                            daysleft +
-                            ' ' +
-                            (daysleft === 1 ? this.replaceText('day') : this.replaceText('days')) +
-                            _left;
-                    }
-                } else {
-                    if (this.config.language === 'ru') {
-                        var c = hoursleft % 10;
-                        var cc = Math.floor(hoursleft / 10) % 10;
-                        if (hoursleft === 1) {
-                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + hoursleft + ' ' + this.replaceText('hour') + _left;
-                        } else if (cc !== 1 && (c > 1 || c < 5)) {
-                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + hoursleft + ' ' + 'часа' + _left;
-                        } else {
-                            text = (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') + ' ' + hoursleft + ' ' + this.replaceText('hours') + _left;
-                        }
-                    } else {
-                        text =
-                            (this.replaceText('still') !== ' ' ? this.replaceText('still') : '') +
-                            ' ' +
-                            hoursleft +
-                            ' ' +
-                            (hoursleft === 1 ? this.replaceText('hour') : this.replaceText('hours')) +
-                            _left;
-                    }
-                }
-            } else {
-                day = _end.getDate();
-                if (fullday) {
-                    day -= 1;
-                    withTime = false;
-                }
-                month = _end.getMonth() + 1;
-                year = _end.getFullYear();
-
-                if (day < 10) day = '0' + day.toString();
-                if (month < 10) month = '0' + month.toString();
-
-                text = day + '.' + month + '.';
-                text += year;
-
-                if (withTime) {
-                    let endhours = _end.getHours().toString();
-                    let endminutes = _end.getMinutes().toString();
-
-                    if (parseInt(endhours) < 10) {
-                        endhours = '0' + endhours.toString();
-                    }
-                    if (parseInt(endminutes) < 10) {
-                        endminutes = '0' + endminutes.toString();
-                    }
-                    text += ' ' + endhours + ':' + endminutes;
-                }
-            }
-
-            return { text: text, _class: _class };
-        }
-
-        if (day < 10) day = '0' + day.toString();
-        if (month < 10) month = '0' + month.toString();
-
-        return {
-            text: (day + '.' + month + '.' + year + _time).trim(),
-            _class: _class,
-        };
-    }
-
-    /* istanbul ignore next */
-    private replaceText(text: string) {
-        if (!text) return '';
-
-        if (this.dictionary[text]) {
-            var newText = this.dictionary[text][this.config.language as string];
-            if (newText) {
-                return newText;
-            } else if (this.config.language !== 'en') {
-                newText = this.dictionary[text].en;
-                if (newText) {
-                    return newText;
-                }
-            }
-        }
-        return text;
-    }
-
-    private dictionary: any = {
-        today: {
-            en: 'Today',
-            it: 'Oggi',
-            es: 'Hoy',
-            pl: 'Dzisiaj',
-            fr: "Aujourd'hui",
-            de: 'Heute',
-            ru: 'Сегодня',
-            nl: 'Vandaag',
-        },
-        tomorrow: {
-            en: 'Tomorrow',
-            it: 'Domani',
-            es: 'Mañana',
-            pl: 'Jutro',
-            fr: 'Demain',
-            de: 'Morgen',
-            ru: 'Завтра',
-            nl: 'Morgen',
-        },
-        dayafter: {
-            en: 'Day After Tomorrow',
-            it: 'Dopodomani',
-            es: 'Pasado mañana',
-            pl: 'Pojutrze',
-            fr: 'Après demain',
-            de: 'Übermorgen',
-            ru: 'Послезавтра',
-            nl: 'Overmorgen',
-        },
-        '3days': {
-            en: 'In 3 days',
-            it: 'In 3 giorni',
-            es: 'En 3 días',
-            pl: 'W 3 dni',
-            fr: 'Dans 3 jours',
-            de: 'In 3 Tagen',
-            ru: 'Через 2 дня',
-            nl: 'Over 3 dagen',
-        },
-        '4days': {
-            en: 'In 4 days',
-            it: 'In 4 giorni',
-            es: 'En 4 días',
-            pl: 'W 4 dni',
-            fr: 'Dans 4 jours',
-            de: 'In 4 Tagen',
-            ru: 'Через 3 дня',
-            nl: 'Over 4 dagen',
-        },
-        '5days': {
-            en: 'In 5 days',
-            it: 'In 5 giorni',
-            es: 'En 5 días',
-            pl: 'W ciągu 5 dni',
-            fr: 'Dans 5 jours',
-            de: 'In 5 Tagen',
-            ru: 'Через 4 дня',
-            nl: 'Over 5 dagen',
-        },
-        '6days': {
-            en: 'In 6 days',
-            it: 'In 6 giorni',
-            es: 'En 6 días',
-            pl: 'W ciągu 6 dni',
-            fr: 'Dans 6 jours',
-            de: 'In 6 Tagen',
-            ru: 'Через 5 дней',
-            nl: 'Over 6 dagen',
-        },
-        oneweek: {
-            en: 'In one week',
-            it: 'In una settimana',
-            es: 'En una semana',
-            pl: 'W jeden tydzień',
-            fr: 'Dans une semaine',
-            de: 'In einer Woche',
-            ru: 'Через неделю',
-            nl: 'Binnen een week',
-        },
-        '1week_left': {
-            en: 'One week left',
-            it: 'Manca una settimana',
-            es: 'Queda una semana',
-            pl: 'Został jeden tydzień',
-            fr: 'Reste une semaine',
-            de: 'Noch eine Woche',
-            ru: 'Ещё неделя',
-            nl: 'Over een week',
-        },
-        '2week_left': {
-            en: 'Two weeks left',
-            it: 'Due settimane rimaste',
-            es: 'Dos semanas restantes',
-            pl: 'Zostały dwa tygodnie',
-            fr: 'Il reste deux semaines',
-            de: 'Noch zwei Wochen',
-            ru: 'Ещё две недели',
-            nl: 'Over twee weken',
-        },
-        '3week_left': {
-            en: 'Three weeks left',
-            it: 'Tre settimane rimanenti',
-            es: 'Tres semanas quedan',
-            pl: 'Pozostały trzy tygodnie',
-            fr: 'Trois semaines restantes',
-            de: 'Noch drei Wochen',
-            ru: 'Ещё три недели',
-            nl: 'Over drie weken',
-        },
-        '4week_left': {
-            en: 'Four weeks left',
-            it: 'Quattro settimane rimaste',
-            es: 'Cuatro semanas quedan',
-            pl: 'Pozostały cztery tygodnie',
-            fr: 'Quatre semaines à gauche',
-            de: 'Noch vier Wochen',
-            ru: 'Ещё три недели',
-            nl: 'Over vier weken',
-        },
-        '5week_left': {
-            en: 'Five weeks left',
-            it: 'Cinque settimane rimaste',
-            es: 'Quedan cinco semanas',
-            pl: 'Pozostało pięć tygodni',
-            fr: 'Cinq semaines à gauche',
-            de: 'Noch fünf Wochen',
-            ru: 'Ещё пять недель',
-            nl: 'Over vijf weken',
-        },
-        '6week_left': {
-            en: 'Six weeks left',
-            it: 'Sei settimane a sinistra',
-            es: 'Seis semanas restantes',
-            pl: 'Pozostało sześć tygodni',
-            fr: 'Six semaines à gauche',
-            de: 'Noch sechs Wochen',
-            ru: 'Ещё шесть недель',
-            nl: 'Over zes weken',
-        },
-        left: {
-            en: 'left',
-            it: 'sinistra',
-            es: 'izquierda',
-            pl: 'lewo',
-            fr: 'la gauche',
-            de: ' ',
-            ru: 'осталось',
-            nl: 'over',
-        },
-        still: { en: ' ', it: '', es: '', pl: '', fr: '', de: 'Noch', ru: ' ', nl: 'nog' },
-        days: { en: 'days', it: 'Giorni', es: 'dias', pl: 'dni', fr: 'journées', de: 'Tage', ru: 'дней', nl: 'dagen' },
-        day: { en: 'day', it: 'giorno', es: 'día', pl: 'dzień', fr: 'journée', de: 'Tag', ru: 'день', nl: 'dag' },
-        hours: {
-            en: 'hours',
-            it: 'ore',
-            es: 'horas',
-            pl: 'godziny',
-            fr: 'heures',
-            de: 'Stunden',
-            ru: 'часов',
-            nl: 'uren',
-        },
-        hour: { en: 'hour', it: 'ora', es: 'hora', pl: 'godzina', fr: 'heure', de: 'Stunde', ru: 'час', nl: 'uur' },
-    };
 }

@@ -67,7 +67,14 @@ function storeValueParameter(name: string | number) {
 
 function storeParameter(name: string) {
     return function (value: string | undefined, parameters: string | any[], curr: any) {
-        const data = parameters && parameters.length > 0 && !(parameters.length === 1 && (parameters[0] === 'CHARSET=utf-8' || parameters[0] === 'VALUE=TEXT')) ? { params: parseParameters(parameters), val: text(value) } : text(value);
+        const data = parameters
+            && parameters.length > 0
+            && !(parameters.length === 1 && (parameters[0] === 'CHARSET=utf-8' || parameters[0] === 'VALUE=TEXT'))
+            ? {
+                params: parseParameters(parameters),
+                val: text(value)
+            }
+            : text(value);
 
         return storeValueParameter(name)(data, curr);
     };
