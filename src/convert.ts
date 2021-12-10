@@ -74,6 +74,10 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             uid.date = startDate.getTime().toString()
         }
 
+        if (!event.duration) {
+            event.duration = moment.duration(endDate.getTime() - startDate.getTime());
+        }
+
         let returnEvent: IKalenderEvent = {
             date: formatDate(event, startDate, endDate, true, config),
             eventStart: startDate,
@@ -81,7 +85,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             summary: event.summary || '',
             description: event.description || '',
             attendee: event.attendees || event.attendee,
-            duration: (typeof event.duration?.toICALString === 'function') ? event.duration?.toICALString() : event.duration,
+            duration: (typeof event.duration?.toICALString === 'function') ? event.duration?.toICALString() : event.duration.toString(),
             durationSeconds: (typeof event.duration?.toSeconds === 'function') ? event.duration?.toSeconds() : (moment.duration(event.duration).asSeconds()),
             location: event.location || '',
             organizer: event.organizer || '',

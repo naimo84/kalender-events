@@ -5,6 +5,7 @@ export interface Config {
     rejectUnauthorized?: boolean;
     url?: string,
     language?: string,
+    dateformat?: Intl.DateTimeFormatOptions
     replacedates?: boolean,
     type?: "icloud" | "caldav" | "ical",
     username?: string,

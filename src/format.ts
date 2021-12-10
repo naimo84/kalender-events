@@ -1,9 +1,15 @@
-import { iCalEvent,IKalenderEvent } from "./interfaces";
+import { iCalEvent, IKalenderEvent, Config } from "./interfaces";
 import { isAllDay } from "./helper";
 import moment from "moment";
 
 /* istanbul ignore next */
-export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Date, _end: Date, withTime: boolean, config: any):string {
+export function formatDate(event: iCalEvent | IKalenderEvent | undefined, _date: Date, _end: Date, withTime: boolean, config: Config): string {
+    if (typeof Intl.DateTimeFormat === 'function') {
+        const dateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(config.language, config.dateformat);
+        //@ts-ignore
+        return dateTime.formatRange(_date, _end);
+    }
+
     var day: any = _date.getDate();
     var month: any = _date.getMonth() + 1;
     var year = _date.getFullYear();
@@ -13,8 +19,8 @@ export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Dat
     var _time = '';
     var alreadyStarted = _date < new Date();
 
-    const fullday=isAllDay(event,_date,_end);
-    
+    const fullday = isAllDay(event, _date, _end);
+
     if (withTime) {
         let hours = _date.getHours().toString();
         let minutes = _date.getMinutes().toString();
@@ -43,7 +49,7 @@ export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Dat
             _time += endhours + ':' + endminutes;
 
             const startDayEnd = moment(_date).endOf('day').toDate();
-            
+
             if (_end > startDayEnd) {
                 var start = new Date();
                 if (!alreadyStarted) {
@@ -84,57 +90,56 @@ export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Dat
 
     if (todayOnly || !alreadyStarted) {
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_today';
+            _class = 'today';
         }
 
         d.setDate(d.getDate() + 1);
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_tomorrow';
+            _class = 'tomorrow';
         }
 
         d.setDate(d.getDate() + 1);
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_dayafter';
+            _class = 'dayafter';
         }
 
         d.setDate(d.getDate() + 1);
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_3days';
+            _class = '3days';
         }
 
         d.setDate(d.getDate() + 1);
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_4days';
+            _class = '4days';
         }
 
         d.setDate(d.getDate() + 1);
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_5days';
+            _class = '5days';
         }
 
         d.setDate(d.getDate() + 1);
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_6days';
+            _class = '6days';
         }
 
         d.setDate(d.getDate() + 1);
         if (day === d.getDate() && month === d.getMonth() + 1 && year === d.getFullYear()) {
-            _class = 'ical_oneweek';
+            _class = 'oneweek';
         }
 
         if (config.replacedates) {
-            if (_class === 'ical_today')
-                return  replaceText('today', config) + _time;
-            if (_class === 'ical_tomorrow') return  replaceText('tomorrow', config) + _time;
-            if (_class === 'ical_dayafter') return  replaceText('dayafter', config) + _time;
-            if (_class === 'ical_3days') return  replaceText('3days', config) + _time;
-            if (_class === 'ical_4days') return replaceText('4days', config) + _time;
-            if (_class === 'ical_5days') return  replaceText('5days', config) + _time;
-            if (_class === 'ical_6days') return  replaceText('6days', config) + _time;
-            if (_class === 'ical_oneweek') return replaceText('oneweek', config) + _time;
+            if (_class === 'today') return replaceText('today', config) + _time;
+            if (_class === 'tomorrow') return replaceText('tomorrow', config) + _time;
+            if (_class === 'dayafter') return replaceText('dayafter', config) + _time;
+            if (_class === '3days') return replaceText('3days', config) + _time;
+            if (_class === '4days') return replaceText('4days', config) + _time;
+            if (_class === '5days') return replaceText('5days', config) + _time;
+            if (_class === '6days') return replaceText('6days', config) + _time;
+            if (_class === 'oneweek') return replaceText('oneweek', config) + _time;
         }
     } else {
-        _class = 'ical_today';
+        _class = 'today';
         var daysleft = Math.round((_end.getDate() - new Date().getDate()) / (1000 * 60 * 60 * 24));
         var hoursleft = Math.round((_end.getDate() - new Date().getDate()) / (1000 * 60 * 60));
 
@@ -230,7 +235,7 @@ export function formatDate(event: iCalEvent|IKalenderEvent|undefined, _date: Dat
     if (month < 10) month = '0' + month.toString();
 
     return (day + '.' + month + '.' + year + _time).trim()
-    
+
 }
 
 /* istanbul ignore next */
