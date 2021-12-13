@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.21.0-0](https://github.com/naimo84/kalender-events/compare/v0.20.1...v0.21.0-0) (2021-12-13)
+
+
+### Features
+
+* custom ical parser ([4797eb1](https://github.com/naimo84/kalender-events/commit/4797eb149f5f7657e607309553a8eb6e5ccd537f))
+* custom ical parser ([ade0aa1](https://github.com/naimo84/kalender-events/commit/ade0aa122ffa6bc0fd58c055fe801290691fbb5f))
+* custom ical parser ([2951af3](https://github.com/naimo84/kalender-events/commit/2951af36df83c668f6d289682e46ce5c9a260938))
+* first version ([6f3c048](https://github.com/naimo84/kalender-events/commit/6f3c048c7bd05af3739aa4b3d703c3d14848f766))
+
+
+### Bug Fixes
+
+* UID:VALUE=TEXT, naimo84/node-red-contrib-ical-events[#111](https://github.com/naimo84/kalender-events/issues/111) ([e5c9e30](https://github.com/naimo84/kalender-events/commit/e5c9e304135f3d413f26ebc8eba421922d17e46e))
+* wrong dateformat, mising duration ([dce386d](https://github.com/naimo84/kalender-events/commit/dce386dd538651a242104448661bccda25273726))
+
 ### [0.20.1](https://github.com/naimo84/kalender-events/compare/v0.20.0...v0.20.1) (2021-12-01)
 
 
