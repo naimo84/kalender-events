@@ -1,6 +1,6 @@
 {
   "name": "kalender-events",
-  "version": "0.21.0-0",
+  "version": "0.21.0",
   "description": "calendar events for nodejs",
   "scripts": {
     "test": "ts-mocha --timeout 10000 --paths test/**/*_spec.ts",
