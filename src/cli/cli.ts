@@ -58,6 +58,8 @@ export async function execute(rawArgs: string[]) {
     const includeTodoOption = new Option('--includeTodo', '');
     const usernameOption = new Option('--username [username]', '');
     const passwordOption = new Option('--password [password]', '');
+    const replaceDatesOption = new Option('--replaceDates, --replacedates', '');
+    const languageOption = new Option('--language [language]', '');
 
     program.addOption(urlOption);
     program.addOption(typeOption);
@@ -73,6 +75,8 @@ export async function execute(rawArgs: string[]) {
     program.addOption(usernameOption);
     program.addOption(passwordOption);
     program.addOption(includeTodoOption);
+    program.addOption(replaceDatesOption);
+    program.addOption(languageOption);
 
     program
       .command('upcoming')

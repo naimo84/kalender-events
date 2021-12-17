@@ -36,6 +36,7 @@
   ],
   "exports": "./dist/index.js",
   "types": "dist/index.d.ts",
+  "main": "dist/index.js",
   "author": "naimo84",
   "dependencies": {
     "@naimo84/dav": "^1.9.0",

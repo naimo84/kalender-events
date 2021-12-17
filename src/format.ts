@@ -4,7 +4,7 @@ import moment from "moment";
 
 /* istanbul ignore next */
 export function formatDate(event: iCalEvent | IKalenderEvent | undefined, _date: Date, _end: Date, withTime: boolean, config: Config): string {
-    if (typeof Intl.DateTimeFormat === 'function') {
+    if (!config.replacedates && typeof Intl.DateTimeFormat === 'function') {
         const dateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(config.language, config.dateformat);
         //@ts-ignore
         return dateTime.formatRange(_date, _end);
@@ -21,7 +21,7 @@ export function formatDate(event: iCalEvent | IKalenderEvent | undefined, _date:
 
     const fullday = isAllDay(event, _date, _end);
 
-    if (withTime) {
+    if (!config.replacedates && withTime) {
         let hours = _date.getHours().toString();
         let minutes = _date.getMinutes().toString();
 
@@ -191,11 +191,11 @@ export function formatDate(event: iCalEvent | IKalenderEvent | undefined, _date:
                     }
                 } else {
                     text =
-                        (replaceText('still', config) !== ' ' ? replaceText('still', config) : '', config) +
+                        (replaceText('still', config) !== ' ' ? replaceText('still', config) : '') +
                         ' ' +
                         hoursleft +
                         ' ' +
-                        (hoursleft === 1 ? replaceText('hour', config) : replaceText('hours', config), config) +
+                        (hoursleft === 1 ? replaceText('hour', config) : replaceText('hours', config)) +
                         _left;
                 }
             }
@@ -407,7 +407,7 @@ const dictionary: any = {
         ru: 'осталось',
         nl: 'over',
     },
-    still: { en: ' ', it: '', es: '', pl: '', fr: '', de: 'Noch', ru: ' ', nl: 'nog' },
+    still: { en: '', it: '', es: '', pl: '', fr: '', de: 'Noch', ru: '', nl: 'nog' },
     days: { en: 'days', it: 'Giorni', es: 'dias', pl: 'dni', fr: 'journées', de: 'Tage', ru: 'дней', nl: 'dagen' },
     day: { en: 'day', it: 'giorno', es: 'día', pl: 'dzień', fr: 'journée', de: 'Tag', ru: 'день', nl: 'dag' },
     hours: {
