@@ -10,9 +10,11 @@
     "watch": "tsc --watch",
     "build": "node ./buildSrc/esbuild.js",
     "esbuild": "esbuild ./src/index.ts --bundle --minify  --outdir=dist/  --platform=node  --format=cjs",
+    "copy": "cp src/windowsZones.json dist/",
+
     "tsc": "tsc",
     "tsc-declaration": "tsc --declaration --emitDeclarationOnly",
-    "compile": "npm run build && npm run tsc-declaration && npm run tsc",
+    "compile": "npm run build && npm run tsc-declaration && npm run tsc && npm run build",
     "prepack": "npm run compile",
     "release": "release-it",
     "coverage": "nyc --reporter=json-summary npm run test"
