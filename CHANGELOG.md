@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.22.0](https://github.com/naimo84/kalender-events/compare/v0.21.0...v0.22.0) (2021-12-20)
+
+
+### Features
+
+* eventTypes ([a768a3c](https://github.com/naimo84/kalender-events/commit/a768a3cb0b2e2d92d57658752542d7d0fd854ecd))
+
 ## [0.21.0](https://github.com/naimo84/kalender-events/compare/v0.21.0-0...v0.21.0) (2021-12-17)
 
 
