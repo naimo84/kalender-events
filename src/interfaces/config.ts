@@ -25,5 +25,7 @@ export interface Config {
     now?: Date,
     timezone?: string;
     includeTodo?: boolean;
+    includeEvents?: boolean;
+    eventtypes?: any;
     cache?: NodeCache;
 }

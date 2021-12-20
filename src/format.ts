@@ -6,8 +6,11 @@ import moment from "moment";
 export function formatDate(event: iCalEvent | IKalenderEvent | undefined, _date: Date, _end: Date, withTime: boolean, config: Config): string {
     if (!config.replacedates && typeof Intl.DateTimeFormat === 'function') {
         const dateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(config.language, config.dateformat);
+        if (_end >= _date)
+            //@ts-ignore
+            return dateTime.formatRange(_date, _end);
         //@ts-ignore
-        return dateTime.formatRange(_date, _end);
+        return dateTime.formatRange(_end, _date);
     }
 
     var day: any = _date.getDate();

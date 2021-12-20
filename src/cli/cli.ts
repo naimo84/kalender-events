@@ -45,7 +45,7 @@ export async function execute(rawArgs: string[]) {
   try {
 
     const urlOption = new Option('-u, --url [url]', 'URL to Calendar');
-    const typeOption = new Option('-t, --type [type]', 'Type can be ical, icloud or caldav');
+    const typeOption = new Option('-t, --type, --calenderType [type]', 'Type can be ical, icloud or caldav');
     const pastviewOption = new Option('--pastview [pastview]', '');
     const pastviewUnitsOption = new Option('--pastview-units [pastviewUnits]', '');
     const previewOption = new Option('--preview [preview]', '');
@@ -60,6 +60,7 @@ export async function execute(rawArgs: string[]) {
     const passwordOption = new Option('--password [password]', '');
     const replaceDatesOption = new Option('--replaceDates, --replacedates', '');
     const languageOption = new Option('--language [language]', '');
+    const eventTypesOption = new Option('--eventTypes, --eventtypes [eventtypes]', '');
 
     program.addOption(urlOption);
     program.addOption(typeOption);
@@ -77,6 +78,8 @@ export async function execute(rawArgs: string[]) {
     program.addOption(includeTodoOption);
     program.addOption(replaceDatesOption);
     program.addOption(languageOption);
+    program.addOption(eventTypesOption);
+    
 
     program
       .command('upcoming')

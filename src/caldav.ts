@@ -72,8 +72,8 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                             //@ts-ignore
                             if (data[k].type !== 'VTODO')
                                 continue;
-                           
-                            var ev = convertEvent(data[k],config);
+
+                            var ev = convertEvent(data[k], config);
                             if (ev) {
                                 ev.calendarName = calendar.displayName;
                                 const key = `${ev.uid!.uid! + ev.uid!.date!}`;
@@ -83,58 +83,59 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                     }
                 }
             }
+            if (config.includeEvents) {
+                //@ts-ignore
+                let calendarEntries = await dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
+                for (let calendarEntry of calendarEntries) {
+                    const ics = calendarEntry.calendarData;
+                    /* istanbul ignore else */
+                    if (ics) {
+                        const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
+                        const events = icalExpander.between(pastview.toDate(), preview.toDate());
 
-            //@ts-ignore
-            let calendarEntries = await dav.listCalendarObjects(calendar, { xhr: xhr, filters: filters })
-            for (let calendarEntry of calendarEntries) {
-                const ics = calendarEntry.calendarData;
-                /* istanbul ignore else */
-                if (ics) {
-                    const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
-                    const events = icalExpander.between(pastview.toDate(), preview.toDate());
-
-                    convertEvents(events,config).forEach((event: IKalenderEvent) => {
-                        debug(`caldav - ical: ${JSON.stringify(event)}`)
-                        if (event) {
-                            event.calendarName = calendar.displayName;
-                            const key = `${event.uid!.uid! + event.uid!.date!}`;
-                            retEntries[<any>key] = event;
-                        }
-                    });
-                } else if (calendarEntry.calendar.objects) {
-                    for (let calendarObject of calendarEntry.calendar.objects) {
-                        if (calendarObject.data && calendarObject.data.href) {
-                            let ics = host + calendarObject.data.href;
-                            let header = {};
-                            let username = config.username;
-                            let password = config.password;
-                            if (username && password) {
-                                var auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
-                                header = {
-                                    headers: {
-                                        'Authorization': auth,
-                                    },
-                                };
+                        convertEvents(events, config).forEach((event: IKalenderEvent) => {
+                            debug(`caldav - ical: ${JSON.stringify(event)}`)
+                            if (event) {
+                                event.calendarName = calendar.displayName;
+                                const key = `${event.uid!.uid! + event.uid!.date!}`;
+                                retEntries[<any>key] = event;
                             }
-
-                            const data = await ical.fromURL(ics, header);
-                            for (var k in data) {
-                                //debug(`caldav - href: ${JSON.stringify(data[k])}`)
-                                //@ts-ignore
-                                var ev = ke.convertEvent(data[k]);
-                                if (ev) {
-                                    ev.calendarName = calendar.displayName;
-                                    const key = `${ev.uid!.uid! + ev.uid!.date!}`;
-                                    retEntries[<any>key] = ev;
+                        });
+                    } else if (calendarEntry.calendar.objects) {
+                        for (let calendarObject of calendarEntry.calendar.objects) {
+                            if (calendarObject.data && calendarObject.data.href) {
+                                let ics = host + calendarObject.data.href;
+                                let header = {};
+                                let username = config.username;
+                                let password = config.password;
+                                if (username && password) {
+                                    var auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+                                    header = {
+                                        headers: {
+                                            'Authorization': auth,
+                                        },
+                                    };
                                 }
-                            }
 
+                                const data = await ical.fromURL(ics, header);
+                                for (var k in data) {
+                                    //debug(`caldav - href: ${JSON.stringify(data[k])}`)
+                                    //@ts-ignore
+                                    var ev = ke.convertEvent(data[k]);
+                                    if (ev) {
+                                        ev.calendarName = calendar.displayName;
+                                        const key = `${ev.uid!.uid! + ev.uid!.date!}`;
+                                        retEntries[<any>key] = ev;
+                                    }
+                                }
+
+                            }
                         }
                     }
+
+
+
                 }
-
-
-
             }
         }
     }
@@ -159,5 +160,5 @@ export async function Fallback(config: Config) {
     let data = await scrapegoat.getAllEvents();
     debug(`Fallback - data: ${JSON.stringify(data)}`)
 
-    return convertEvents(data,config);
+    return convertEvents(data, config);
 }

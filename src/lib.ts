@@ -94,12 +94,14 @@ export class KalenderEvents {
             seconds: s,
         };
     }
-    
+
     public async getEvents(config?: Config): Promise<IKalenderEvent[]> {
         try {
             if (config) {
                 this.config = Object.assign(this.config, config);
             }
+            this.config.includeEvents = this.config.eventtypes !== undefined && this.config.eventtypes !== '' ? this.config.eventtypes?.indexOf('events') >= 0 : true;
+            this.config.includeTodo = this.config.eventtypes !== undefined && this.config.eventtypes !== '' ? this.config.eventtypes?.indexOf('todos') >= 0 : this.config.includeTodo;
             this.calcPrePastView();
             let data = await this.getCal();
             let realnow = new Date();
