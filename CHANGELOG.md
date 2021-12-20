@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.1](https://github.com/naimo84/kalender-events/compare/v0.21.0...v0.21.1) (2021-12-20)
+
+
+### Bug Fixes
+
+* add windowsZones.json ([6c7b47c](https://github.com/naimo84/kalender-events/commit/6c7b47c974c7467085b74a118a89f15d932eb88d))
+
 ## [0.21.0](https://github.com/naimo84/kalender-events/compare/v0.21.0-0...v0.21.0) (2021-12-17)
 
 
