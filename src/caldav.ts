@@ -55,12 +55,15 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
         if (!calName || !calName.length || (calName && calName.length && calName.toLowerCase() === calendar.displayName.toLowerCase())) {
             if (config.includeTodo) {
                 let todoEntries = await dav.syncCalendar(calendar, {
-                    xhr: xhr, filters: [
-                        {
+                    xhr: xhr, filters: [{
+                        type: 'comp-filter',
+                        attrs: { name: 'VCALENDAR' },
+                        children: [{
                             type: 'comp-filter',
                             attrs: { name: 'VTODO' },
-                        }
-                    ]
+
+                        }]
+                    }]   
                 })
 
                 for (let todoEntry of todoEntries.objects) {

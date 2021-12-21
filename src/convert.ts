@@ -44,7 +44,13 @@ export function convertEvents(events: any, config: Config): IKalenderEvent[] {
 export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent | undefined {
     if (event && !Array.isArray(event)) {
         let startDate = new Date(event.startDate?.toJSDate() || moment(event.start).toDate());
-        let endDate = new Date(event.endDate?.toJSDate() || (event.type === "VEVENT" ? event.end : moment(event.due).toISOString()) || moment(event.start).toDate());
+        let endDate = new Date(
+            event.endDate?.toJSDate()
+            || (event.type === "VEVENT" ?
+                event.end
+                : moment(event.end || event.due).toISOString())
+            || moment(event.start).toDate()
+        );
 
         const recurrence = event.recurrenceId;
 
