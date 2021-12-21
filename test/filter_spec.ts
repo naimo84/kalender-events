@@ -112,22 +112,15 @@ describe('filter', () => {
                     filterOperator: 'between',
                     trigger: 'match'
                 });
-                console.log('events1', events1);
-                console.log('events2', events2);
-                console.log('events2 - filter', moment('2021-11-24_13:01:00', "YYYY-MM-DD_hh:mm:ss"));
+              
                 for (let event of events2) {
-                    expect(event).to.have.property('eventStart');
-                    console.log('events2 - event', moment(event.eventStart));
-                    
+                    expect(event).to.have.property('eventStart');                    
                     expect(event.eventStart).to.be.greaterThan(moment('2021-11-21_00:00:00', "YYYY-MM-DD_hh:mm:ss").toDate());
                 }
-                console.log('events3', events3);
+               
                 expect(events1).to.have.lengthOf(2)
                 expect(events2).to.have.lengthOf(1)
                 expect(events3).to.have.lengthOf(1)
-
-
-
                 resolve();
             } catch (err) {
                 reject(err);

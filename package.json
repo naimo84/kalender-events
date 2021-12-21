@@ -16,7 +16,7 @@
     "compile": "npm run build && npm run tsc-declaration && npm run tsc && npm run copy",
     "prepack": "npm run compile",
     "release": "release-it",
-    "coverage": "nyc --reporter=json-summary npm run test"
+    "coverage": "nyc npm run test"
   },
   "bin": {
     "kalender-events": "./bin/kalender-events.js",
