@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.23.0](https://github.com/naimo84/kalender-events/compare/v0.22.0...v0.23.0) (2021-12-22)
+
+
+### Features
+
+* more debug infos ([ccf40c4](https://github.com/naimo84/kalender-events/commit/ccf40c42113552076e2077c870257e963a7f99ab))
+
+
+### Bug Fixes
+
+* caldav Todo Filter ([9990a18](https://github.com/naimo84/kalender-events/commit/9990a18542bad2578ad4c3a7d153978c925fa873))
+
 ## [0.22.0](https://github.com/naimo84/kalender-events/compare/v0.21.0...v0.22.0) (2021-12-20)
 
 
