@@ -6,20 +6,21 @@ import moment = require('moment');
 import { convertEvents } from './convert';
 import { getPreviews } from './helper';
 const https = require('https');
-var debug = require('debug')('kalendar-events_icloud')
+var debug = require('debug')('kalender-events:icloud')
 
-function process(reslist: IKalenderEvent[], start: any, end: any, ics: any,config: Config) {
+function process(reslist: IKalenderEvent[], start: any, end: any, ics: any, config: Config) {
     const cal = new icalExpander({ ics, maxIterations: 1000 });
     const events = cal.between(start.toDate(), end.toDate());
+    debug(`process - events: ${JSON.stringify(events)}`)
 
-    for (let event of convertEvents(events,config)) {
+    for (let event of convertEvents(events, config)) {
         const key = event?.uid?.uid! + event?.uid?.date!;
         reslist[<any>key] = event;
     }
 }
 
 function requestIcloudSecure(config: Config, start: moment.Moment, end: moment.Moment): Promise<any> {
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
         const DavTimeFormat = 'YYYYMMDDTHHmms\\Z',
             url = config.url,
             user = config.username,
@@ -64,7 +65,8 @@ function requestIcloudSecure(config: Config, start: moment.Moment, end: moment.M
             //@ts-ignore
             options.headers["Authorization"] = "Basic " + userpass;
         }
-
+        debug(`requestIcloudSecure - options: ${JSON.stringify(options)}`)
+        debug(`requestIcloudSecure - xml: ${xml}`)
         var req = https.request(options, function (res: { on: (arg0: string, arg1: (chunk: any) => void) => void; }) {
             var s = "";
             res.on('data', function (chunk: string) {
@@ -99,13 +101,13 @@ export async function ICloud(config: Config) {
 
 
     const json = await requestIcloudSecure(config, pastview, preview);
-    debug(json);
+    debug(`ICloud - json: ${JSON.stringify(json)}`);
     var reslist: IKalenderEvent[] = [];
     if (json && json.multistatus && json.multistatus.response) {
-         /* istanbul ignore else */
+        /* istanbul ignore else */
         if (json.multistatus.response.propstat) {
             process(reslist, pastview, preview, json.multistatus.response.propstat.prop['calendar-data']._cdata, config);
-        } else {            
+        } else {
             json.multistatus.response.forEach((response: any) => process(reslist, pastview, preview, response.propstat.prop['calendar-data']._cdata, config));
         }
     }

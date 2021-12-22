@@ -3,10 +3,12 @@ import { v4 } from "uuid";
 import { formatDate } from "./format";
 import { isAllDay } from "./helper";
 import { Config, iCalEvent, IKalenderEvent } from "./interfaces";
+var debug = require('debug')('kalender-events:convert')
 
 export function convertEvents(events: any, config: Config): IKalenderEvent[] {
     let retEntries: IKalenderEvent[] = [];
     if (events) {
+        debug(`convertEvents - events: ${JSON.stringify(events)}`)
         if (Array.isArray(events)) {
             events.forEach(event => {
                 let ev = convertScrapegoat(event.data, config);
@@ -51,7 +53,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
                 : moment(event.end || event.due).toISOString())
             || moment(event.start).toDate()
         );
-
+        debug(`convertEvent - event: ${JSON.stringify(event)}`)
         const recurrence = event.recurrenceId;
 
         if (event.item) {
@@ -149,6 +151,7 @@ export function convertScrapegoat(event: any, config: Config): IKalenderEvent | 
     if (event) {
         let startDate = moment(event.start).toDate();
         let endDate = moment(event.end).toDate();
+        debug(`convertScrapegoat - event: ${JSON.stringify(event)}`)
 
         const recurrence = event.recurrenceId || event.type?.recurring;
 

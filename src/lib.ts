@@ -8,6 +8,8 @@ import { IKalenderEvent } from './interfaces';
 import { formatDate } from './format';
 import { getPreviews, getTimezoneOffset, insertSorted } from './helper';
 import { convertEvent, convertEvents } from './convert';
+import { parseJson } from './utils/configUtils';
+import { join } from 'path';
 var debug = require('debug')('kalender-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
@@ -25,6 +27,7 @@ export class KalenderEvents {
 
         this.calcPrePastView();
         this.cache = this.config.cache ? this.config.cache : new NodeCache.default();
+
     }
 
     private calcPrePastView() {
@@ -97,6 +100,10 @@ export class KalenderEvents {
 
     public async getEvents(config?: Config): Promise<IKalenderEvent[]> {
         try {
+
+            const packageJson = await parseJson<Record<string, string>>(join(__dirname, '../package.json'));
+            debug(`packageJson version: ${packageJson?.version}`)
+
             if (config) {
                 this.config = Object.assign(this.config, config);
             }
