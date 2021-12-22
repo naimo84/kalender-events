@@ -1,7 +1,7 @@
 # kalender-events (ka'lɛndɐ, german for calendar) <img src="https://github.com/naimo84/kalender-events/blob/master/docs/logo.png" width="200" align="right" alt="kalender-events">
 
 This Node module gets the events from an ical-URL, a caldav-server or from the iCloud.
-
+Special thanks to Peter Braden (https://github.com/peterbraden/ical.js) and Jens Maus (https://github.com/jens-maus/node-ical) for the whole ical parsing code :+1:
 
 ## :question: Get Help
 
