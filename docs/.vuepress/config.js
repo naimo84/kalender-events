@@ -64,6 +64,11 @@ module.exports = {
               title: 'Debug',
               path: '/guide/debug',
               collapsable: false             
+            },  
+            {
+              title: 'iCloud secure',
+              path: '/guide/icloudsecure',
+              collapsable: false             
             },            
             // '/guide/troubleshooting',
             // {
