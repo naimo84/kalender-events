@@ -12,13 +12,20 @@ For bug reports and feature requests, open issues. :bug:
 I open-source almost everything I can, and I try to reply to everyone needing help using these projects. Obviously,
 this takes time. You can integrate and use these projects in your applications _for free_! You can even change the source code and redistribute (even resell it).
 
+Thank you to all my backers!
+### People
+
+![backers](https://github.com/naimo84/kalender-events/blob/main/backers.svg)
+
+### Become a backer
+
 However, if you get some profit from this or just want to encourage me to continue creating stuff, there are few ways you can do it:
 
 - Starring and sharing the projects you like :rocket:
 - **Crypto.&#65279;com** Use my referral link https://crypto.com/app/f2smbah8fm to sign up for Crypto.&#65279;com and we both get $25 USD :) 
 - [![PayPal][badge_paypal]][paypal-donations] **PayPal**— You can make one-time donations via PayPal. I'll probably buy a ~~coffee~~ tea. :tea:
 - [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T412CXA) **Ko-fi**— I'll buy a ~~tea~~ coffee. :coffee: :wink:
-- <img src="./docs/bitcoin.png" width="100"/>&nbsp; **Bitcoin**—You can send me bitcoins at this address (or scanning the code): `3GqiebqcZeonziRUMYxU35J3jPSMJzpTAc`
+- <img src="./docs/bitcoin.png" width="50"/>&nbsp; **Bitcoin**—You can send me bitcoins at this address (or scanning the code): `3GqiebqcZeonziRUMYxU35J3jPSMJzpTAc`
 
 Thanks! :heart:
 
