@@ -17,8 +17,7 @@ Thank you to all my backers!
 
 <table>
 <tr>
-<td><a href="https://github.com/fflorent"><div>fflorent</div><img src="https://avatars.githubusercontent.com/u/
-371705?v=4" width=64/></a></td>
+<td><a href="https://github.com/fflorent"><div>fflorent</div><img src="https://avatars.githubusercontent.com/u/371705?v=4" width=64/></a></td>
 <td><a href="https://github.com/Speeedy0815"><div>Speeedy0815</div><img src="https://avatars.githubusercontent.com/u/59925572?v=4" width=64/></a></td>
 
 <td><div>Ralf S.</div></td>
