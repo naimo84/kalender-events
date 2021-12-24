@@ -15,7 +15,20 @@ this takes time. You can integrate and use these projects in your applications _
 Thank you to all my backers!
 ### People
 
-![backers](https://github.com/naimo84/kalender-events/blob/main/backers.svg)
+<table>
+<tr>
+<td><a href="https://github.com/fflorent"><div>fflorent</div><img src="https://avatars.githubusercontent.com/u/
+371705?v=4" width=64/></a></td>
+<td><a href="https://github.com/Speeedy0815"><div>Speeedy0815</div><img src="https://avatars.githubusercontent.com/u/59925572?v=4" width=64/></a></td>
+
+<td><div>Ralf S.</div></td>
+<td><div>Enno L.</div></td>
+<td><div>Jürgen G.</div></td>
+<td><div>Mark MC G.</div></td>
+<td><div>Kay-Uwe M.</div></td>
+<td><div>Craig O.</div></td>
+<td><div>Manuel G.</div></td>
+</tr></table>
 
 ### Become a backer
 
