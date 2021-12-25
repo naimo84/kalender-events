@@ -7,11 +7,11 @@ As you're logged in, have a look for "Security" in the Apple ID control panel an
 
 Label the app-specific password whatever you want, e.g. "kalender-events" and click "Create".
 
-![generate_password](https://github.com/naimo84/kalender-events/raw/docs/examples/generate_password.png)
+![generate_password](https://github.com/naimo84/kalender-events/raw/docs/docs/examples/generate_password.png)
 
 Apple will provide you with a randomly generated alphanumeric string in the format xxxx-xxxx-xxxx-xxxx. Highlight and copy the password and keep it somewhere safe.
 
-![generate_password](https://github.com/naimo84/kalender-events/raw/docs/examples/generate_password_2.png)  
+![generate_password](https://github.com/naimo84/kalender-events/raw/docs/docs/examples/generate_password_2.png)  
   
 Next open a console that can run cURL
 
