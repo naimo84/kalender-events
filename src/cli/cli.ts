@@ -6,7 +6,27 @@ import { promises as fsPromises } from 'fs';
 import * as fs from 'fs';
 import { Config } from '../';
 import { CliOptions } from './cliOptions';
+import { getCalender } from '../utils/icloudCalender';
 const program = new Command();
+
+async function icloudurl(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
+
+  let options: CliOptions = cli1;
+  //let command: Command = cli2 as Command;
+
+  if (cli3 !== undefined) {
+    options = cli2 as Config;
+    options.argument = cli1;
+    //command = cli3;
+  }
+  if (options.username === undefined) {
+    options = Object.assign(options, program.opts());
+  }
+
+  getCalender(options).then((obj: any) => {
+    console.log(obj)
+  })
+}
 
 async function status(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
 
@@ -61,6 +81,7 @@ export async function execute(rawArgs: string[]) {
     const replaceDatesOption = new Option('--replaceDates, --replacedates', '');
     const languageOption = new Option('--language [language]', '');
     const eventTypesOption = new Option('--eventTypes, --eventtypes [eventtypes]', '');
+    const basicAuthOption = new Option('--basicAuth [basicAuth]', '');
 
     program.addOption(urlOption);
     program.addOption(typeOption);
@@ -79,7 +100,8 @@ export async function execute(rawArgs: string[]) {
     program.addOption(replaceDatesOption);
     program.addOption(languageOption);
     program.addOption(eventTypesOption);
-    
+    program.addOption(basicAuthOption);
+
 
     program
       .command('upcoming')
@@ -95,6 +117,11 @@ export async function execute(rawArgs: string[]) {
       .command('sensors')
       .description('Check if a event is running currently')
       .action(status);
+
+    program
+      .command('icloudurl')
+      .description('Get iCloud Calenders and URL')
+      .action(icloudurl);
 
     await program.parseAsync(rawArgs);
     if (process.argv.length < 3) {
