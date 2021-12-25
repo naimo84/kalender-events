@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.24.0](https://github.com/naimo84/kalender-events/compare/v0.23.0...v0.24.0) (2021-12-25)
+
+
+### Features
+
+* make getOptions function ([e63c4e7](https://github.com/naimo84/kalender-events/commit/e63c4e7443f5216c9293a99ef02f527d280f90e3))
+* replace https with axios ([8c9e6a7](https://github.com/naimo84/kalender-events/commit/8c9e6a756e9a194162dc77ef60aea68c95bdf888))
+
 ## [0.23.0](https://github.com/naimo84/kalender-events/compare/v0.22.0...v0.23.0) (2021-12-22)
 
 
