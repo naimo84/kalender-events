@@ -6,7 +6,7 @@ actionLink: /guide/
 footer: MIT Licensed | Copyright © 2019-present Benjamin Neumann
 ---
 
-# Features of node-red-ical-events
+# Features of kalender-events
 
 <div class="features">
   
