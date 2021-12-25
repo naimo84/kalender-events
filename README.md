@@ -37,126 +37,17 @@ However, if you get some profit from this or just want to encourage me to contin
 
 Thanks! :heart:
 
-## :cloud: Installation
-
-```sh
-$ npm install kalender-events
-```
-
 ## :yum: How to contribute
 
 Have an idea? Found a bug? See [how to contribute][contributing].
 
-```sh
-git clone https://github.com/naimo84/kalender-events.git
-cd kalender-events
-npm install
-gulp
-cd /your/project/path
-npm install /path/to/kalender-events
-```
+## :memo: Documentation  
 
-## :memo: Documentation
 
-### INPUT
+<a href="https://naimo84.github.io/kalender-events" target="_blank">
+<img src="https://img.shields.io/badge/doku-naimo84.github.io-0078D6?style=for-the-badge&logo=github&logoColor=white"/>
+</a>
 
-- **url**: _string_ (URL to Calendar)
-- **language**: _string_ (if dates are replaced with names, the following languages are available at the moment Deutsch, English, русский, polski, Nederlands, français, Italiano, Espanol)
-- **replacedates**: _boolean_ (Dates are formated in a readable way, like today, tommorrow, in 3 weeks,...)
-- **type**: _string_ (ical, icloud, caldav). default is ical
-- **username**: _string_ (optional)
-- **password**: _string_ (optional)
-- **calendar**: _string_ (Name of the caldav calendar)
-- **filter**: _string_, Regex to filter for
-- **trigger**: _string_ (always, match, nomatch)
-- **preview**: _number_
-- **previewUnits**: _string_ (seconds, minutes, hours, days)
-- **pastview**: _number_
-- **pastviewUnits**: _string_ (seconds, minutes, hours, days)
-
-> :warning: **If you are using iCloud**: Have a look here: [wiki/Get-iCloud-secure-URL](https://github.com/naimo84/kalender-events/wiki/Get-iCloud-secure-URL)
-
-### OUTPUT
-
-arraylist of upcoming events.  
-properties:
-
-    -   date
-    -   summary
-    -   event
-    -   eventStart
-    -   eventEnd
-    -   description
-    -   id
-    -   allDay
-    -   rule
-    -   location
-
-### Example:
-
-```ts
-//Typescript - index.ts
-
-import { KalenderEvents } from "kalender-events";
-
-const ev = new KalenderEvents({
-    url: "https://calendar.google.com/calendar/ical/xxx%40group.calendar.google.com/private-xxx/basic.ics"
-});
-
-ev.getEvents({
-    type: 'ical',
-    preview: 10,
-    previewUnits:'days',
-    pastview: 10,
-    pastviewUnits:'days'
-}).then(data => {
-    console.log(data);
-})
-```
-
-or
-
-```js
-//Javascript - index.js
-
-var kalender_events = require("kalender-events");
-var ev = new kalender_events.KalenderEvents({
-    url: "https://calendar.google.com/calendar/ical/xxx%40group.calendar.google.com/private-xxx/basic.ics"
-});
-
-ev.getEvents({
-    type: 'ical',
-    preview: 10,
-    previewUnits: 'days',
-    pastview: 10,
-    pastviewUnits: 'days'
-}).then(function (data) {
-    console.log(data);
-});
-```
-
-output:  
-```sh
-$ tsc index.ts
-$ node .\index.js
-[
-  {
-    date: '02.05.2020 10:00',
-    event: 'test',
-    summary: 'test',
-    topic: 'test',
-    calendarName: undefined,
-    eventStart: 2020-05-02T07:00:00.000Z,
-    eventEnd: 2020-05-02T08:00:00.000Z,
-    description: '',
-    id: '123@google.com',
-    allDay: false,
-    rule: ' ',
-    location: '',
-    countdown: { days: -1, hours: -7, minutes: -26, seconds: -38 }
-  }
-]
-```
 
 [badge_brave]: ./docs/support_banner.png
 [badge_paypal]: https://img.shields.io/badge/Donate-PayPal-blue.svg

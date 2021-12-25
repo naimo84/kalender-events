@@ -23,6 +23,16 @@ requested. :sparkles:
  - Fork the project in your account and create a branch with your fix:
    `some-great-feature` or `some-issue-fix`.
 
+ - Clone the project and install dependencies
+   ```sh
+   git clone https://github.com/yourusername/kalender-events.git
+   cd kalender-events
+   npm install
+   gulp
+   cd /your/project/path
+   npm install /path/to/kalender-events
+   ```
+
  - Commit your changes in that branch. If the project contains tests (generally, the `test`
    directory), you are encouraged to add a test as well. :memo:
 
