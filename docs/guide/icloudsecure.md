@@ -1,6 +1,10 @@
 # iCloud secure
 
-For getting the iCloud secure URL you have to use cURL.
+For getting the iCloud secure URL you have two options: manually using cURL or automatically via kalender-events.
+
+For both options you have to do the following:
+
+## Generate an app-specific password
 
 Log into your Apple account at appleid.apple.com. Maybe you have to confirm your login by entering the two-factor identification code.
 As you're logged in, have a look for "Security" in the Apple ID control panel and click on "Generate Password".
@@ -12,13 +16,52 @@ Label the app-specific password whatever you want, e.g. "kalender-events" and cl
 Apple will provide you with a randomly generated alphanumeric string in the format xxxx-xxxx-xxxx-xxxx. Highlight and copy the password and keep it somewhere safe.
 
 ![generate_password](https://github.com/naimo84/kalender-events/raw/docs/docs/examples/generate_password_2.png)  
+
+## use kalender-events
+
+Next open a console.
+run this (replacing me@icloud.com with your own Apple ID and xxxx-xxxx-xxxx-xxxx with the app-specific password):
+
+```sh
+npx kalender-events icloudurl --username me@icloud.com --password xxxx-xxxx-xxxx-xxxx 
+```
+
+the output will look like: 
+
+```json
+{
+  href: 'https://p51-caldav.icloud.com:443/123456789/calendars/',
+  list: [
+    { 
+      name: 'Benjamin', 
+      href: '/123456789/calendars/' },
+    {
+      name: 'Kalender',
+      href: '/123456789/calendars/005CEAF5-72EF-4D3B-B6F4-CB2575EC765C/'
+    },
+    {
+      name: 'Familie',
+      href: '/123456789/calendars/bef56e45-9bd0-4c66-8c61-faf5d00f2167/'
+    },
+    {
+      name: 'Familie',
+      href: '/123456789/calendars/e0b1aa5c-ff01-4c27-9706-e8f1e397dd11/'
+    },
+    { name: 'Privat', href: '/123456789/calendars/home/' },
+    { name: 'Erinnerungen', href: '/123456789/calendars/tasks/' },
+    { name: 'Arbeit', href: '/123456789/calendars/work/' }
+  ]
+}
+```
+
+## manual using cURL
   
 Next open a console that can run cURL
 
-run this (replacing $APPLEID with your own Apple ID):
+run this (replacing me@icloud.com with your own Apple ID):
 
 ```sh
-$ curl -s -X PROPFIND -u "$APPLEID" -H "Depth: 0"  --data "<propfind xmlns='DAV:'><prop><current-user-principal/></prop></propfind>"  https://caldav.icloud.com/
+$ curl -s -X PROPFIND -u "me@icloud.com" -H "Depth: 0"  --data "<propfind xmlns='DAV:'><prop><current-user-principal/></prop></propfind>"  https://caldav.icloud.com/
 ```
 
 When propmted for credentials, enter in the app-specific password
