@@ -11,12 +11,6 @@ features:
 footer: MIT Licensed | Copyright © 2019-present Benjamin Neumann
 ---
 
-# Features of kalender-events
-
-<div class="features">
-  
-</div>
-
 ## Getting Started
 
 ### Install CLI
