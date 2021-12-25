@@ -9,41 +9,19 @@ import { CliOptions } from './cliOptions';
 import { getCalender } from '../utils/icloudCalender';
 const program = new Command();
 
-async function icloudurl(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
-
+async function getOptions(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
   let options: CliOptions = cli1;
-  //let command: Command = cli2 as Command;
 
   if (cli3 !== undefined) {
     options = cli2 as Config;
     options.argument = cli1;
-    //command = cli3;
   }
-  if (options.username === undefined) {
+
+  if (options.url === undefined || options.username === undefined) {
     options = Object.assign(options, program.opts());
   }
 
-  getCalender(options).then((obj: any) => {
-    console.log(obj)
-  })
-}
-
-async function status(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
-
-  let options: CliOptions = cli1;
-  //let command: Command = cli2 as Command;
-
-  if (cli3 !== undefined) {
-    options = cli2 as Config;
-    options.argument = cli1;
-    //command = cli3;
-  }
-
-  if (options.url === undefined) {
-    options = Object.assign(options, program.opts());
-  }
-
-  if (!Object.prototype.hasOwnProperty.call(options, 'auth') && !Object.prototype.hasOwnProperty.call(options, 'url')) {
+  if (!Object.prototype.hasOwnProperty.call(options, 'username') && !Object.prototype.hasOwnProperty.call(options, 'url')) {
     const paths = await globby(['**/.kalender-events.json']);
     const homedir = os.homedir();
     if (fs.existsSync(`${homedir}/.kalender-events.json`)) {
@@ -55,8 +33,19 @@ async function status(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
       options = Object.assign(options, data);
     }
   }
+  return options;
+}
 
-  let ke = new KalenderEvents()
+async function icloudurl(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
+  const options: CliOptions = await getOptions(cli1, cli2, cli3)
+  getCalender(options).then((obj: any) => {
+    console.log(obj)
+  })
+}
+
+async function status(cli1: CliOptions, cli2: Command | Config, cli3: Command) {
+  const options: CliOptions = await getOptions(cli1, cli2, cli3)
+  const ke = new KalenderEvents()
   const ret: any = await ke.getEvents(options);
   console.log(ret);
 }
