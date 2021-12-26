@@ -63,12 +63,7 @@ module.exports = {
             {
               title: 'Debug',
               path: '/guide/debug',
-              collapsable: false             
-            },  
-            {
-              title: 'iCloud secure',
-              path: '/guide/icloudsecure',
-              collapsable: false             
+              collapsable: false
             },
             {
               title: 'Examples',
@@ -76,10 +71,24 @@ module.exports = {
               path: '/guide/examples',
               children: [
                 '/guide/examples_lib',
-                '/guide/examples_cli',               
+                '/guide/examples_cli',
               ]
             },
+          ],
+          '/config/': [
+            '/config/',
+            {
+              title: 'Google',
+              path: '/config/google',
+              collapsable: false
+            },
+            {
+              title: 'iCloud secure',
+              path: '/config/icloudsecure',
+              collapsable: false
+            },
           ]
+
         }
       }
     }

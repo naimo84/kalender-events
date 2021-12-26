@@ -1,3 +1,7 @@
+---
+sidebarDepth: 0
+---
+
 # iCloud secure
 
 For getting the iCloud secure URL you have two options: manually using cURL or automatically via kalender-events.
