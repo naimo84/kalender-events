@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "export NODE_OPTIONS=--openssl-legacy-provider && vuepress dev docs",
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && vuepress build docs"
+    "build": "vuepress build docs"
   },
   "keywords": [
     "kalender-events",
