@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.25.0](https://github.com/naimo84/kalender-events/compare/v0.24.0...v0.25.0) (2021-12-27)
+
+
+### Features
+
+* add default command to cli ([a09d001](https://github.com/naimo84/kalender-events/commit/a09d001ff91b2551d9b9f5b05b310a222b5c5899))
+
 ## [0.24.0](https://github.com/naimo84/kalender-events/compare/v0.23.0...v0.24.0) (2021-12-25)
 
 
