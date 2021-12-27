@@ -13,8 +13,7 @@
     "copy": "cp src/windowsZones.json dist/",
     "tsc": "tsc",
     "tsc-declaration": "tsc --declaration --emitDeclarationOnly",
-    "compile": "npm run build && npm run tsc-declaration && npm run tsc && npm run copy",
-    "prepack": "npm run compile",
+    "compile": "npm run build && npm run tsc-declaration && npm run tsc && npm run copy",    
     "release": "release-it",
     "coverage": "nyc npm run test"
   },

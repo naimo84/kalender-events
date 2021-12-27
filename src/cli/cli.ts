@@ -58,7 +58,7 @@ export async function execute(rawArgs: string[]) {
     const pastviewOption = new Option('--pastview [pastview]', '');
     const pastviewUnitsOption = new Option('--pastview-units [pastviewUnits]', '');
     const previewOption = new Option('--preview [preview]', '');
-    const previewUnitsOption = new Option('--preview-units [previewUnits]', '');
+    const previewUnitsOption = new Option('--preview-units,--previewunits,--previewUnits [previewUnits]', '');
     const filterOption = new Option('--filter [filter]', '');
     const filterPropertyOption = new Option('--filter-property [filterProperty]', '');
     const filterOperatorOption = new Option('--filter-operator [filterOperator]', '');
@@ -112,6 +112,11 @@ export async function execute(rawArgs: string[]) {
       .description('Get iCloud Calenders and URL')
       .action(icloudurl);
 
+    program
+      .command('all', { isDefault: true })
+      .description('Get iCloud Calenders and URL')
+      .action(status);
+    // process.argv.splice(2, 0, 'all') 
     await program.parseAsync(rawArgs);
     if (process.argv.length < 3) {
       program.help();
