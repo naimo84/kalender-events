@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.25.2](https://github.com/naimo84/kalender-events/compare/v0.25.1...v0.25.2) (2021-12-27)
+
+
+### Bug Fixes
+
+* gh action upload_url ([a80caf3](https://github.com/naimo84/kalender-events/commit/a80caf3809b322b90ed2a7c20ee26638c7aa50f2))
+
 ### [0.25.1](https://github.com/naimo84/kalender-events/compare/v0.25.0...v0.25.1) (2021-12-27)
 
 
