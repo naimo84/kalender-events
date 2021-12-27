@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.25.1](https://github.com/naimo84/kalender-events/compare/v0.25.0...v0.25.1) (2021-12-27)
+
+
+### Bug Fixes
+
+* duration parsing ([db6a867](https://github.com/naimo84/kalender-events/commit/db6a867e1d7112a0dcceafdad4f8b75b1837e8c1))
+* publish error ([5f20b92](https://github.com/naimo84/kalender-events/commit/5f20b927cce6789064bb0eb61013cb9e6103fd9d))
+
 ## [0.25.0](https://github.com/naimo84/kalender-events/compare/v0.24.0...v0.25.0) (2021-12-27)
 
 
