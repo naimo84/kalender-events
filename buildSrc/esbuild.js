@@ -1,5 +1,8 @@
 const esbuild = require('esbuild')
 
+const { nodeExternalsPlugin } = require('esbuild-node-externals')
+const isWatchBuild = process.argv.indexOf('--watch') >= 0;
+
 const makeAllPackagesExternalPlugin = {
   name: 'make-all-packages-external',
   setup(build) {
@@ -7,8 +10,6 @@ const makeAllPackagesExternalPlugin = {
     build.onResolve({ filter }, args => ({ path: args.path, external: true }))
   },
 }
-
-const isWatchBuild = process.argv.indexOf('--watch') >= 0;
 
 esbuild.build({
   logLevel: "info",
@@ -20,5 +21,5 @@ esbuild.build({
   sourcemap: true,
   target: 'node14',
   watch: isWatchBuild,
-  plugins: [makeAllPackagesExternalPlugin]
+  plugins: [makeAllPackagesExternalPlugin,nodeExternalsPlugin()]
 }).catch(() => process.exit(1))

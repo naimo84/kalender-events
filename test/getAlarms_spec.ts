@@ -1,12 +1,12 @@
 
 import { expect, use } from "chai";
 import moment = require('moment');
-import { KalenderEvents } from '../dist/lib';
+import { KalenderEvents } from '../dist/';
 use(require('chai-like'));
 use(require('chai-things'));
-describe('events', () => {
+describe('alarms', () => {
 
-    it('ical', async () => {
+    it('', async () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({

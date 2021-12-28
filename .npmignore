@@ -5,3 +5,8 @@ test/*
 src/*
 gulpfile.js
 buildSrc
+docs
+coverage
+.nyc*
+CHANGELOG.md
+CONTRIBUTING.md

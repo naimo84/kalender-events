@@ -1,8 +1,7 @@
 
 import { expect, should, use } from "chai";
-var sinon = require('sinon');
-import moment = require('moment');
-import { KalenderEvents } from '../dist/lib';
+import moment from 'moment';
+import { KalenderEvents } from '../dist/';
 use(require('chai-like'));
 use(require('chai-things'));
 

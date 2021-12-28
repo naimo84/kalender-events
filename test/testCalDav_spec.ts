@@ -1,7 +1,7 @@
 
 import { expect, use } from "chai";
 import moment = require('moment');
-import { KalenderEvents } from '../dist/lib';
+import { KalenderEvents } from '../dist';
 use(require('chai-like'));
 use(require('chai-things'));
 
