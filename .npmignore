@@ -10,3 +10,4 @@ coverage
 .nyc*
 CHANGELOG.md
 CONTRIBUTING.md
+commitlint.config.js
