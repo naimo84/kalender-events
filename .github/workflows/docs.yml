@@ -3,7 +3,7 @@ on:
   push:
     branches: [ docs ]
 jobs:
-  build-and-deploy:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

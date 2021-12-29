@@ -11,3 +11,4 @@ coverage
 CHANGELOG.md
 CONTRIBUTING.md
 commitlint.config.js
+.release-it.js

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
 
-const { cli } = require('../dist/index');
-cli.execute(process.argv);
+console.log("The cli is moved to an independent package.")
+console.log("Please install it via: npm install -g kalender-events-cli")
+console.log("or use: npx kalender-events-cli@latest kalender-events-cli")
