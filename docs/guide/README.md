@@ -9,8 +9,8 @@ This Node module gets the events from an ical-URL, a caldav-server or from iClou
 ### Usage as cli
 
 ``` 
-installed via npm globally: kalender-events
-alternatively: npx kalender-events
+installed via npm globally: npm i -g kalender-events-cli
+alternatively: npx kalender-events-cli@latest
 ```
 
 ```
