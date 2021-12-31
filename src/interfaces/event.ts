@@ -64,6 +64,7 @@ export interface IKalenderEvent {
         percent?: any;
         completed?: any;
     };
+    originalEvent?:any
 }
 
 export interface IKalenderAlarm {

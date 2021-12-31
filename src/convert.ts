@@ -111,7 +111,8 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             status: event.type === "VTODO" ? {
                 completed: event.status === "COMPLETED",
                 percent: event.completion,
-            } : undefined
+            } : undefined,
+            originalEvent: event
         }
 
         const makeProperty = (k: string, v: string | Date | undefined) => {
