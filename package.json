@@ -1,6 +1,6 @@
 {
   "name": "kalender-events",
-  "version": "0.25.2",
+  "version": "0.26.0",
   "description": "calendar events for nodejs",
   "scripts": {
     "test": "ts-mocha --timeout 10000 --paths test/**/*_spec.ts",
@@ -62,7 +62,7 @@
     "@types/uuid": "^8.3.3",
     "chai": "4.2.0",
     "chai-like": "1.1.1",
-    "chai-things": "0.2.0",    
+    "chai-things": "0.2.0",
     "esbuild": "^0.13.15",
     "esbuild-node-externals": "^1.4.1",
     "mocha": "^8.0.0",
@@ -82,9 +82,8 @@
     "url": "https://github.com/naimo84/kalender-events/issues"
   },
   "homepage": "https://github.com/naimo84/kalender-events#readme",
-  
   "funding": {
     "type": "paypal",
     "url": "https://paypal.me/NeumannBenjamin"
-  }  
+  }
 }
