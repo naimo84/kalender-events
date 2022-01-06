@@ -6,7 +6,22 @@ sidebarDepth: 0
 
 This Node module gets the events from an ical-URL, a caldav-server or from iCloud.
 
-### Usage as cli
+## Usage as Node-RED nodes
+
+First of all install [Node-RED](http://nodered.org/docs/getting-started/installation)
+
+### Install node-red-contrib-ical-events
+
+#### Node-RED palette manager
+
+![sensor_node.png](../examples/nodered-palette-manager.png)  
+
+There are three types of nodes:
+- [upcoming](./upcoming.md) - a list of events
+- [sensors](./sensors.md) - check if a event is running currently
+- [trigger](./trigger.md) - trigger a output on event start and event end  
+
+## Usage as cli
 
 ``` 
 installed via npm globally: npm i -g kalender-events-cli
@@ -45,7 +60,7 @@ Commands:
   help [command]                           display help for command
 ```
 
-### Usage in your own node module
+## Usage in your own node module
 
 ```sh
 $ npm install kalender-events

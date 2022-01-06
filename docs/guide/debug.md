@@ -1,6 +1,6 @@
-# Debug kalender-events
+# Debug node-red-contrib-ical-events
 
-[kalender-events](https://github.com/niamo84/kalender-events) uses the [debug](https://www.npmjs.com/package/debug) package to put out some more informations, when collecting ical events from the calender.
+My library [kalender-events](https://github.com/niamo84/kalender-events) uses the [debug](https://www.npmjs.com/package/debug) package to put out some more informations, when collecting ical events from the calender.
 
 To activate the additional logging, you have to set the environment variable ``DEBUG`` to ``kalender-events``.
 
