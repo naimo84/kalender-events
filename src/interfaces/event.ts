@@ -1,6 +1,6 @@
 
 export interface iCalEvent {
-    status?: any; 
+    status?: any;
     completion?: any;
     due?: string | number | Date;
     exdate: any;
@@ -38,7 +38,7 @@ export interface iCalEvent {
 export interface IKalenderEvent {
     exdate?: any;
     recurrences?: any;
-    summary?: string,
+    summary?: string | { val: string, params: any },
     location?: string,
     eventStart?: Date,
     eventEnd?: Date,
@@ -64,7 +64,7 @@ export interface IKalenderEvent {
         percent?: any;
         completed?: any;
     };
-    originalEvent?:any
+    originalEvent?: any
 }
 
 export interface IKalenderAlarm {
