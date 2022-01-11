@@ -27,7 +27,7 @@ Next open a console.
 run this (replacing me@icloud.com with your own Apple ID and xxxx-xxxx-xxxx-xxxx with the app-specific password):
 
 ```sh
-npx kalender-events icloudurl --username me@icloud.com --password xxxx-xxxx-xxxx-xxxx 
+npx kalender-events-cli icloudurl --username me@icloud.com --password xxxx-xxxx-xxxx-xxxx 
 ```
 
 the output will look like: 
