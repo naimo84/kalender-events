@@ -45,12 +45,14 @@ export function convertEvents(events: any, config: Config): IKalenderEvent[] {
 
 export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent | undefined {
     if (event && !Array.isArray(event)) {
-        let startDate = new Date(event.startDate?.toJSDate() || moment(event.start).toDate());
+        let startDate = new Date(event.type === "VEVENT"
+            ? (event.startDate?.toJSDate() || moment(event.start).toDate())
+            : moment(event.start || event.due).toISOString());
         let endDate = new Date(
             event.endDate?.toJSDate()
-            || (event.type === "VEVENT" ?
-                event.end
-                : moment(event.end || event.due).toISOString())
+            || (event.type === "VEVENT"
+                ? event.end
+                : moment(event.due || event.end).toISOString())
             || moment(event.start).toDate()
         );
         debug(`convertEvent - event: ${JSON.stringify(event)}`)
@@ -111,6 +113,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             status: event.type === "VTODO" ? {
                 completed: event.status === "COMPLETED",
                 percent: event.completion,
+                date: moment(event.completed).toDate(),
             } : undefined,
             originalEvent: event
         }
