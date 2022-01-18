@@ -66,6 +66,16 @@ module.exports = {
               collapsable: false
             },
             {
+              title: 'Node-RED',
+              path: '/guide/nodes',
+              collapsable: false,
+              children: [
+                '/guide/upcoming',
+                '/guide/sensors',
+                '/guide/trigger',
+              ]
+            },
+            {
               title: 'Examples',
               collapsable: false,
               path: '/guide/examples',
