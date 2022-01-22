@@ -85,7 +85,7 @@ describe('events', () => {
         });
     });
 
-    it('countdown + Duration parse Error', async () => {
+    it('countdown', async () => {
         return new Promise(async (resolve, reject) => {
             let ke = new KalenderEvents({
                 url: "./test/mocks/events.ics"
@@ -94,10 +94,24 @@ describe('events', () => {
                 await ke.getEvents({ pastview: 'wrongFormat' })
                 reject('should not be there');
             } catch (err) {
-                const countdown = ke.countdown(new Date(new Date().getTime() + (1 * 60 * 60 * 1000)));
-                expect(countdown.hours).to.be.equal(1);
+
                 expect(err).to.be.instanceof(Error);
                 resolve();
+            }
+        });
+    });
+
+    it('Duration parse Error', async () => {
+        return new Promise(async (resolve, reject) => {
+            let ke = new KalenderEvents({
+                url: "./test/mocks/events.ics"
+            });
+            try {
+                const countdown = ke.countdown(new Date(new Date().getTime() + (1 * 60 * 60 * 1000)));
+                expect(countdown.hours).to.be.equal(1);
+                resolve();
+            } catch (err) {
+                reject(err);
             }
         });
     });
@@ -156,12 +170,12 @@ describe('events', () => {
 
     // it('webcal', async () => {
 
-        
+
     //         let stub = sinon.stub(Ical, "fromURL");
     //         let data = await Ical.parseFile('./test/mocks/events.ics');
     //         stub.returns(data);
-      
-        
+
+
     //     return new Promise(async (resolve, reject) => {
     //         try {
     //             let ke = new KalenderEvents({
@@ -222,7 +236,7 @@ describe('events', () => {
         return new Promise(async (resolve, reject) => {
             try {
                 let ke = new KalenderEvents({
-                    url: "./test/mocks/ev2.ics",            
+                    url: "./test/mocks/ev2.ics",
                 });
                 let events = await ke.getEvents({
                     now: moment('20200616').toDate(),
