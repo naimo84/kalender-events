@@ -45,12 +45,12 @@ export function convertEvents(events: any, config: Config): IKalenderEvent[] {
 
 export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent | undefined {
     if (event && !Array.isArray(event)) {
-        let startDate = new Date(event.type === "VEVENT"
+        let startDate = new Date((!event.type || event.type === "VEVENT")
             ? (event.startDate?.toJSDate() || moment(event.start).toDate())
             : moment(event.start || event.due).toISOString());
         let endDate = new Date(
             event.endDate?.toJSDate()
-            || (event.type === "VEVENT"
+            || ((!event.type || event.type === "VEVENT")
                 ? event.end
                 : moment(event.due || event.end).toISOString())
             || moment(event.start).toDate()
