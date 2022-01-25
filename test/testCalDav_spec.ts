@@ -56,6 +56,54 @@ describe('caldav', () => {
         });
     });
     
+    it('todos #2', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!process.env.CALDAV1_URL) resolve();
+                let ke = new KalenderEvents({
+                    url: process.env.CALDAV1_URL,
+                    username: process.env.CALDAV1_USERNAME,
+                    password: process.env.CALDAV1_PASSWORD,
+                    type: 'caldav'
+                });
+                let events = await ke.getEvents({
+                    now: moment('20220116').toDate(),
+                    pastview: 2,
+                    preview: 2,
+                    eventtypes: 'todos'
+                });
+                expect(events).to.have.lengthOf(1)    
+                expect(events[0].datetype).to.equal('todo');
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
 
+    it('todos #3', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!process.env.CALDAV1_URL) resolve();
+                let ke = new KalenderEvents({
+                    url: process.env.CALDAV1_URL,
+                    username: process.env.CALDAV1_USERNAME,
+                    password: process.env.CALDAV1_PASSWORD,
+                    type: 'caldav'
+                });
+                let events = await ke.getEvents({
+                    now: moment('20220116').toDate(),
+                    pastview: 2,
+                    preview: 2,
+                    eventtypes: 'todos,events'
+                });
+                expect(events).to.have.lengthOf(2)    
+                expect(events[0].datetype).to.be.oneOf(['todo','date']);
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
 });
 
