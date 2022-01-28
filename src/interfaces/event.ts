@@ -3,7 +3,7 @@ export interface iCalEvent {
     status?: any;
     completion?: any;
     completed?: any;
-    due?: string | number | Date;
+    due?:any;
     exdate: any;
     recurrences: any;
     rrule?: any;
@@ -64,7 +64,7 @@ export interface IKalenderEvent {
     status?: {
         percent?: any;
         completed?: any;
-        date?:any;
+        date?: any;
     };
     originalEvent?: any
 }

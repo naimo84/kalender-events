@@ -43,21 +43,28 @@ export function convertEvents(events: any, config: Config): IKalenderEvent[] {
     return retEntries;
 }
 
+function getDateVal(date: any) {
+    return (date && date.val) ? date.val : date;
+}
+
+function getStartEndDate(event: iCalEvent) {
+    let startDate = new Date((!event.type || event.type === "VEVENT")
+        ? (event.startDate?.toJSDate() || moment(getDateVal(event.start)).toDate())
+        : moment(getDateVal(event.start) || getDateVal(event.due)).toISOString());
+
+    let endDate = new Date(
+        event.endDate?.toJSDate()
+        || ((!event.type || event.type === "VEVENT")
+            ? getDateVal(event.end)
+            : moment(getDateVal(event.due) || getDateVal(event.end)).toISOString())
+        || moment(getDateVal(event.start)).toDate()
+    );
+
+    return { startDate, endDate }
+}
+
 export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent | undefined {
     if (event && !Array.isArray(event)) {
-        let startDate = new Date((!event.type || event.type === "VEVENT")
-            ? (event.startDate?.toJSDate() || moment(event.start).toDate())
-            : moment(event.start || event.due).toISOString());
-        let endDate = new Date(
-            event.endDate?.toJSDate()
-            || ((!event.type || event.type === "VEVENT")
-                ? event.end
-                : moment(event.due || event.end).toISOString())
-            || moment(event.start).toDate()
-        );
-        debug(`convertEvent - event: ${JSON.stringify(event)}`)
-        const recurrence = event.recurrenceId;
-
         if (event.item) {
             event = event.item
         }
@@ -65,6 +72,12 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
         if ((config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
             return undefined;
         }
+
+        let { startDate, endDate } = getStartEndDate(event)
+
+        debug(`convertEvent - event: ${JSON.stringify(event)}`)
+        const recurrence = event.recurrenceId;
+
         /* istanbul ignore if */
         if (event.type === "VTODO" && !config.includeTodo) {
             return undefined;
@@ -113,7 +126,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             status: event.type === "VTODO" ? {
                 completed: event.status === "COMPLETED",
                 percent: event.completion,
-                date: moment(event.completed).toDate(),
+                date: moment(getDateVal(event.completed)).toDate(),
             } : undefined,
             originalEvent: event
         }
