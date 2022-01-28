@@ -15,7 +15,6 @@ jobs:
       - name: Test
         run: npm test
         env:
-          DEBUG: kalender-events*
           ICLOUD_URL: ${{secrets.ICLOUD_URL}}
           ICLOUD_USERNAME: ${{secrets.ICLOUD_USERNAME}}
           ICLOUD_PASSWORD: ${{secrets.ICLOUD_PASSWORD}}
