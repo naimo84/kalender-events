@@ -71,7 +71,7 @@ export function getPreviews(config: Config): { preview: moment.Moment, pastview:
     if (config && config.now) {
         preview = pastview = moment(config.now).toDate();
     }
-    let preMoment = moment(preview)
+    let preMoment = moment(preview);
     let previewDuration = moment.duration(JSON.parse(`{"${config.previewUnits}" : "${config.preview === 1 && config.previewUnits === 'days' ? config.preview - 1 : config.preview}" }`));
     if (typeof config.preview === 'string' && Number.isNaN(Number.parseInt(config.preview))) {
         if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(config.preview as string)) {
@@ -96,7 +96,7 @@ export function getPreviews(config: Config): { preview: moment.Moment, pastview:
 
     const pre: moment.Moment = preMoment.add(previewDuration)
 
-    let pastMoment = moment(pastview).startOf('day')
+    let pastMoment = moment(pastview);
     let pastviewDuration = moment.duration(JSON.parse(`{"${config.pastviewUnits}" : "${config.pastview === 1 && config.pastviewUnits === 'days' ? config.pastview - 1 : config.pastview}" }`));
     if (typeof config.pastview === 'string' && Number.isNaN(Number.parseInt(config.pastview))) {
         if (/^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(config.pastview as string)) {
