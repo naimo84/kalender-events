@@ -65,6 +65,12 @@ function getStartEndDate(event: iCalEvent) {
 
 export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent | undefined {
     if (event && !Array.isArray(event)) {
+        let { startDate, endDate } = getStartEndDate(event)
+
+        debug(`convertEvent - event: ${JSON.stringify(event)}`)
+        const recurrence = event.recurrenceId;
+
+        // !!!!!!! intended to be after getStartEndDate and recurrenceId !!!!!
         if (event.item) {
             event = event.item
         }
@@ -72,12 +78,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
         if ((config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
             return undefined;
         }
-
-        let { startDate, endDate } = getStartEndDate(event)
-
-        debug(`convertEvent - event: ${JSON.stringify(event)}`)
-        const recurrence = event.recurrenceId;
-
+    
         /* istanbul ignore if */
         if (event.type === "VTODO" && !config.includeTodo) {
             return undefined;
