@@ -3,6 +3,8 @@
 This Node module gets the events from an ical-URL, a caldav-server or from the iCloud.
 Special thanks to Peter Braden (https://github.com/peterbraden/ical.js) and Jens Maus (https://github.com/jens-maus/node-ical) for the whole ical parsing code :+1:
 
+<img src="https://img.shields.io/npm/dy/kalender-events?style=for-the-badge"/>
+
 ## :question: Get Help
 
 For bug reports and feature requests, open issues. :bug:
