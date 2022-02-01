@@ -14,7 +14,6 @@ import { parseICS } from './ical';
 var debug = require('debug')('kalender-events:caldav');
 
 export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
-    const calName = config.calendar;
     const ke = new KalenderEvents(config);
     let { preview, pastview } = getPreviews(config)
 
@@ -52,7 +51,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     }
     let retEntries: IKalenderEvent[] = [];
     for (let calendar of account.calendars) {
-        if (!calName || !calName.length || (calName && calName.length && calName.toLowerCase() === calendar.displayName.toLowerCase())) {
+        if (isCalName(config.calendar as string, calendar.displayName)) {
             if (config.includeTodo) {
                 let todoEntries = await dav.syncCalendar(calendar, {
                     xhr: xhr, filters: [{
@@ -63,7 +62,7 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
                             attrs: { name: 'VTODO' },
 
                         }]
-                    }]   
+                    }]
                 })
 
                 for (let todoEntry of todoEntries.objects) {
@@ -144,6 +143,12 @@ export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     }
     return retEntries;
 
+}
+
+function isCalName(configCalName: string, calName: string) {
+    if (!configCalName || !calName || !calName.length) return true;
+    if (configCalName.toLowerCase().split(',').indexOf(calName.toLowerCase()) >= 0) return true;
+    return false;
 }
 
 export async function Fallback(config: Config) {

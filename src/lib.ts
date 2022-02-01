@@ -8,7 +8,7 @@ import { IKalenderEvent } from './interfaces';
 import { formatDate } from './format';
 import { getPreviews, getTimezoneOffset, insertSorted } from './helper';
 import { convertEvent, convertEvents } from './convert';
-import { parseJson } from './utils/configUtils';
+import { getPackageVersion, parseJson } from './utils/configUtils';
 import { join } from 'path';
 var debug = require('debug')('kalender-events')
 var RRule = require('rrule').RRule;
@@ -500,4 +500,8 @@ export class KalenderEvents {
         }
     }
 
+}
+
+export function getVersion(){
+    return getPackageVersion();
 }
