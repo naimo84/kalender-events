@@ -2,4 +2,8 @@
 sidebarDepth: 0
 ---
 
-# Use as libary
+# Examples
+
+- [Node-RED](./nodered.md)
+- [NodeJS lib](./examples_lib.md) 
+- [Comanndline Tool](./examples_cli.md) 

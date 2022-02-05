@@ -80,6 +80,7 @@ module.exports = {
               collapsable: false,
               path: '/guide/examples',
               children: [
+                '/guide/nodered',
                 '/guide/examples_lib',
                 '/guide/examples_cli',
               ]
