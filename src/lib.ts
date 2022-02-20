@@ -1,6 +1,6 @@
 import moment = require('moment');
 import { ICloud } from './icloud';
-import { CalDav, Fallback } from './caldav';
+import { CalDav, createCalDavEvent, deleteCalDavEvent, Fallback } from './caldav';
 import { Config } from './interfaces/config';
 import { parseFile, fromURL } from './ical';
 import * as NodeCache from 'node-cache';
@@ -40,6 +40,19 @@ export class KalenderEvents {
         this.config.previewUnits = this.config.previewUnits.toLocaleLowerCase();
     }
 
+    public async createEvent(event: IKalenderEvent) {
+        if (this.config.type === 'caldav') {
+            createCalDavEvent(event, this.config);
+        }
+    }
+
+
+    public async deleteEvent(event: IKalenderEvent) {
+        if (this.config.type === 'caldav') {
+            deleteCalDavEvent(event, this.config);
+        }
+    }
+    
     /**    
     * @param date Date, eg. new Date()
     * @param args offset either in minutes or as value and type (seconds, minutes, hours, days)
@@ -502,6 +515,6 @@ export class KalenderEvents {
 
 }
 
-export function getVersion(){
+export function getVersion() {
     return getPackageVersion();
 }

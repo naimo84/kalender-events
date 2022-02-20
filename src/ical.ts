@@ -1,6 +1,5 @@
-
 import fs from 'fs';
-
+import { ICalEvent } from 'ical-gen';
 import axios from 'axios';
 
 /* eslint-disable max-depth, max-params, no-warning-comments, complexity */
@@ -8,6 +7,29 @@ import axios from 'axios';
 const { v4: uuid } = require('uuid');
 const rrule = require('rrule').RRule;
 import moment = require('moment-timezone');
+import { IKalenderEvent } from './interfaces';
+
+export function createEvent(event: IKalenderEvent) {
+    const icalEvent = new ICalEvent({
+        uid: uuid(),
+        sequence: 0,
+        stamp: new Date(),
+        start: {
+            date: moment(event.eventStart).toDate()
+        },
+        end: {
+            date: moment(event.eventEnd).toDate()
+        },
+        //@ts-ignore
+        summary: event.summary?.val ? event.summary?.val : event.summary,
+        description: event.description,
+        location: {
+            title: event.location as string,
+        }
+    });
+
+    return icalEvent;
+}
 
 function text(t = '') {
     return t
@@ -746,7 +768,7 @@ export function parseLines(lines: string | any[], limit: number, ctx?: { type?: 
     return null;
 }
 
-export function parseICS(string: string) :any{
+export function parseICS(string: string): any {
     const lineEndType = getLineBreakChar(string);
     const lines = string.split(lineEndType === '\n' ? /\n/ : /\r?\n/);
     let ctx = parseLines(lines, lines.length);

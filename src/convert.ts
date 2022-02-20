@@ -78,7 +78,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
         if ((config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
             return undefined;
         }
-    
+
         /* istanbul ignore if */
         if (event.type === "VTODO" && !config.includeTodo) {
             return undefined;
@@ -140,7 +140,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
         for (let key of Object.keys(event)) {
             const alarm = event[key as keyof iCalEvent];
             if (alarm?.type === "VALARM") {
-                returnEvent.alarms.push(Object.assign({},
+                returnEvent.alarms?.push(Object.assign({},
                     makeProperty("trigger", (typeof alarm.trigger?.toICALString === 'function') ? alarm.trigger?.toICALString() : alarm.trigger),
                     makeProperty("triggerParsed", moment(startDate).add(moment.duration(alarm.trigger)).toDate()),
                     makeProperty("action", alarm.action),
@@ -148,6 +148,17 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
                     makeProperty("description", alarm.description),
                     makeProperty("attendee", alarm.attendees || alarm.attendee)
                 ))
+            } else if (alarm.jCal && Array.isArray(alarm.jCal)) {
+                for (let jCalKey of Object.keys(alarm.jCal)) {
+                    if (alarm.jCal[jCalKey] && Array.isArray(alarm.jCal[jCalKey])) {
+                        for (let jCalKey2 of Object.keys(alarm.jCal[jCalKey])) {
+                            const alarmjCal = alarm.jCal[jCalKey][jCalKey2];
+                            if (Array.isArray(alarmjCal) && alarmjCal[0].toUpperCase() === "VALARM") {
+                                console.log(alarmjCal);
+                            }
+                        }
+                    }
+                }
             }
         }
 

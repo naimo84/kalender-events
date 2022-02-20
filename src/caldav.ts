@@ -6,12 +6,13 @@ import IcalExpander = require('ical-expander');
 import * as  ical from './ical';
 import { KalenderEvents } from './lib';
 import * as URL from "url";
-
 import { IKalenderEvent } from './interfaces/event';
 import { convertEvent, convertEvents } from './convert';
 import { getPreviews } from './helper';
-import { parseICS } from './ical';
+import { parseICS, createEvent } from './ical';
 var debug = require('debug')('kalender-events:caldav');
+import axios, { AxiosRequestConfig } from 'axios';
+
 
 export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     const ke = new KalenderEvents(config);
@@ -151,6 +152,68 @@ function isCalName(configCalName: string, calName: string) {
     return false;
 }
 
+export async function deleteCalDavEvent(event: IKalenderEvent, config: Config){
+    const options: AxiosRequestConfig = {
+        //@ts-ignore
+        rejectUnauthorized: config.rejectUnauthorized,
+        url: config.url + '' +config.calendar + '/' + event.uid?.uid,
+        //@ts-ignore
+        method: 'DELETE',
+        headers: {            
+            "User-Agent": "calDavClient",
+            "Connection": "close",
+            "Depth": "1"
+        }
+    }
+
+    if (config.username && config.password) {
+        options.auth = { username: config.username as string, password: config.password as string }
+    }
+    try {
+        const res = await axios({
+            ...options           
+        });
+        return res?.data;
+    } catch (err: any) {
+        return err?.data ? err?.data : err;
+    }
+}
+
+export async function createCalDavEvent(event: IKalenderEvent, config: Config) {
+    const ics = await createEvent(event).renderToString();
+    const body = `BEGIN:VCALENDAR
+        ${ics}
+        END:VCALENDAR`;
+
+    const options: AxiosRequestConfig = {
+        //@ts-ignore
+        rejectUnauthorized: config.rejectUnauthorized,
+        url: config.url + '' +config.calendar + '/' + event.summary,
+        //@ts-ignore
+        method: 'PUT',
+        headers: {
+            "Content-type": "text/calender",
+            "Content-Length": body.length,
+            "User-Agent": "calDavClient",
+            "Connection": "close",
+            "Depth": "1"
+        }
+    }
+
+    if (config.username && config.password) {
+        options.auth = { username: config.username as string, password: config.password as string }
+    }
+    try {
+        const res = await axios({
+            ...options,
+            data: body
+        });
+        return res?.data;
+    } catch (err: any) {
+        return err?.data ? err?.data : err;
+    }
+}
+
 export async function Fallback(config: Config) {
     debug(`Fallback`)
     let scrapegoat = new Scrapegoat({
@@ -170,3 +233,4 @@ export async function Fallback(config: Config) {
 
     return convertEvents(data, config);
 }
+

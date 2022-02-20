@@ -60,7 +60,7 @@ export interface IKalenderEvent {
     datetype?: string,
     attendee?: any,
     categories?: string[],
-    alarms: IKalenderAlarm[];
+    alarms?: IKalenderAlarm[];
     status?: {
         percent?: any;
         completed?: any;
