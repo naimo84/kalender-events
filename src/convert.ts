@@ -1,7 +1,9 @@
 import moment from "moment";
+import { RRule } from "rrule";
+
 import { v4 } from "uuid";
 import { formatDate } from "./format";
-import { isAllDay } from "./helper";
+import { addOffset, getTimezoneOffset, isAllDay } from "./helper";
 import { Config, iCalEvent, IKalenderEvent } from "./interfaces";
 var debug = require('debug')('kalender-events:convert')
 
@@ -78,7 +80,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
         if ((config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
             return undefined;
         }
-    
+
         /* istanbul ignore if */
         if (event.type === "VTODO" && !config.includeTodo) {
             return undefined;
@@ -100,6 +102,15 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
 
         if (!event.duration) {
             event.duration = moment.duration(endDate.getTime() - startDate.getTime());
+        }
+        if (event.rrule) {
+            var options = RRule.parseString(RRule.fromString(event.rrule).toString());
+            options.dtstart = addOffset(startDate, -getTimezoneOffset(startDate));
+            if (options.until) {
+                options.until = addOffset(options.until, -getTimezoneOffset(options.until));
+            }
+
+            event.rrule = event.rrule ? new RRule(options) : undefined;
         }
 
         let returnEvent: IKalenderEvent = {

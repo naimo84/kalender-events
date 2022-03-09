@@ -1,12 +1,8 @@
-
 import fs from 'fs';
-
 import axios from 'axios';
-
-/* eslint-disable max-depth, max-params, no-warning-comments, complexity */
-
-const { v4: uuid } = require('uuid');
-const rrule = require('rrule').RRule;
+//@ts-ignore
+import parseLines from './parseIcs'
+import { v4 as uuid } from 'uuid';
 import moment = require('moment-timezone');
 
 function text(t = '') {
@@ -569,7 +565,6 @@ const objectHandlers: any = {
         // Recurrence rules are only valid for VEVENT, VTODO, and VJOURNAL.
         // More specifically, we need to filter the VCALENDAR type because we might end up with a defined rrule
         // due to the subtypes.
-
         if ((value === 'VEVENT' || value === 'VTODO' || value === 'VJOURNAL') && curr.rrule) {
             let rule = curr.rrule.replace('RRULE:', '');
             // Make sure the rrule starts with FREQ=
@@ -621,16 +616,8 @@ const objectHandlers: any = {
                     throw new Error('No toISOString function in curr.start' + curr.start);
                 }
             }
-
-            // Make sure to catch error from rrule.fromString()
-            try {
-                curr.rrule = rrule.fromString(rule);
-            } catch (error) {
-                throw error;
-            }
         }
         //@ts-ignore
-
         return originalEnd.call(this, value, parameters, curr, stack);
     },
     SUMMARY: storeParameter('summary'),
@@ -679,89 +666,25 @@ export function handleObject(name: string, value: any, parameters: any, ctx: any
     return storeParameter(name.toLowerCase())(value, parameters, ctx);
 }
 
-export function parseLines(lines: string | any[], limit: number, ctx?: { type?: any; params?: any; } | undefined, stack?: never[], lastIndex?: number, cb?: (arg0: null, arg1: any) => void) {
-    if (!cb && typeof ctx === 'function') {
-        cb = ctx;
-        ctx = undefined;
-    }
 
-    ctx = ctx || {};
-    stack = stack || [];
 
-    let limitCounter = 0;
-
-    let i = lastIndex || 0;
-    for (let ii = lines.length; i < ii; i++) {
-        let l = lines[i];
-        // Unfold : RFC#3.1
-        while (lines[i + 1] && /[ \t]/.test(lines[i + 1][0])) {
-            l += lines[i + 1].slice(1);
-            i++;
-        }
-
-        // Remove any double quotes in any tzid statement// except around (utc+hh:mm
-        if (l.includes('TZID=') && !l.includes('"(')) {
-            l = l.replace(/"/g, '');
-        }
-
-        const exp = /^([\w\d-]+)((?:;[\w\d-]+=(?:(?:"[^"]*")|[^":;]+))*):(.*)$/;
-        let kv = l.match(exp);
-
-        if (kv === null) {
-            // Invalid line - must have k&v
-            continue;
-        }
-
-        kv = kv.slice(1);
-
-        const value = kv[kv.length - 1];
-        const name = kv[0];
-        const parameters = kv[1] ? kv[1].split(';').slice(1) : [];
-
-        ctx = handleObject(name, value, parameters, ctx, stack, l) || {};
-        if (++limitCounter > limit) {
-            break;
-        }
-    }
-
-    if (i >= lines.length) {
-        // Type and params are added to the list of items, get rid of them.
-        delete ctx?.type;
-        delete ctx?.params;
-    }
-
-    if (cb) {
-        if (i < lines.length) {
-            setImmediate(() => {
-                parseLines(lines, limit, ctx, stack, i + 1, cb);
-            });
-        } else {
-            setImmediate(() => {
-                cb!(null, ctx);
-            });
-        }
-    } else {
-        return ctx;
-    }
-    return null;
-}
-
-export function parseICS(string: string) :any{
+export async function parseICS(string: string) :Promise<any>{
     const lineEndType = getLineBreakChar(string);
     const lines = string.split(lineEndType === '\n' ? /\n/ : /\r?\n/);
-    let ctx = parseLines(lines, lines.length);
+    let ctx = await parseLines(lines, lines.length);
     return ctx;
 }
 
 export async function fromURL(url: any, options: any) {
     const response = await axios.get(url, options)
+
     if (Math.floor(response.status / 100) !== 2) {
         throw new Error(`${response.status} ${response.statusText}`);
     }
-    return parseICS(response.data);
+    return await parseICS(response.data);
 }
 
 export async function parseFile(filename: any) {
     const data = await fs.promises.readFile(filename, 'utf8')
-    return parseICS(data)
+    return await parseICS(data)
 }

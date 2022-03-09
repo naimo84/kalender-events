@@ -6,10 +6,11 @@ import { parseFile, fromURL } from './ical';
 import * as NodeCache from 'node-cache';
 import { IKalenderEvent } from './interfaces';
 import { formatDate } from './format';
-import { getPreviews, getTimezoneOffset, insertSorted } from './helper';
+import { addOffset, getPreviews, getTimezoneOffset, insertSorted } from './helper';
 import { convertEvent, convertEvents } from './convert';
 import { getPackageVersion, parseJson } from './utils/configUtils';
 import { join } from 'path';
+
 var debug = require('debug')('kalender-events')
 var RRule = require('rrule').RRule;
 var ce = require('cloneextend');
@@ -40,26 +41,7 @@ export class KalenderEvents {
         this.config.previewUnits = this.config.previewUnits.toLocaleLowerCase();
     }
 
-    /**    
-    * @param date Date, eg. new Date()
-    * @param args offset either in minutes or as value and type (seconds, minutes, hours, days)
-    * ```
-    * example:
-    * let ke = new KalenderEvents();
-    * ke.addOffset(new Date(), 10, 'hours') // adds 10 hours
-    * ke.addOffset(new Date(), 10) // adds 10 minutes
-    * ```
-    */
-    public addOffset(date: Date, ...args: any): Date {
-        /* istanbul ignore else */
-        if (args.length == 1) {
-            let dat = new Date(date.getTime() + parseInt(args) * 60 * 1000);
-            return dat;
-        } else {
-            let dat = moment(date).add(args[0], args[1]).toDate();
-            return dat;
-        }
-    }
+   
 
     /**  
     * calculates the countdown to ``date``
@@ -189,6 +171,7 @@ export class KalenderEvents {
                     };
                 }
 
+
                 let data = await fromURL(this.config.url, header);
                 debug(data)
 
@@ -209,10 +192,10 @@ export class KalenderEvents {
 
     private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date, now: Date) {
         var eventLength = ev.eventEnd!.getTime() - ev.eventStart!.getTime();
-        var options = RRule.parseString(ev.rrule.toString());
-        options.dtstart = this.addOffset(ev.eventStart!, -getTimezoneOffset(ev.eventStart!));
+        var options = RRule.parseString(new RRule(ev.rrule.options).toString());
+        options.dtstart = addOffset(ev.eventStart!, -getTimezoneOffset(ev.eventStart!));
         if (options.until) {
-            options.until = this.addOffset(options.until, -getTimezoneOffset(options.until));
+            options.until = addOffset(options.until, -getTimezoneOffset(options.until));
         }
         debug('options:' + JSON.stringify(options));
 
@@ -221,47 +204,13 @@ export class KalenderEvents {
         now2.setHours(0, 0, 0, 0);
         var now3 = new Date(now2.getTime() - eventLength);
         if (now2 < now3) now3 = now2;
-        debug(
-            'processRRule - RRule event:' +
-            ev.summary +
-            '; start:' +
-            ev.eventStart?.toString() +
-            '; preview:' +
-            preview.toString() +
-            '; today:' +
-            pastview +
-            '; now2:' +
-            now2 +
-            '; now3:' +
-            now3 +
-            '; rule:' +
-            JSON.stringify(rule)
-        );
+        debug('processRRule - RRule event:' + ev.summary + '; start:' + ev.eventStart?.toString() + '; preview:' + preview.toString() + '; today:' + pastview + '; now2:' + now2 + '; now3:' + now3 + '; rule:' + JSON.stringify(rule));
 
         var dates = [];
         try {
-
             dates = rule.between(now3, preview, true);
         } catch (e) {
-            throw (
-                'Issue detected in RRule, event ignored; ' +
-                (e as any).stack +
-                '\n' +
-                'RRule object: ' +
-                JSON.stringify(rule) +
-                '\n' +
-                'now3: ' +
-                now3 +
-                '\n' +
-                'preview: ' +
-                preview +
-                '\n' +
-                'string: ' +
-                ev.rrule.toString() +
-                '\n' +
-                'options: ' +
-                JSON.stringify(options)
-            );
+            throw ('Issue detected in RRule, event ignored; ' + (e as any).stack + '\n' + 'RRule object: ' + JSON.stringify(rule) + '\n' + 'now3: ' + now3 + '\n' + 'preview: ' + preview + '\n' + 'string: ' + ev.rrule.toString() + '\n' + 'options: ' + JSON.stringify(rule.options));
         }
 
         debug('processRRule - dates:' + JSON.stringify(dates));
@@ -270,10 +219,10 @@ export class KalenderEvents {
             for (var i = 0; i < dates.length; i++) {
                 var ev2: IKalenderEvent = ce.clone(ev);
                 var start = dates[i];
-                ev2.eventStart = this.addOffset(start, getTimezoneOffset(start));
+                ev2.eventStart = addOffset(start, getTimezoneOffset(start));
 
                 var end = new Date(start.getTime() + eventLength);
-                ev2.eventEnd = this.addOffset(end, getTimezoneOffset(end));
+                ev2.eventEnd = addOffset(end, getTimezoneOffset(end));
 
                 if (ev2.alarms && ev2.alarms.length > 0) {
                     for (let alarm of ev2.alarms) {
@@ -396,7 +345,6 @@ export class KalenderEvents {
         return output;
     }
 
-
     private checkRegex(filterProperty: any) {
         if (this.config.filterProperty && this.config.filterProperty == "attendee") {
             let regex = new RegExp(this.config.filter || "");
@@ -502,6 +450,6 @@ export class KalenderEvents {
 
 }
 
-export function getVersion(){
+export function getVersion() {
     return getPackageVersion();
 }

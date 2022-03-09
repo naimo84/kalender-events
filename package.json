@@ -3,7 +3,7 @@
   "version": "0.28.0",
   "description": "calendar events for nodejs",
   "scripts": {
-    "test": "ts-mocha --timeout 10000 --paths test/**/*_spec.ts",
+    "test": "ts-mocha --timeout 30000 --paths test/**/*_spec.ts",
     "testfile": "ts-mocha --timeout 10000 --paths ",
     "watch": "tsc --watch",
     "build": "node ./buildSrc/esbuild.js",

@@ -112,11 +112,11 @@ describe('filter', () => {
                     trigger: 'match'
                 });
               
-                for (let event of events2) {
+                for (let event of events1) {
                     expect(event).to.have.property('eventStart');                    
                     expect(event.eventStart).to.be.greaterThan(moment('2021-11-21_00:00:00', "YYYY-MM-DD_hh:mm:ss").toDate());
                 }
-               
+                expect(events1[0].summary).to.be.a('string', 'homeoffice')
                 expect(events1).to.have.lengthOf(2)
                 expect(events2).to.have.lengthOf(1)
                 expect(events3).to.have.lengthOf(1)

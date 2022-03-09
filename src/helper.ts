@@ -65,6 +65,27 @@ export function getTimezoneOffset(date: Date) {
     return -offset;
 }
 
+/**    
+   * @param date Date, eg. new Date()
+   * @param args offset either in minutes or as value and type (seconds, minutes, hours, days)
+   * ```
+   * example:
+   * let ke = new KalenderEvents();
+   * ke.addOffset(new Date(), 10, 'hours') // adds 10 hours
+   * ke.addOffset(new Date(), 10) // adds 10 minutes
+   * ```
+   */
+export function addOffset(date: Date, ...args: any): Date {
+    /* istanbul ignore else */
+    if (args.length == 1) {
+        let dat = new Date(date.getTime() + parseInt(args) * 60 * 1000);
+        return dat;
+    } else {
+        let dat = moment(date).add(args[0], args[1]).toDate();
+        return dat;
+    }
+}
+
 export function getPreviews(config: Config): { preview: moment.Moment, pastview: moment.Moment } {
     let preview = new Date();
     let pastview = new Date();
