@@ -207,7 +207,7 @@ export class KalenderEvents {
         }
     }
 
-    private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date, now: Date) {
+    private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date) {
         var eventLength = ev.eventEnd!.getTime() - ev.eventStart!.getTime();
         var options = RRule.parseString(ev.rrule.toString());
         options.dtstart = this.addOffset(ev.eventStart!, -getTimezoneOffset(ev.eventStart!));
@@ -217,10 +217,6 @@ export class KalenderEvents {
         debug('options:' + JSON.stringify(options));
 
         var rule = new RRule(options);
-        var now2 = new Date(now);
-        now2.setHours(0, 0, 0, 0);
-        var now3 = new Date(now2.getTime() - eventLength);
-        if (now2 < now3) now3 = now2;
         debug(
             'processRRule - RRule event:' +
             ev.summary +
@@ -230,18 +226,13 @@ export class KalenderEvents {
             preview.toString() +
             '; today:' +
             pastview +
-            '; now2:' +
-            now2 +
-            '; now3:' +
-            now3 +
             '; rule:' +
             JSON.stringify(rule)
         );
 
         var dates = [];
         try {
-
-            dates = rule.between(now3, preview, true);
+            dates = rule.between(pastview, preview, true);
         } catch (e) {
             throw (
                 'Issue detected in RRule, event ignored; ' +
@@ -249,9 +240,6 @@ export class KalenderEvents {
                 '\n' +
                 'RRule object: ' +
                 JSON.stringify(rule) +
-                '\n' +
-                'now3: ' +
-                now3 +
                 '\n' +
                 'preview: ' +
                 preview +
@@ -353,7 +341,7 @@ export class KalenderEvents {
                 if (ev.rrule === undefined) {
                     this.checkDates(ev, preview, pastview, realnow, ' ', reslist);
                 } else {
-                    let evlist = this.processRRule(ev, preview, pastview, realnow);
+                    let evlist = this.processRRule(ev, preview, pastview);
                     for (let ev2 of evlist) {
                         this.checkDates(ev2 as IKalenderEvent, preview, pastview, realnow, ev.rrule, reslist);
                     }
@@ -502,6 +490,6 @@ export class KalenderEvents {
 
 }
 
-export function getVersion(){
+export function getVersion() {
     return getPackageVersion();
 }
