@@ -12,6 +12,65 @@ import { convertEvent, convertEvents } from './convert';
 import { getPreviews } from './helper';
 import { parseICS } from './ical';
 var debug = require('debug')('kalender-events:caldav');
+import { DAVClient } from 'tsdav';
+
+
+export async function CalDav2(config: Config): Promise<IKalenderEvent[]> {
+    let { preview, pastview } = getPreviews(config)
+    const client = new DAVClient({
+        serverUrl: config.url as string,
+        credentials: {
+            username: config.username,
+            password: config.password,
+        },
+        authMethod: 'Basic',
+        defaultAccountType: 'caldav',
+    });
+
+    await client.login();
+
+    const calendars = await client.fetchCalendars();
+
+    if (!calendars) {
+        throw 'CalDAV -> no calendars found.';
+    }
+    let retEntries: IKalenderEvent[] = [];
+
+    for (let calendar of calendars) {
+        if (isCalName(config.calendar as string, calendar.displayName as string)) {
+            if (config.includeEvents) {
+                const calendarEntries = await client.fetchCalendarObjects({
+                    calendar: calendars[0],
+                    timeRange: {
+                        start: pastview.toISOString(),
+                        end: preview.toISOString()
+                    }
+                });
+
+                //@ts-ignore               
+                for (let calendarEntry of calendarEntries) {
+                    const ics = calendarEntry.data;
+                    /* istanbul ignore else */
+                    if (ics) {
+                        const icalExpander = new IcalExpander({ ics, maxIterations: 100 });
+                        const events = icalExpander.between(pastview.toDate(), preview.toDate());
+
+                        convertEvents(events, config).forEach((event: IKalenderEvent) => {
+                            debug(`caldav - ical: ${JSON.stringify(event)}`)
+                            if (event) {
+                                event.calendarName = calendar.displayName;
+                                const key = `${event.uid!.uid! + event.uid!.date!}`;
+                                retEntries[<any>key] = event;
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    return retEntries;
+}
 
 export async function CalDav(config: Config): Promise<IKalenderEvent[]> {
     const ke = new KalenderEvents(config);

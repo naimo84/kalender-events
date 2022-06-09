@@ -1,6 +1,6 @@
 import moment = require('moment');
 import { ICloud } from './icloud';
-import { CalDav, Fallback } from './caldav';
+import { CalDav2, Fallback } from './caldav';
 import { Config } from './interfaces/config';
 import { parseFile, fromURL } from './ical';
 import * as NodeCache from 'node-cache';
@@ -153,7 +153,7 @@ export class KalenderEvents {
             debug('getCal - caldav');
 
             try {
-                let data = await CalDav(this.config);
+                let data = await CalDav2(this.config);
                 return data;
             }
             catch (err) {
