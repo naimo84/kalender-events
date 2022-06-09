@@ -429,6 +429,8 @@ export class KalenderEvents {
                         return true;
                     }
                 }
+            } else if (filterProperty instanceof Object && filterProperty.hasOwnProperty('val')) {
+                return regex.test(filterProperty.val);
             } else {
                 return regex.test(filterProperty);
             }
