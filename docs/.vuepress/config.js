@@ -73,6 +73,7 @@ module.exports = {
                 '/guide/upcoming',
                 '/guide/sensors',
                 '/guide/trigger',
+                '/guide/experimental',
               ]
             },
             {
