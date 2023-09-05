@@ -28,6 +28,35 @@ describe('issues', () => {
         });
     });
 
+    it('#15', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!process.env.CALDAV1_URL) resolve();
+                let ke = new KalenderEvents({
+                    url: "./test/mocks/15.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20230610').toDate(),
+                    pastview: 1,
+                    preview: 1,                    
+                });
+                expect(events).to.have.lengthOf(0)
+
+                events = await ke.getEvents({
+                    now: moment('20230608').toDate(),
+                    pastview: 1,
+                    preview: 1,                    
+                });
+                expect(events).to.have.lengthOf(1)
+
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
+
     it('#9', async () => {
         return new Promise(async (resolve, reject) => {
             try {

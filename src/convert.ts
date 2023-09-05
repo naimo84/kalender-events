@@ -78,7 +78,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
         if ((config.type === "ical" && event.type === undefined) || (event.type && (!["VEVENT", "VTODO", "VALARM"].includes(event.type)))) {
             return undefined;
         }
-    
+
         /* istanbul ignore if */
         if (event.type === "VTODO" && !config.includeTodo) {
             return undefined;
@@ -102,6 +102,10 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             event.duration = moment.duration(endDate.getTime() - startDate.getTime());
         }
 
+        let rruleText = null;
+        if (event.rrule && event.rrule.toText) {
+            rruleText = event.rrule.toText();
+        }
         let returnEvent: IKalenderEvent = {
             date: formatDate(event, startDate, endDate, true, config),
             eventStart: startDate,
@@ -114,7 +118,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             location: event.location || '',
             organizer: event.organizer || '',
             rrule: event.rrule,
-            rruleText: event.rrule?.toText(),
+            rruleText: rruleText,
             uid: uid,
             isRecurring: !!recurrence || !!event.rrule,
             datetype: event.type === "VTODO" ? 'todo' : 'date',
