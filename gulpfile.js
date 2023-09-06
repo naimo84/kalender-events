@@ -8,9 +8,14 @@ var paths = {
     dist: 'dist'
 };
 
+function copyResources() {   
+    return gulp.src('src/windowsZones.json', { base: 'src' })
+        .pipe(gulp.dest('dist'));
+}
+
 
 gulp.task("default", gulp.series(
-  
+    copyResources,
     () => {
         return tsProject
             .src()
