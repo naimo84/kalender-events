@@ -1,8 +1,11 @@
 ---
 home: true
 heroImage: /favicon.png
-actionText: Get Started →
-actionLink: /guide/
+actions:
+  - text: Get Started →
+    link: /guide/
+    type: primary
+
 features:
   - title: Feature Rich
     details: Execute ical, icloud or caldav queries from within your own nodejs app or CLI

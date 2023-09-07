@@ -1,0 +1,21 @@
+{
+    "name": "kalender-events",
+    "short_name": "kalender-events",
+    "description": "This Node module gets the events from an ical-URL, a caldav-server or from iCloud.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#fff",
+    "theme_color": "#3eaf7c",
+    "icons": [
+      {
+        "src": "/icons/android-chrome-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/icons/android-chrome-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
