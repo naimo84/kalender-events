@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-3cabe76c","path":"/guide/sensors.html","title":"sensor","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1694110772000,"contributors":[{"name":"naimo84","email":"git@naimo84.dev","commits":1}]},"filePathRelative":"guide/sensors.md"}');export{e as data};

@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-439871ac","path":"/config/google.html","title":"Google","lang":"en-US","frontmatter":{"sidebarDepth":0},"headers":[],"git":{"updatedTime":1694110772000,"contributors":[{"name":"naimo84","email":"git@naimo84.dev","commits":1}]},"filePathRelative":"config/google.md"}');export{e as data};

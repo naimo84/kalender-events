@@ -3,25 +3,31 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>kalender-events</title>
-    <meta name="generator" content="VuePress 1.9.4">
-    <link rel="icon" href="/kalender-events/favicon.png">
-    <link rel="manifest" href="/kalender-events/manifest.json">
-    <link rel="apple-touch-icon" href="/kalender-events/icons/apple-touch-icon-152x152.png">
-    <meta name="description" content="This Node module gets the events from an ical-URL, a caldav-server or from iCloud.">
-    <meta name="theme-color" content="#706B69">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="msapplication-TileImage" content="/icons/msapplication-icon-144x144.png">
-    <meta name="msapplication-TileColor" content="#000000">
-    
-    <link rel="preload" href="/kalender-events/assets/css/0.styles.556c3969.css" as="style"><link rel="preload" href="/kalender-events/assets/js/app.6f5edb6e.js" as="script"><link rel="preload" href="/kalender-events/assets/js/13.a1544d2a.js" as="script"><link rel="preload" href="/kalender-events/assets/js/5.0a3e9aa9.js" as="script"><link rel="prefetch" href="/kalender-events/assets/js/10.d6495373.js"><link rel="prefetch" href="/kalender-events/assets/js/11.030930ce.js"><link rel="prefetch" href="/kalender-events/assets/js/12.c19b8b82.js"><link rel="prefetch" href="/kalender-events/assets/js/14.031bf084.js"><link rel="prefetch" href="/kalender-events/assets/js/15.b19ef3f1.js"><link rel="prefetch" href="/kalender-events/assets/js/16.905f74d9.js"><link rel="prefetch" href="/kalender-events/assets/js/17.a5de3f1d.js"><link rel="prefetch" href="/kalender-events/assets/js/18.0bda1f73.js"><link rel="prefetch" href="/kalender-events/assets/js/19.0f11dfbd.js"><link rel="prefetch" href="/kalender-events/assets/js/20.b91bdeb8.js"><link rel="prefetch" href="/kalender-events/assets/js/21.6fafc518.js"><link rel="prefetch" href="/kalender-events/assets/js/22.bc7df8c7.js"><link rel="prefetch" href="/kalender-events/assets/js/23.13bd71b4.js"><link rel="prefetch" href="/kalender-events/assets/js/3.ab9172cb.js"><link rel="prefetch" href="/kalender-events/assets/js/4.50086b22.js"><link rel="prefetch" href="/kalender-events/assets/js/6.8bc27063.js"><link rel="prefetch" href="/kalender-events/assets/js/7.e4e7ea17.js"><link rel="prefetch" href="/kalender-events/assets/js/8.b4822f51.js"><link rel="prefetch" href="/kalender-events/assets/js/9.31c4fb9e.js"><link rel="prefetch" href="/kalender-events/assets/js/vendors~flowchart.2b4075ff.js">
-    <link rel="stylesheet" href="/kalender-events/assets/css/0.styles.556c3969.css">
+    <meta name="generator" content="VuePress 2.0.0-beta.67">
+    <style>
+      :root {
+        --c-bg: #fff;
+      }
+      html.dark {
+        --c-bg: #22272e;
+      }
+      html, body {
+        background-color: var(--c-bg);
+      }
+    </style>
+    <script>
+      const userMode = localStorage.getItem('vuepress-color-scheme');
+			const systemDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+			if (userMode === 'dark' || (userMode !== 'light' && systemDarkMode)) {
+				document.documentElement.classList.toggle('dark', true);
+			}
+    </script>
+    <link rel="icon" href="/favicon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#3eaf7c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="/icons/apple-touch-icon-152x152.png"><meta name="msapplication-TileImage" content="/icons/msapplication-icon-144x144.png"><meta name="msapplication-TileColor" content="#000000"><title>kalender-events</title><meta name="description" content="This Node module gets the events from an ical-URL, a caldav-server or from iCloud.">
+    <link rel="preload" href="/kalender-events/assets/style-97123e8b.css" as="style"><link rel="stylesheet" href="/kalender-events/assets/style-97123e8b.css">
+    <link rel="modulepreload" href="/kalender-events/assets/app-148e4e27.js"><link rel="modulepreload" href="/kalender-events/assets/404.html-60b35caa.js"><link rel="modulepreload" href="/kalender-events/assets/404.html-fd41032c.js"><link rel="prefetch" href="/kalender-events/assets/index.html-09337a44.js" as="script"><link rel="prefetch" href="/kalender-events/assets/index.html-0cd69db3.js" as="script"><link rel="prefetch" href="/kalender-events/assets/google.html-125d2a23.js" as="script"><link rel="prefetch" href="/kalender-events/assets/icloudsecure.html-497c98b1.js" as="script"><link rel="prefetch" href="/kalender-events/assets/index.html-cdd94d47.js" as="script"><link rel="prefetch" href="/kalender-events/assets/debug.html-faa2defd.js" as="script"><link rel="prefetch" href="/kalender-events/assets/examples.html-22c5978a.js" as="script"><link rel="prefetch" href="/kalender-events/assets/examples_cli.html-bf6a05a0.js" as="script"><link rel="prefetch" href="/kalender-events/assets/examples_lib.html-9e92bad2.js" as="script"><link rel="prefetch" href="/kalender-events/assets/experimental.html-f8518609.js" as="script"><link rel="prefetch" href="/kalender-events/assets/nodered.html-142daff9.js" as="script"><link rel="prefetch" href="/kalender-events/assets/nodes.html-2f34bc55.js" as="script"><link rel="prefetch" href="/kalender-events/assets/sensors.html-9f8bc76c.js" as="script"><link rel="prefetch" href="/kalender-events/assets/trigger.html-c2d79a34.js" as="script"><link rel="prefetch" href="/kalender-events/assets/upcoming.html-e9d8ef08.js" as="script"><link rel="prefetch" href="/kalender-events/assets/index.html-27a2a858.js" as="script"><link rel="prefetch" href="/kalender-events/assets/index.html-ee5020b6.js" as="script"><link rel="prefetch" href="/kalender-events/assets/google.html-51249f87.js" as="script"><link rel="prefetch" href="/kalender-events/assets/icloudsecure.html-7e0d97be.js" as="script"><link rel="prefetch" href="/kalender-events/assets/index.html-da4250a4.js" as="script"><link rel="prefetch" href="/kalender-events/assets/debug.html-dd894bec.js" as="script"><link rel="prefetch" href="/kalender-events/assets/examples.html-75e65ef6.js" as="script"><link rel="prefetch" href="/kalender-events/assets/examples_cli.html-b7c28f94.js" as="script"><link rel="prefetch" href="/kalender-events/assets/examples_lib.html-b387f1ee.js" as="script"><link rel="prefetch" href="/kalender-events/assets/experimental.html-ac68b2d3.js" as="script"><link rel="prefetch" href="/kalender-events/assets/nodered.html-aa55fe3e.js" as="script"><link rel="prefetch" href="/kalender-events/assets/nodes.html-817390db.js" as="script"><link rel="prefetch" href="/kalender-events/assets/sensors.html-dc693bae.js" as="script"><link rel="prefetch" href="/kalender-events/assets/trigger.html-72cb94bb.js" as="script"><link rel="prefetch" href="/kalender-events/assets/upcoming.html-ae744959.js" as="script"><link rel="prefetch" href="/kalender-events/assets/index-e32a7948.js" as="script">
   </head>
   <body>
-    <div id="app" data-server-rendered="true"><div class="theme-container"><div class="theme-default-content"><h1>404</h1> <blockquote>There's nothing here.</blockquote> <a href="/kalender-events/" class="router-link-active">
-      Take me home.
-    </a></div></div><div class="global-ui"><!----></div></div>
-    <script src="/kalender-events/assets/js/app.6f5edb6e.js" defer></script><script src="/kalender-events/assets/js/13.a1544d2a.js" defer></script><script src="/kalender-events/assets/js/5.0a3e9aa9.js" defer></script>
+    <div id="app"><!--[--><div class="theme-container"><main class="page"><div class="theme-default-content"><h1>404</h1><blockquote>Looks like we&#39;ve got some broken links.</blockquote><a href="/kalender-events/" class="">Take me home</a></div></main></div><!----><!--]--></div>
+    <script type="module" src="/kalender-events/assets/app-148e4e27.js" defer></script>
   </body>
 </html>

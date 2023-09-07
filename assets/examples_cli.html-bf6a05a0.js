@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-77258783","path":"/guide/examples_cli.html","title":"Use as cli","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1694110772000,"contributors":[{"name":"naimo84","email":"git@naimo84.dev","commits":1}]},"filePathRelative":"guide/examples_cli.md"}');export{e as data};

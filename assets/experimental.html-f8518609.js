@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-12557185","path":"/guide/experimental.html","title":"Experimental Features","lang":"en-US","frontmatter":{"sidebarDepth":0},"headers":[],"git":{"updatedTime":1694110772000,"contributors":[{"name":"naimo84","email":"git@naimo84.dev","commits":1}]},"filePathRelative":"guide/experimental.md"}');export{e as data};
