@@ -118,6 +118,7 @@ export function convertEvent(event: iCalEvent, config: Config): IKalenderEvent |
             location: event.location || '',
             organizer: event.organizer || '',
             rrule: event.rrule,
+            rdate: event.rdate,
             rruleText: rruleText,
             uid: uid,
             isRecurring: !!recurrence || !!event.rrule,

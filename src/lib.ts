@@ -119,6 +119,7 @@ export class KalenderEvents {
 
             const { preview, pastview } = getPreviews(this.config as Config);
 
+            debug(`getEvents - config: ${this.config}`)
             debug(`getEvents - pastview: ${pastview}`)
             debug(`getEvents - preview: ${preview}`)
             let processedData = this.processData(data, realnow, pastview.toDate(), preview.toDate());
@@ -139,6 +140,7 @@ export class KalenderEvents {
     }
 
     private async getCal(): Promise<IKalenderEvent[]> {
+        debug(this.config)
         if (this.config.type && this.config.type === 'icloud') {
             debug('getCal - icloud');
 
@@ -189,7 +191,7 @@ export class KalenderEvents {
                     };
                 }
 
-                let data = await fromURL(this.config.url, header);
+                let data = await fromURL(this.config.url, header, this.config);
                 debug(data)
 
                 let converted = await convertEvents(data, this.config);
@@ -199,7 +201,7 @@ export class KalenderEvents {
                 if (!this.config.url) {
                     throw "URL/File is not defined";
                 }
-                let data = await parseFile(this.config.url);
+                let data = await parseFile(this.config.url, this.config);
                 debug(data)
                 let converted = await convertEvents(data, this.config);
                 return converted;
@@ -207,10 +209,14 @@ export class KalenderEvents {
         }
     }
 
-    private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date) {
+    private processRRule(ev: IKalenderEvent, preview: Date, pastview: Date, rdate: boolean = false) {
         var eventLength = ev.eventEnd!.getTime() - ev.eventStart!.getTime();
         var options = RRule.parseString(ev.rrule.toString());
-        options.dtstart = this.addOffset(ev.eventStart!, -getTimezoneOffset(ev.eventStart!));
+        if (!rdate)
+            options.dtstart = this.addOffset(ev.eventStart!, -getTimezoneOffset(ev.eventStart!));
+        else
+            options.dtstart = this.addOffset(options.dtstart, -getTimezoneOffset(options.dtstart));
+
         if (options.until) {
             options.until = this.addOffset(options.until, -getTimezoneOffset(options.until));
         }
@@ -339,7 +345,17 @@ export class KalenderEvents {
                 }
 
                 if (ev.rrule === undefined) {
-                    this.checkDates(ev, preview, pastview, realnow, ' ', reslist);
+                    if (ev.rdate === undefined) {
+                        this.checkDates(ev, preview, pastview, realnow, ' ', reslist);
+                    } else {
+                        for (let rdate of ev.rdate) {
+                            ev.rrule = rdate;
+                            let evlist = this.processRRule(ev, preview, pastview, true);
+                            for (let ev2 of evlist) {
+                                this.checkDates(ev2 as IKalenderEvent, preview, pastview, realnow, ev.rrule, reslist);
+                            }
+                        }
+                    }
                 } else {
                     let evlist = this.processRRule(ev, preview, pastview);
                     for (let ev2 of evlist) {

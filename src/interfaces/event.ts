@@ -7,6 +7,7 @@ export interface iCalEvent {
     exdate: any;
     recurrences: any;
     rrule?: any;
+    rdate?: any;
     startDate?: any;
     endDate?: any;
     recurrenceId?: any;
@@ -49,6 +50,7 @@ export interface IKalenderEvent {
     id?: string,
     allDay?: boolean,
     rrule?: any,
+    rdate?: any,
     rruleText?: string,
     countdown?: object,
     calendarName?: string,

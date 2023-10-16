@@ -8,6 +8,7 @@ import axios from 'axios';
 const { v4: uuid } = require('uuid');
 const rrule = require('rrule').RRule;
 import moment = require('moment-timezone');
+import RRule, { RRuleSet } from 'rrule';
 
 function text(t = '') {
     return t
@@ -113,7 +114,7 @@ function getIanaTZFromMS(msTZName: string | number) {
     return he ? he.iana[0] : null;
 }
 
-function getTimeZone(value: any) {
+function getTimeZone(value: any,config:any) {
     let tz = value;
     let found = '';
     // If this is the custom timezone from MS Outlook
@@ -140,8 +141,13 @@ function getTimeZone(value: any) {
     if (tz && tz.startsWith('(')) {
         // Extract just the offset
         const regex = /[+|-]\d*:\d*/;
-        tz = null;
         found = tz.match(regex);
+        // guess Timezone, because RRule's TZID only accepts IANA tz
+        // possible fix for issue https://github.com/naimo84/node-red-contrib-ical-events/issues/133
+        if (found) {
+            tz = config.timezone;
+            found = '';
+        }
     }
 
     // Timezone not confirmed yet
@@ -369,6 +375,35 @@ function recurrenceParameter(name: string) {
     return dateParameter(name);
 };
 
+//@ts-ignore
+function rdateParameter(name: string) {
+    //@ts-ignore
+    return function (value: any, parameters: any, curr: any) {
+
+        //@ts-ignore
+        storeParameter(value, parameters, curr);
+        if (parameters.length > 0 && parameters[0].indexOf('PERIOD') >= 0) {
+            let values = value.split(',');
+            const rruleSet = new RRuleSet()
+            for (const rdate of values) {
+                const rdateSplit = rdate.split('/')
+
+                
+                const dtstart = moment(rdateSplit[0])
+                const until = moment(rdateSplit[1])
+                rruleSet.rrule(
+                    new RRule({
+                        dtstart: dtstart.toDate(),
+                        until:until.toDate()
+                    }))
+            }
+            curr[name] = rruleSet.rrules();
+        }
+        return curr;
+    };
+};
+
+
 function addFBType(fb: { type?: any; }, parameters: any) {
     const p = parseParameters(parameters);
 
@@ -418,7 +453,8 @@ const objectHandlers: any = {
 
         return { type: component, params: parameters };
     },
-    END(value: string, parameters: any, curr: { rrule: string; start: any; }, stack: any) {
+    //@ts-ignore
+    END(value: string, parameters: any, curr: { rrule: string; start: any; }, stack: any, line: any, config: any) {
         // Original end function
         //@ts-ignore
         function originalEnd(component: string, parameters_: any, curr: { [x: string]: any; end: Date; datetype: string; start: any; duration: string | undefined; uid: string | number; recurrenceid: { toISOString: () => string; } | undefined; }, stack: any[]) {
@@ -607,7 +643,7 @@ const objectHandlers: any = {
                     try {
                         // If the original date has a TZID, add it
                         if (curr.start.tz) {
-                            const tz = getTimeZone(curr.start.tz);
+                            const tz = getTimeZone(curr.start.tz,config);
                             rule += `;DTSTART;TZID=${tz}:${curr.start.toISOString().replace(/[-:]/g, '')}`;
                         } else {
                             rule += `;DTSTART=${curr.start.toISOString().replace(/[-:]/g, '')}`;
@@ -655,6 +691,7 @@ const objectHandlers: any = {
     CREATED: dateParameter('created'),
     'LAST-MODIFIED': dateParameter('lastmodified'),
     'RECURRENCE-ID': recurrenceParameter('recurrenceid'),
+    'RDATE': rdateParameter('rdate'),
     //@ts-ignore
     RRULE(value: any, parameters: any, curr: { rrule: any; }, stack: any, line: any) {
         curr.rrule = line;
@@ -662,9 +699,9 @@ const objectHandlers: any = {
     }
 }
 
-export function handleObject(name: string, value: any, parameters: any, ctx: any, stack: string | any[], line: any) {
+export function handleObject(name: string, value: any, parameters: any, ctx: any, stack: string | any[], line: any, config: any) {
     if (objectHandlers[name]) {
-        return objectHandlers[name](value, parameters, ctx, stack, line);
+        return objectHandlers[name](value, parameters, ctx, stack, line, config);
     }
 
     // Handling custom properties
@@ -679,7 +716,7 @@ export function handleObject(name: string, value: any, parameters: any, ctx: any
     return storeParameter(name.toLowerCase())(value, parameters, ctx);
 }
 
-export function parseLines(lines: string | any[], limit: number, ctx?: { type?: any; params?: any; } | undefined, stack?: never[], lastIndex?: number, cb?: (arg0: null, arg1: any) => void) {
+export function parseLines(lines: string | any[], limit: number, config:any , ctx?: { type?: any; params?: any; } | undefined, stack?: never[], lastIndex?: number, cb?: (arg0: null, arg1: any) => void) {
     if (!cb && typeof ctx === 'function') {
         cb = ctx;
         ctx = undefined;
@@ -718,7 +755,7 @@ export function parseLines(lines: string | any[], limit: number, ctx?: { type?: 
         const name = kv[0];
         const parameters = kv[1] ? kv[1].split(';').slice(1) : [];
 
-        ctx = handleObject(name, value, parameters, ctx, stack, l) || {};
+        ctx = handleObject(name, value, parameters, ctx, stack, l,config) || {};
         if (++limitCounter > limit) {
             break;
         }
@@ -733,7 +770,7 @@ export function parseLines(lines: string | any[], limit: number, ctx?: { type?: 
     if (cb) {
         if (i < lines.length) {
             setImmediate(() => {
-                parseLines(lines, limit, ctx, stack, i + 1, cb);
+                parseLines(lines, limit, ctx, config, stack, i + 1, cb);
             });
         } else {
             setImmediate(() => {
@@ -746,22 +783,22 @@ export function parseLines(lines: string | any[], limit: number, ctx?: { type?: 
     return null;
 }
 
-export function parseICS(string: string) :any{
+export function parseICS(string: string, config:any): any {
     const lineEndType = getLineBreakChar(string);
     const lines = string.split(lineEndType === '\n' ? /\n/ : /\r?\n/);
-    let ctx = parseLines(lines, lines.length);
+    let ctx = parseLines(lines, lines.length, config);
     return ctx;
 }
 
-export async function fromURL(url: any, options: any) {
+export async function fromURL(url: any, options: any, config: any) {
     const response = await axios.get(url, options)
     if (Math.floor(response.status / 100) !== 2) {
         throw new Error(`${response.status} ${response.statusText}`);
     }
-    return parseICS(response.data);
+    return parseICS(response.data, config);
 }
 
-export async function parseFile(filename: any) {
+export async function parseFile(filename: any, config: any) {
     const data = await fs.promises.readFile(filename, 'utf8')
-    return parseICS(data)
+    return parseICS(data, config)
 }

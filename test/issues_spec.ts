@@ -7,10 +7,54 @@ use(require('chai-things'));
 
 describe('issues', () => {
 
+
+    it('#133', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                
+                let ke = new KalenderEvents({
+                    url: "./test/mocks/133.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20160919').toDate(),
+                    pastview: 1,
+                    preview: 2,
+                    includeTodo: true,
+                    timezone: 'Europe/Amsterdam'
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
+    it('#11', async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+               
+                let ke = new KalenderEvents({
+                    url: "./test/mocks/11.ics"
+                });
+                let events = await ke.getEvents({
+                    now: moment('20221108').toDate(),
+                    pastview: 10,
+                    preview: 10,
+                    includeTodo: true
+                });
+                expect(events).to.have.lengthOf(1)
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
+
     it('#131', async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!process.env.CALDAV1_URL) resolve();
+              
                 let ke = new KalenderEvents({
                     url: "./test/mocks/131.ics"
                 });
@@ -31,7 +75,7 @@ describe('issues', () => {
     it('#15', async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!process.env.CALDAV1_URL) resolve();
+                
                 let ke = new KalenderEvents({
                     url: "./test/mocks/15.ics"
                 });
@@ -83,7 +127,7 @@ describe('issues', () => {
     it('#77', async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!process.env.CALDAV1_URL) resolve();
+                
                 let ke = new KalenderEvents({
                     url: "./test/mocks/77.ics"
                 });
