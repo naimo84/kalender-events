@@ -41,7 +41,7 @@
   "author": "naimo84",
   "dependencies": {
     "@naimo84/dav": "^1.9.0",
-    "axios": "^0.21.1",
+    "axios": "^1.8.2",
     "cloneextend": "0.0.3",
     "debug": "^4.1.1",
     "ical-expander": "^2.1.0",
