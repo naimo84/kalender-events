@@ -41,7 +41,7 @@
   "author": "naimo84",
   "dependencies": {
     "@naimo84/dav": "^1.9.0",
-    "axios": "^0.21.1",
+    "axios": "^1.13.5",
     "cloneextend": "0.0.3",
     "debug": "^4.1.1",
     "ical-expander": "^2.1.0",
@@ -49,7 +49,7 @@
     "moment-timezone": "^0.5.34",
     "node-cache": "^5.1.0",
     "rrule": "2.6.4",
-    "scrapegoat": "1.0.1",
+    "scrapegoat": "2.0.0",
     "uuid": "^8.3.2",
     "xml-js": "^1.6.11"
   },
